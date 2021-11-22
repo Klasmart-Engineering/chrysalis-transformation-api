@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: node-server
+    environment:
+      DATABASE_URL: postgresql://postgres:kidsloop@db:5432/mcb-integration
+    expose:
+      - '4200'
+    ports:
+      - '4200:4200'
+    depends_on:
+      - db
+
+  db:
+    container_name: postgres-db
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: kidsloop
+      POSTGRES_DB: mcb-integration
+    ports:
+      - '5432:5432'
