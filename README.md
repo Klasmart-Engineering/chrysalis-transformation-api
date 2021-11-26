@@ -11,6 +11,10 @@ Install postgres:
 
 -   `docker run -d --name=postgres-database -p 5432:5432 -e POSTGRES_PASSWORD=kidsloop postgres`
 
+Install redis:
+
+-   `docker run -d --name=redis-database -p 6379:6379 redis:alpine`
+
 Install dependencies:
 
 -   `npm i`
@@ -22,6 +26,10 @@ Install dependencies:
 Start postgres:
 
 -  `docker start postgres-database`
+
+Start redis:
+
+-  `docker start redis-database`
 
 Start the application:
 
