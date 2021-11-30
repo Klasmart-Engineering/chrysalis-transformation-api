@@ -48,5 +48,8 @@ Thumbs.db
 *.mov
 *.wmv
 
-# Enviroment Variables File 
+# Enviroment Variables File
 .env
+
+# NewRelic
+newrelic_agent.log

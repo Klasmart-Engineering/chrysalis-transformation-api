@@ -1,3 +1,5 @@
+import './utils/dotenv'
+import 'newrelic';
 import express, { Request, Response, NextFunction} from 'express';
 import logger from 'morgan';
 import createError, { HttpError } from 'http-errors';
@@ -31,4 +33,3 @@ app.listen(PORT, () => {
     /* eslint-disable no-console */
     console.log(`The application is listening on port ${PORT} !`);
 });
-
