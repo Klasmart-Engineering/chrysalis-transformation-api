@@ -1,7 +1,7 @@
-import './utils/dotenv'
+import './utils/dotenv';
 import 'newrelic';
-import express, { Request, Response, NextFunction} from 'express';
-import logger from 'morgan';
+import express, { Request, Response, NextFunction } from 'express';
+import logger from './utils/logging';
 import createError, { HttpError } from 'http-errors';
 import indexRouter from './routes';
 
@@ -9,9 +9,8 @@ const app = express();
 
 const PORT = process.env.PORT || 4200;
 
-app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({ extended: false }));
 
 app.use('/', indexRouter);
 
@@ -31,5 +30,5 @@ app.use((err: HttpError, req: Request, res: Response, nex: NextFunction) => {
 
 app.listen(PORT, () => {
     /* eslint-disable no-console */
-    console.log(`The application is listening on port ${PORT} !`);
+    logger.info(`The application is listening on port ${PORT}!`);
 });

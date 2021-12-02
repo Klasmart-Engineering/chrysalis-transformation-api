@@ -3,6 +3,7 @@ FROM node:16-alpine
 WORKDIR /usr/app
 COPY package.json tsconfig.json ./
 COPY src ./src
+COPY types ./types
 COPY prisma ./prisma
 COPY newrelic.js .
 
