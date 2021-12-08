@@ -46,3 +46,6 @@ Start the application:
 You can also run the application with its dependencies through a docker-compose. For this just run:
 
 - `docker-compose up`
+
+### Migration
+- `npm run migrate:dev`
