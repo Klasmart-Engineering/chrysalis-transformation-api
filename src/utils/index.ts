@@ -4,4 +4,5 @@ export {
   REDIS_HOST
 } from './redis'
 
+export * from './httpError'
 export * from './retryQueue'

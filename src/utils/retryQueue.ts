@@ -2,7 +2,7 @@ import Queue from 'bee-queue';
 import {redisClient} from './redis';
 import {RedisClient} from 'redis';
 
-type Data<T> = {
+export type Data<T> = {
   data: T
 }
 

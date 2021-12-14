@@ -14,7 +14,7 @@
       "project": "./tsconfig.json"
     },
     "rules": {
-      "no-shadow": "warn",
+      "@typescript-eslint/no-shadow": "error",
       "no-async-promise-executor": "warn",
       "@typescript-eslint/no-this-alias": "warn",
       "no-empty-pattern": "warn",
