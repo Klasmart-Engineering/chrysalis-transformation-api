@@ -1,28 +1,28 @@
-import {McbService} from '../../src/services/mcbService';
+import {C1Service} from '../../src/services/c1Service';
 import {createFakeClient} from '../utils/createFakeClient';
 import chai, {expect} from 'chai';
 import spies from 'chai-spies';
 chai.use(spies);
 import nock from 'nock';
-import {mcbGetSchoolsResponse} from '../utils/mcbGetSchoolsResponse';
+import {c1GetSchoolsResponse} from '../utils/c1GetSchoolsResponse';
 
-const hostname = 'klapi.myclassboard.com';
-const schoolPath = '/api/KidsLoop/Get_SchoolsList';
+const hostname = 'testapi.ezmis.in';
+const schoolPath = '/KL/SchoolsForKL';
 
-const service = new McbService();
+const service = new C1Service();
 
 const headers = {
   'Authorization': 'Bearer ',
   'Content-Type': 'application/json'
 };
 
-const params = {programmeGuid: 'test'}
+const pathSegments = ['test'];
 
-describe('MCB Service', () => {
+describe('C1 Service', () => {
   describe('#getSchools', () => {
     beforeEach(() => {
       nock('https://' + hostname, {reqheaders: headers})
-        .get(schoolPath).reply(200, mcbGetSchoolsResponse);
+        .get(schoolPath).reply(200, c1GetSchoolsResponse);
       chai.spy.on(service, 'createClient', () => createFakeClient(hostname, schoolPath));
     });
 
@@ -31,13 +31,11 @@ describe('MCB Service', () => {
     })
 
     it('should return schools list', function() {
-      return service.getSchools(params).then((res) => {
+      return service.getSchools(pathSegments).then((res) => {
         expect(service.createClient).to.have.been.called.once;
         expect(typeof res).to.equal('object');
-        expect(res).to.have.property('status');
-        expect(res).property('status').to.equal('1');
-        expect(res).to.have.property('data');
-        expect(res).property('data').to.have.length(2);
+        expect(Array.isArray(res)).to.equal(true);
+        expect(res).to.have.length(2);
       });
     });
   });
