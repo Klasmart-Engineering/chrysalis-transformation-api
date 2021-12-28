@@ -4,28 +4,25 @@ export const validSchool = {
   name: 'name',
   clientUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
   klOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  programUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  programName: 'programname',
+  programName: ['program name', 'program name2'],
   clientOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  organizationName: 'organizationname',
+  organizationName: 'organization name',
 }
 
 export const invalidSchool = {
   name: '',
   clientUuid: 'cdc9a77f-ac83-',
   klOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  programUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  programName: 'programname',
+  programName: ['program name', 'program name2'],
   clientOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  organizationName: 'organizationname',
+  organizationName: 'organization name',
 }
 
 interface School {
   name: string
   clientUuid: string
   klOrgUuid: string
-  programUuid: string
-  programName: string
+  programName: string[]
   clientOrgUuid: string
   organizationName: string
 }
@@ -33,7 +30,6 @@ interface School {
 export const isSchoolValid = (school: School) => {
   try {
       const { error } = schoolSchema.validate(school);
-
       return !error;
   } catch (error) {
       return false;
