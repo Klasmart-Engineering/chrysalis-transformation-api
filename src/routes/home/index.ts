@@ -2,13 +2,15 @@ import express, { Request, Response } from 'express'
 import { PrismaClient } from '@prisma/client'
 import logger from '../../utils/logging';
 import { HttpError } from '../../utils'
-import { McbService } from '../../services/mcbService'
 import { RetryQueue } from '../../utils'
 import { AdminService } from '../../services/adminService'
+import { C1Service } from "../../services/c1Service";
+import { MappedSchool } from "../../utils/mapResKeys";
+import { validateSchool } from "../../utils/validations";
 
 const router = express.Router()
 const prisma = new PrismaClient()
-const service = new McbService()
+const service = new C1Service()
 
 const retryQueue = new RetryQueue('test')
 retryQueue.createWorker(getSchools)
@@ -37,9 +39,22 @@ function getSchools() {
 }
 
 //this function should be de deleted in the future
-router.get('/schools/:KLProgrammeGUID', async (req: Request, res: Response) => {
+router.get('/schools/:OrganizationUUID', async (req: Request, res: Response) => {
     try {
-        const schools = await service.getSchools(req.params)
+        const pathSegments = [req.params.OrganizationUUID, 'Schools']
+        const schools = await service.getSchools(pathSegments);
+        if (Array.isArray(schools)) {
+            schools.forEach(school => {
+                const mappedSchool = new MappedSchool(school.SchoolName,
+                  school.SchoolUUID,
+                  school.ProgramName,
+                  school.OrganizationName,
+                  req.params.OrganizationUUID);
+                if (validateSchool(mappedSchool)) {
+                    //insert into db
+                }
+            })
+        }
         res.json(schools)
     } catch (e) {
         e instanceof HttpError
