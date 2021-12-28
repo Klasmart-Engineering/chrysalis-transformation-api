@@ -26,4 +26,15 @@ describe('Admin Service', () => {
             expect(programs).to.have.length(2)
         })
     })
+
+    describe('#getRoles', () => {
+        it('returns all roles when has pagination', async () => {
+            const adminService = await AdminService.getInstance()
+            const roles = await adminService.getRoles()
+
+            expect(typeof roles).to.equal('object')
+            expect(Array.isArray(roles)).to.equal(true)
+            expect(roles).to.have.length(2)
+        })
+    })
 })

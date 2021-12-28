@@ -42,3 +42,17 @@ model Program {
 
   @@map("programs")
 }
+
+model Role {
+  id            Int       @id @default(autoincrement())
+  name          String    @db.VarChar(255)
+  klUuid        String    @unique @db.Uuid            @map("kl_uuid")
+  klOrgUuid     String    @db.Uuid                    @map("kl_org_uuid")
+  system        Boolean   @db.Boolean @default(false) @map("system")
+  client        String?   @db.VarChar(255)            @map("client")
+  createdAt     DateTime  @default(now())             @map("created_at")
+  updatedAt     DateTime  @updatedAt                  @map("updated_at")
+  deletedAt     DateTime?                             @map("deleted_at")
+
+  @@map("roles")
+}

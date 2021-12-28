@@ -70,4 +70,76 @@ export const adminServiceHandlers = [
             })
         )
     }),
+
+    // Handles a "rolesConnection" query
+    graphql.query('getRoles', (req, res, ctx) => {
+        if (!req.headers.get('Authorization')) {
+            // When not authenticated, respond with an error
+            return res(
+                ctx.errors([
+                    {
+                        message: 'Not authenticated',
+                        errorType: 'AuthenticationError',
+                    },
+                ])
+            )
+        }
+
+        // When authenticated & has pagination cursor, respond with a query payload
+        const { cursor } = req.variables
+        if (cursor) {
+            return res(
+                ctx.data({
+                    rolesConnection: {
+                        totalCount: 2,
+                        pageInfo: {
+                            hasNextPage: false,
+                            hasPreviousPage: true,
+                            startCursor:
+                                'eyJyb2xlX2lkIjoiMzliZGYzYWYtODNiOS00ZjRlLWEzMDEtNjE4Yjk2N2UwZDYyIn0=',
+                            endCursor:
+                                'eyJyb2xlX2lkIjoiMzliZGYzYWYtODNiOS00ZjRlLWEzMDEtNjE4Yjk2N2UwZDYyIn0=',
+                        },
+                        edges: [
+                            {
+                                node: {
+                                    id: '39bdf3af-83b9-4f4e-a301-618b967e0d62',
+                                    name: 'Organization Admin',
+                                    status: 'active',
+                                    system: true,
+                                },
+                            },
+                        ],
+                    },
+                })
+            )
+        }
+
+        // When authenticated and without pagination cursor, respond with a query payload
+        return res(
+            ctx.data({
+                rolesConnection: {
+                    totalCount: 2,
+                    pageInfo: {
+                        hasNextPage: true,
+                        hasPreviousPage: false,
+                        startCursor:
+                            'eyJyb2xlX2lkIjoiMzM5NDcwZTktNjU1My00NjUzLTkxMDctMTE5NDVjOTNlM2MwIn0=',
+                        endCursor:
+                            'eyJyb2xlX2lkIjoiMzM5NDcwZTktNjU1My00NjUzLTkxMDctMTE5NDVjOTNlM2MwIn0=',
+                    },
+                    edges: [
+                        {
+                            node: {
+                                id: '339470e9-6553-4653-9107-11945c93e3c0',
+                                name: 'Parent',
+                                status: 'active',
+                                system: true,
+                            },
+                        },
+                    ],
+                },
+            })
+        )
+    }),
 ]

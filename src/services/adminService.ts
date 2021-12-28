@@ -11,6 +11,7 @@ import { Prisma } from '@prisma/client'
 import fetch from 'cross-fetch'
 import logger from '../utils/logging'
 import { getPrograms } from '../api/adminService/programs'
+import { getRoles } from '../api/adminService/roles'
 
 export class AdminService {
     public static async getInstance() {
@@ -118,6 +119,47 @@ export class AdminService {
             }
 
             return programs
+        } catch (e) {
+            // Will not log error here because already did in `errorLink` while init `ApolloClient`
+            // console.log(JSON.stringify(e, null, 2));
+            return []
+        }
+    }
+
+    // While loop to get all roles from Admin User service
+    async getRoles(): Promise<Prisma.RoleCreateInput[]> {
+        try {
+            let hasNextPage = true
+            let cursor = ''
+            const roles: Prisma.RoleCreateInput[] = []
+            while (hasNextPage) {
+                /**
+                 * Don't need to handle errors here because:
+                 *
+                 * - 4xx/5xx were handel in `errorLink` while init `ApolloClient`
+                 * - 2xx errors won't exist in this case
+                 */
+                const { data } = await getRoles(
+                    process.env.ADMIN_SERVICE_JWT || '',
+                    cursor
+                )
+
+                const responseData = data.rolesConnection
+                hasNextPage = responseData.pageInfo.hasNextPage
+                cursor = responseData.pageInfo.endCursor
+
+                for (const roleNode of responseData.edges) {
+                    roles.push({
+                        name: roleNode.node.name,
+                        client: 'MCB',
+                        klUuid: roleNode.node.id,
+                        klOrgUuid: '001be878-11c2-40dc-ad25-bfbcbf6f0960', // TODO: replace with real org UUID
+                        system: roleNode.node.system,
+                    })
+                }
+            }
+
+            return roles
         } catch (e) {
             // Will not log error here because already did in `errorLink` while init `ApolloClient`
             // console.log(JSON.stringify(e, null, 2));

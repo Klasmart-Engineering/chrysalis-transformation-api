@@ -65,4 +65,25 @@ router.get('/programs', async (req: Request, res: Response) => {
     }
 })
 
+// (testing purpose, will delete later) get programs from Admin User service
+router.get('/roles', async (req: Request, res: Response) => {
+    try {
+        // While loop to get all roles from Admin User service
+        const adminService = await AdminService.getInstance()
+        const roles = await adminService.getRoles()
+        res.json(roles)
+
+        if (roles) {
+            await prisma.role.createMany({
+                data: roles,
+                skipDuplicates: true,
+            })
+        }
+    } catch (e) {
+        e instanceof HttpError
+            ? res.status(e.status).json(e)
+            : res.status(500).json(e)
+    }
+})
+
 export default router
