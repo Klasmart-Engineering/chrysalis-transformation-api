@@ -3,7 +3,7 @@ import { validationRules } from '../config/validationRules';
 
 export const school = Joi.object({
     name: Joi.string()
-        .alphanum()
+        .regex(/^[\p{L}\d .'&/,-]*$/u)
         .min(validationRules.SCHOOL_NAME_MIN_LENGTH)
         .max(validationRules.SCHOOL_NAME_MAX_LENGTH)
         .required(),
@@ -16,22 +16,18 @@ export const school = Joi.object({
         .guid()
         .required(),
 
-    programUuid: Joi.string()
-        .guid()
-        .required(),
-    
-    programName: Joi.string()
-        .alphanum()
-        .min(validationRules.PROGRAM_NAME_MIN_LENGTH)
-        .max(validationRules.PROGRAM_NAME_MAX_LENGTH)
+    programName: Joi.array()
+        .items(Joi.string()
+            .regex(/^[\p{L}\d .'&/,-]*$/u)
+            .min(validationRules.PROGRAM_NAME_MIN_LENGTH)
+            .max(validationRules.PROGRAM_NAME_MAX_LENGTH))
         .required(),
 
     clientOrgUuid: Joi.string()
-        .guid()
-        .required(),
+        .guid(),
 
     organizationName: Joi.string()
-        .alphanum()
+        .regex(/^[\p{L}\d .'&/,-]*$/u)
         .min(validationRules.ORGANIZATION_NAME_MIN_LENGTH)
         .max(validationRules.ORGANIZATION_NAME_MAX_LENGTH)
         .required(),
