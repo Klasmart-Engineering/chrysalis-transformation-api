@@ -56,3 +56,26 @@ model Role {
 
   @@map("roles")
 }
+
+model Class {
+  id               Int       @id @default(autoincrement())
+  name             String    @db.VarChar(255)
+  klUuid           String    @unique @db.Uuid @map("kl_uuid")
+  klOrgUuid        String    @db.Uuid         @map("kl_org_uuid")
+  clientUuid       String    @db.Uuid         @map("client_uuid")
+  shortCode        String?   @db.VarChar(255) @map("short_code")
+  organizationName String    @db.VarChar(255) @map("organization_name")
+  schoolName       String    @db.VarChar(255) @map("school_name")
+  programNames     String[]                   @map("program_names")
+  client           String?   @db.VarChar(255) @map("client")
+  errors           String[]
+  status           String?   @db.VarChar(255) @map("status")
+  createdAt        DateTime  @default(now())  @map("created_at")
+  updatedAt        DateTime  @updatedAt       @map("updated_at")
+  deletedAt        DateTime?                  @map("deleted_at")
+
+  @@index(klOrgUuid)
+  @@index(clientUuid)
+
+  @@map("classes")
+}
