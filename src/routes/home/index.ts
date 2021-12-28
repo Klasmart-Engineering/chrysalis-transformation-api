@@ -1,18 +1,19 @@
 import express, { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import logger from '../../utils/logging';
-import { HttpError } from '../../utils';
-import { RetryQueue } from '../../utils';
-import { AdminService } from '../../services/adminService';
-import { C1Service } from '../../services/c1Service';
-import { validateSchool } from '../../utils/validations';
+import { HttpError } from '../../utils'
+import { RetryQueue } from '../../utils'
+import { AdminService } from '../../services/adminService'
+import { C1Service } from "../../services/c1Service";
+import { MappedSchool } from "../../utils/mapResKeys";
+import { validateSchool } from "../../utils/validations";
 
-const router = express.Router();
-const prisma = new PrismaClient();
-const service = new C1Service();
+const router = express.Router()
+const prisma = new PrismaClient()
+const service = new C1Service()
 
-const retryQueue = new RetryQueue('test');
-retryQueue.createWorker(getSchools);
+const retryQueue = new RetryQueue('test')
+retryQueue.createWorker(getSchools)
 
 router.get('/', async (req: Request, res: Response) => {
   const job = await retryQueue.createJob();
@@ -44,27 +45,23 @@ router.get('/schools/:OrganizationUUID', async (req: Request, res: Response) => 
     const schools = await service.getSchools(pathSegments);
     if (Array.isArray(schools)) {
       schools.forEach(school => {
-        const mappedSchool = {
-          name: school.SchoolName,
-          clientUuid: school.SchoolUUID,
-          programNames: school.ProgramName,
-          organizationName: school.OrganizationName,
-          clientOrgUuid: req.params.OrganizationUUID,
-          shortCode: school.SchoolShortCode,
-          klOrgUuid: req.params.OrganizationUUID
-        };
+        const mappedSchool = new MappedSchool(school.SchoolName,
+          school.SchoolUUID,
+          school.ProgramName,
+          school.OrganizationName,
+          req.params.OrganizationUUID);
         if (validateSchool(mappedSchool)) {
           //insert into db
         }
       })
     }
-    res.json(schools);
+    res.json(schools)
   } catch (e) {
     e instanceof HttpError
       ? res.status(e.status).json(e)
-      : res.status(500).json(e);
+      : res.status(500).json(e)
   }
-});
+})
 
 // (testing purpose, will delete later) get programs from Admin User service
 router.get('/programs', async (req: Request, res: Response) => {
