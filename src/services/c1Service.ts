@@ -1,22 +1,23 @@
 import {BaseRestfulService} from './baseRestfulService';
-import {C1Endpoints} from '../config/c1Endpoints';
+import {C1AuthEndpoints, C1Endpoints} from '../config/c1Endpoints';
+import {AuthServer} from '../utils/authServer';
+
+const loginData = JSON.stringify({
+  'Username': String(process.env.C1_API_USERNAME),
+  'Password': String(process.env.C1_API_PASSWORD)
+});
+
+const authServer = new AuthServer(String(process.env.C1_API_HOSTNAME), loginData);
 
 export class C1Service extends BaseRestfulService {
   hostname = String(process.env.C1_API_HOSTNAME);
   jwtToken = '';
-  refreshToken = '';
 
   constructor() {
     super();
-    this.authenticate();
-  }
-
-  authenticate() {
-    //TODO this should be implemented in CIL-61
-  }
-
-  tokenRefresh() {
-    //TODO this should be implemented in CIL-62
+    authServer.getAccessToken(C1AuthEndpoints.login)
+      .then(res => this.jwtToken = res)
+      .catch(() => { throw new Error('error to get access token') });
   }
 
   getSchools(pathSegments: string[]) {
