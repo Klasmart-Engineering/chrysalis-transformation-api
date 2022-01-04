@@ -26,8 +26,8 @@ export class C1Service extends BaseRestfulService {
     return this.getData(client);
   }
 
-  getClasses() {
-    const client = this.createClient(C1Endpoints.classApiEndpoint);
+  getClasses(pathSegments: string[]) {
+    const client = this.createClient(C1Endpoints.classApiEndpoint, pathSegments);
     return this.getData(client);
   }
 

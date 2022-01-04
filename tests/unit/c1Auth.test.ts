@@ -2,7 +2,7 @@ import chai, {expect} from 'chai';
 import spies from 'chai-spies';
 chai.use(spies);
 import {AuthServer} from '../../src/utils/authServer';
-import {c1GetTokenResponse} from '../utils/c1GetTokenResponse';
+import {getToken} from '../utils/responses/c1';
 
 const hostname = 'testapi.ezmis.in';
 const loginPath = '/Accounts/Authenticate-KL';
@@ -15,7 +15,7 @@ const authServer = new AuthServer(hostname, loginTestData);
 describe('C1 Auth', () => {
   describe('#login', () => {
     beforeEach(() => {
-      chai.spy.on(authServer, 'login', () => authServer.jwtToken = c1GetTokenResponse.JwtToken);
+      chai.spy.on(authServer, 'login', () => authServer.jwtToken = getToken.JwtToken);
     });
 
     afterEach(() => {

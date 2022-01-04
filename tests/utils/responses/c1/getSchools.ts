@@ -1,4 +1,4 @@
-export const c1GetSchoolsResponse = [
+export const getSchools = [
   {
     "OrganizationName": "Chrysalis BLP Classic",
     "SchoolUUID": "C83928CB-2CA5-441A-8CFB-2576F732F27B",

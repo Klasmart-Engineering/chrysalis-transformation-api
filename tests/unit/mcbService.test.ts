@@ -4,7 +4,7 @@ import chai, {expect} from 'chai';
 import spies from 'chai-spies';
 chai.use(spies);
 import nock from 'nock';
-import {mcbGetSchoolsResponse} from '../utils/mcbGetSchoolsResponse';
+import {getSchools} from '../utils/responses/mcb';
 
 const hostname = 'klapi.myclassboard.com';
 const schoolPath = '/api/KidsLoop/Get_SchoolsList';
@@ -22,7 +22,7 @@ describe('MCB Service', () => {
   describe('#getSchools', () => {
     beforeEach(() => {
       nock('https://' + hostname, {reqheaders: headers})
-        .get(schoolPath).reply(200, mcbGetSchoolsResponse);
+        .get(schoolPath).reply(200, getSchools);
       chai.spy.on(service, 'createClient', () => createFakeClient(hostname, schoolPath));
     });
 

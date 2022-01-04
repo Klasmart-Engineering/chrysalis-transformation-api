@@ -1,4 +1,4 @@
-export const c1SchoolSchema = {
+export const schoolSchema = {
   title: 'schoolSchema',
   type: 'object',
   required: ['OrganizationName', 'SchoolUUID', 'SchoolName', 'SchoolShortCode', 'ProgramName', 'Source'],
