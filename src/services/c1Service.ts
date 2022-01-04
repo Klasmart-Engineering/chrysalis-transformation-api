@@ -12,6 +12,7 @@ const authServer = new AuthServer(String(process.env.C1_API_HOSTNAME), loginData
 export class C1Service extends BaseRestfulService {
   hostname = String(process.env.C1_API_HOSTNAME);
   jwtToken = '';
+  refreshToken = '';
 
   constructor() {
     super();

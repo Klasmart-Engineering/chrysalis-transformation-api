@@ -8,21 +8,22 @@ datasource db {
 }
 
 model School {
-  id                   Int        @id @default(autoincrement())
-  name                 String     @db.VarChar(255)
-  klUuid               String     @unique @db.Uuid              @map("kl_uuid")
-  clientUuid           String     @db.Uuid                      @map("client_uuid")
-  klOrgUuid            String     @db.Uuid                      @map("kl_org_uuid")
-  programUuid          String     @db.Uuid                      @map("program_uuid")
-  programName          String     @db.VarChar(255)              @map("program_name")
-  clientOrgUuid        String     @db.Uuid                      @map("client_org_uuid")
-  organizationName     String     @db.VarChar(255)              @map("organization_name")
-  createdAt            DateTime   @default(now())               @map("created_at")
-  updatedAt            DateTime   @updatedAt                    @map("updated_at")
-  deletedAt            DateTime?                                @map("deleted_at")
+  id                   Int       @id @default(autoincrement())
+  name                 String    @db.VarChar(255)
+  klUuid               String?   @unique @db.Uuid              @map("kl_uuid")
+  clientUuid           String    @db.Uuid                      @map("client_uuid")
+  klOrgUuid            String?   @db.Uuid                      @map("kl_org_uuid")
+  programNames         String[]                                @map("program_names")
+  organizationName     String    @db.VarChar(255)              @map("organization_name")
+  clientOrgUuid        String?   @db.Uuid                      @map("client_org_uuid")
+  shortCode            String?   @db.VarChar(255)              @map("short_code")
+  status               String?   @db.VarChar(255)              @map("status")
+  createdAt            DateTime  @default(now())               @map("created_at")
+  updatedAt            DateTime  @updatedAt                    @map("updated_at")
+  deletedAt            DateTime?                               @map("deleted_at")
 
   @@index(clientUuid)
-  @@index(clientOrgUuid)
+  @@index(klOrgUuid)
 
   @@map("schools")
 }

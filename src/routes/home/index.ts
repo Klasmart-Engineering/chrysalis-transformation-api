@@ -9,8 +9,8 @@ import { AdminService } from '../../services/adminService'
 const router = express.Router()
 const prisma = new PrismaClient()
 const service = new McbService()
-
 const retryQueue = new RetryQueue('test')
+
 retryQueue.createWorker(getSchools)
 
 router.get('/', async (req: Request, res: Response) => {
