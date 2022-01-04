@@ -1,4 +1,4 @@
-export const mcbGetSchoolsResponse = {
+export const getSchools = {
   "status": "1",
   "message": "success",
   "data": [
