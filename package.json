@@ -10,9 +10,14 @@
     "start:dev": "nodemon",
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
+    "fmt": "npm run lint-fix && npm run prettier-format",
+    "prettier-format": "prettier --config .prettierrc \"./**/*.{ts,test.ts}\" --write",
+    "prettier-check": "prettier --config .prettierrc \"./**/*.{ts,test.ts}\" --check",
+    "commitlint-check": "commitlint",
     "prisma:generate": "npx prisma generate --schema=./prisma/schema.prisma",
     "migrate:dev": "npx prisma migrate dev",
-    "migrate:prod": "npx prisma migrate deploy"
+    "migrate:prod": "npx prisma migrate deploy",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",

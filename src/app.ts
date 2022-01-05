@@ -16,19 +16,19 @@ app.use('/', indexRouter);
 
 // catch 404 and forward to error handler
 app.use((req: Request, res: Response, next: NextFunction) => {
-    next(createError(404));
+  next(createError(404));
 });
 
 // error handler
 app.use((err: HttpError, req: Request, res: Response, nex: NextFunction) => {
-    res.locals.message = err.message;
-    res.locals.error = req.app.get('env') === 'development' ? err : {};
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-    res.status(err.status || 500);
-    res.send(`error ${err.status}: ${err.message}`);
+  res.status(err.status || 500);
+  res.send(`error ${err.status}: ${err.message}`);
 });
 
 app.listen(PORT, () => {
-    /* eslint-disable no-console */
-    logger.info(`The application is listening on port ${PORT}!`);
+  /* eslint-disable no-console */
+  logger.info(`The application is listening on port ${PORT}!`);
 });

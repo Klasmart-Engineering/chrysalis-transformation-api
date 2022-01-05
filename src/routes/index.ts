@@ -1,5 +1,5 @@
 import express from 'express';
-import HomeRouter from './home'
+import HomeRouter from './home';
 
 const router = express.Router();
 

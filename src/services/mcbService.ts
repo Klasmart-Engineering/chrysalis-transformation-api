@@ -1,12 +1,16 @@
-import {BaseRestfulService} from './baseRestfulService';
-import {McbEndpoints} from '../config/mcbEnpoints';
+import { BaseRestfulService } from './baseRestfulService';
+import { McbEndpoints } from '../config/mcbEnpoints';
 
 export class McbService extends BaseRestfulService {
   hostname = String(process.env.MCB_API_HOSTNAME);
   jwtToken = String(process.env.MCB_API_TOKEN);
 
   getSchools(params: Record<string, string>) {
-    const client = this.createClient(McbEndpoints.schoolApiEndpoint, [], params);
+    const client = this.createClient(
+      McbEndpoints.schoolApiEndpoint,
+      [],
+      params
+    );
     return this.getData(client);
   }
 

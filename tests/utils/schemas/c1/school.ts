@@ -1,13 +1,20 @@
 export const schoolSchema = {
   title: 'schoolSchema',
   type: 'object',
-  required: ['OrganizationName', 'SchoolUUID', 'SchoolName', 'SchoolShortCode', 'ProgramName', 'Source'],
+  required: [
+    'OrganizationName',
+    'SchoolUUID',
+    'SchoolName',
+    'SchoolShortCode',
+    'ProgramName',
+    'Source',
+  ],
   properties: {
     OrganizationName: {
       type: 'string',
     },
     SchoolUUID: {
-      type: 'string'
+      type: 'string',
     },
     SchoolName: {
       type: 'string',
@@ -21,5 +28,5 @@ export const schoolSchema = {
     Source: {
       type: 'string',
     },
-  }
+  },
 };
