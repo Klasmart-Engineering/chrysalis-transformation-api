@@ -1,5 +1,5 @@
-import { Prisma, PrismaClient } from "@prisma/client";
-import { handleError } from "./errorHandler";
+import { Prisma, PrismaClient } from '@prisma/client';
+import { handleError } from './errorHandler';
 
 const prisma = new PrismaClient();
 
@@ -11,17 +11,15 @@ export const storeSchools = async (schools: Prisma.SchoolCreateInput[]) => {
       {
         type: 'dbError',
         entity: 'school',
-        message: JSON.stringify(error)
+        message: JSON.stringify(error),
       },
       createSchools.bind(schools)
-    )
+    );
   }
-}
+};
 
 const createSchools = async (schools: Prisma.SchoolCreateInput[]) => {
-  return await prisma.school.createMany(
-    {
-      data: schools
-    }
-  );
-}
+  return await prisma.school.createMany({
+    data: schools,
+  });
+};

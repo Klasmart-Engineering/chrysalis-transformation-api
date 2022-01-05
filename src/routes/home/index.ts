@@ -1,93 +1,93 @@
-import express, { Request, Response } from 'express'
-import { PrismaClient } from '@prisma/client'
+import express, { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
 import logger from '../../utils/logging';
-import { HttpError } from '../../utils'
-import { McbService } from '../../services/mcbService'
-import { RetryQueue } from '../../utils'
-import { AdminService } from '../../services/adminService'
+import { HttpError } from '../../utils';
+import { McbService } from '../../services/mcbService';
+import { RetryQueue } from '../../utils';
+import { AdminService } from '../../services/adminService';
 
-const router = express.Router()
-const prisma = new PrismaClient()
-const service = new McbService()
-const retryQueue = new RetryQueue('test')
+const router = express.Router();
+const prisma = new PrismaClient();
+const service = new McbService();
+const retryQueue = new RetryQueue('test');
 
-retryQueue.createWorker(getSchools)
+retryQueue.createWorker(getSchools);
 
 router.get('/', async (req: Request, res: Response) => {
   const job = await retryQueue.createJob();
-  job.on('succeeded', result => res.status(200).json(result));
+  job.on('succeeded', (result) => res.status(200).json(result));
   job.on('failed', (error) => {
-    logger.error(error.message)
-    res.status(400).json(error.message)
+    logger.error(error.message);
+    res.status(400).json(error.message);
   });
 });
 
 //example worker function, this should be deleted in the future
 function getSchools() {
-    return new Promise((resolve, reject) => {
-        prisma.school
-            .findMany()
-            .then((value) => {
-                resolve(value)
-            })
-            .catch((error) => {
-                reject(error)
-            })
-    })
+  return new Promise((resolve, reject) => {
+    prisma.school
+      .findMany()
+      .then((value) => {
+        resolve(value);
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
 }
 
 //this function should be de deleted in the future
 router.get('/schools/:KLProgrammeGUID', async (req: Request, res: Response) => {
-    try {
-        const schools = await service.getSchools(req.params)
-        res.json(schools)
-    } catch (e) {
-        e instanceof HttpError
-            ? res.status(e.status).json(e)
-            : res.status(500).json(e)
-    }
-})
+  try {
+    const schools = await service.getSchools(req.params);
+    res.json(schools);
+  } catch (e) {
+    e instanceof HttpError
+      ? res.status(e.status).json(e)
+      : res.status(500).json(e);
+  }
+});
 
 // (testing purpose, will delete later) get programs from Admin User service
 router.get('/programs', async (req: Request, res: Response) => {
-    try {
-        // While loop to get all programs from Admin User service
-        const adminService = await AdminService.getInstance()
-        const programs = await adminService.getPrograms()
-        res.json(programs)
+  try {
+    // While loop to get all programs from Admin User service
+    const adminService = await AdminService.getInstance();
+    const programs = await adminService.getPrograms();
+    res.json(programs);
 
-        if (programs) {
-            await prisma.program.createMany({
-                data: programs,
-                skipDuplicates: true,
-            })
-        }
-    } catch (e) {
-        e instanceof HttpError
-            ? res.status(e.status).json(e)
-            : res.status(500).json(e)
+    if (programs) {
+      await prisma.program.createMany({
+        data: programs,
+        skipDuplicates: true,
+      });
     }
-})
+  } catch (e) {
+    e instanceof HttpError
+      ? res.status(e.status).json(e)
+      : res.status(500).json(e);
+  }
+});
 
 // (testing purpose, will delete later) get programs from Admin User service
 router.get('/roles', async (req: Request, res: Response) => {
-    try {
-        // While loop to get all roles from Admin User service
-        const adminService = await AdminService.getInstance()
-        const roles = await adminService.getRoles()
-        res.json(roles)
+  try {
+    // While loop to get all roles from Admin User service
+    const adminService = await AdminService.getInstance();
+    const roles = await adminService.getRoles();
+    res.json(roles);
 
-        if (roles) {
-            await prisma.role.createMany({
-                data: roles,
-                skipDuplicates: true,
-            })
-        }
-    } catch (e) {
-        e instanceof HttpError
-            ? res.status(e.status).json(e)
-            : res.status(500).json(e)
+    if (roles) {
+      await prisma.role.createMany({
+        data: roles,
+        skipDuplicates: true,
+      });
     }
-})
+  } catch (e) {
+    e instanceof HttpError
+      ? res.status(e.status).json(e)
+      : res.status(500).json(e);
+  }
+});
 
-export default router
+export default router;

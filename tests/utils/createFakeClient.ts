@@ -1,4 +1,4 @@
-import {HttpOptions} from '../../src/interfaces/httpOptions';
+import { HttpOptions } from '../../src/interfaces/httpOptions';
 
 export function createFakeClient(hostname: string, path: string): HttpOptions {
   return {
@@ -6,8 +6,8 @@ export function createFakeClient(hostname: string, path: string): HttpOptions {
     path: path,
     method: 'GET',
     headers: {
-      'Authorization': 'Bearer ',
-      'Content-Type': 'application/json'
-    }
-  }
+      Authorization: 'Bearer ',
+      'Content-Type': 'application/json',
+    },
+  };
 }

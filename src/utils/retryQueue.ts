@@ -1,10 +1,10 @@
 import Queue from 'bee-queue';
-import {redisClient} from './redis';
-import {RedisClient} from 'redis';
+import { redisClient } from './redis';
+import { RedisClient } from 'redis';
 
 export type Data<T> = {
-  data: T
-}
+  data: T;
+};
 
 export class RetryQueue {
   NUMBER_OF_RETRIES = 3;
@@ -15,18 +15,19 @@ export class RetryQueue {
     this.queue = new Queue(queueName, {
       redis: redis ? redis : redisClient,
       removeOnSuccess: true,
-      activateDelayedJobs: true
-    })
+      activateDelayedJobs: true,
+    });
   }
 
   createWorker(task: CallableFunction) {
-    this.queue.process( (job) => {
+    this.queue.process((job) => {
       return task(job.data);
     });
   }
 
   createJob<T>(data?: Data<T>) {
-    return this.queue.createJob(data)
+    return this.queue
+      .createJob(data)
       .retries(this.NUMBER_OF_RETRIES)
       .backoff('exponential', this.FIRST_RETRY_DELAY)
       .save();
