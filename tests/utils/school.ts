@@ -4,7 +4,7 @@ export const validSchool = {
   name: 'name',
   clientUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
   klOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  programName: ['program name', 'program name2'],
+  programNames: ['program name', 'program name2'],
   clientOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
   organizationName: 'organization name',
 }
@@ -13,7 +13,7 @@ export const invalidSchool = {
   name: '',
   clientUuid: 'cdc9a77f-ac83-',
   klOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  programName: ['program name', 'program name2'],
+  programNames: ['program name', 'program name2'],
   clientOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
   organizationName: 'organization name',
 }
@@ -22,7 +22,7 @@ interface School {
   name: string
   clientUuid: string
   klOrgUuid: string
-  programName: string[]
+  programNames: string[]
   clientOrgUuid: string
   organizationName: string
 }
