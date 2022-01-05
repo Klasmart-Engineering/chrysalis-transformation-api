@@ -1,4 +1,4 @@
-import { PROGRAM_NOT_EXIST } from '../config/errorMessages';
+import { PROGRAM_NOT_EXIST, SCHOOL_VALIDATION_FAILED } from "../config/errorMessages";
 import { school as schoolSchema } from '../validatorsSchemes'
 import logger from "./logging";
 import { Prisma, PrismaClient } from '@prisma/client';
@@ -9,10 +9,10 @@ export const isSchoolValid = (school: Prisma.SchoolCreateInput) => {
     try {
         const { error, value } = schoolSchema.validate(school);
 
-        error && logger.error(JSON.stringify({
+        error && logger.error({
             school: value,
-            messages: error.details.map((detail: {message: string}) => detail.message)
-        }));
+            messages: SCHOOL_VALIDATION_FAILED
+        });
 
         return !error;
     } catch (error) {
@@ -31,11 +31,11 @@ export const isSchoolProgramValid = async (programName: string, organizationUuid
         })
         const isValid = (programs > 0);
 
-        !isValid && logger.error(JSON.stringify({
+        !isValid && logger.error({
             program: programName,
             organization: organizationUuid,
             messages: PROGRAM_NOT_EXIST
-        }));
+        });
 
         return isValid;
     } catch (error) {
