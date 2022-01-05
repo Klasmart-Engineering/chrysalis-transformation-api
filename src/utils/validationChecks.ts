@@ -141,9 +141,6 @@ export const checkClassesValid = async (classes: MappedClass[]) => {
 
     for (const cl of classes) {
       cl.clientUuid = school.clientUuid;
-      cl.klOrgUuid = school.klOrgUuid;
-      cl.clientOrgUuid = school.clientOrgUuid;
-
       const { error, value } = classSchema.validate(cl);
 
       if (error) {

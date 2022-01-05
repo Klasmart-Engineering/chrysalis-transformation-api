@@ -21,16 +21,16 @@ export class MappedSchool {
 export class MappedClass {
   name: string;
   clientUuid: string;
-  klOrgUuid: string;
+  klOrgUuid: string | null;
   shortCode: string;
   schoolName: string;
-  clientOrgUuid: string;
+  clientOrgUuid: string | null;
   programNames: string[];
   organizationName: string;
 
   constructor(schoolClass: ClassQuerySchema) {
-    this.klOrgUuid = '';
-    this.clientOrgUuid = '';
+    this.klOrgUuid = null;
+    this.clientOrgUuid = null;
     this.clientUuid = '';
     this.name = schoolClass.ClassName;
     this.shortCode = schoolClass.ClassShortCode;
