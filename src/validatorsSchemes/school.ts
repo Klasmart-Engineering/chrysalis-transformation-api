@@ -1,5 +1,5 @@
-import Joi from "joi";
-import { validationRules } from "../config/validationRules";
+import Joi from 'joi';
+import { validationRules } from '../config/validationRules';
 
 export const school = Joi.object({
   name: Joi.string()

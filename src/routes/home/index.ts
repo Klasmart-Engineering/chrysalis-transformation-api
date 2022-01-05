@@ -5,7 +5,6 @@ import { HttpError } from '../../utils'
 import { RetryQueue } from '../../utils'
 import { AdminService } from '../../services/adminService'
 import { C1Service } from "../../services/c1Service";
-import { MappedSchool } from "../../utils/mapResKeys";
 import { validateSchool } from "../../utils/validations";
 
 const router = express.Router()
