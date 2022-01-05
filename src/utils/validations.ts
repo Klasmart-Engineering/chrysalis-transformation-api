@@ -1,11 +1,15 @@
 import { isSchoolProgramValid, isSchoolValid } from "./validationChecks";
-import { MappedSchool } from "./mapResKeys";
+import { Prisma } from '@prisma/client';
 
-export function validateSchool(school: MappedSchool) {
+export function validateSchool(school: Prisma.SchoolCreateInput) {
   if (isSchoolValid(school)) {
-    school.programName.forEach(async program => {
-      return !await isSchoolProgramValid(program, school.klOrgUuid);
-    })
+    if (school.programNames) {
+      Object.values(school.programNames).forEach(async program => {
+        return !await isSchoolProgramValid(String(program), String(school.klOrgUuid));
+      })
+    } else {
+      return false;
+    }
     return true;
   } else {
     return false;

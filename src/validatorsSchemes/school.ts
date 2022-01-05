@@ -12,10 +12,9 @@ export const school = Joi.object({
         .required(),
     
     klOrgUuid: Joi.string()
-        .guid()
-        .required(),
+        .guid(),
 
-    programName: Joi.array()
+    programNames: Joi.array()
         .items(Joi.string()
             .min(validationRules.PROGRAM_NAME_MIN_LENGTH)
             .max(validationRules.PROGRAM_NAME_MAX_LENGTH))
@@ -28,4 +27,6 @@ export const school = Joi.object({
         .min(validationRules.ORGANIZATION_NAME_MIN_LENGTH)
         .max(validationRules.ORGANIZATION_NAME_MAX_LENGTH)
         .required(),
+
+    shortCode: Joi.string()
 });

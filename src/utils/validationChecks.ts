@@ -1,12 +1,11 @@
 import { PROGRAM_NOT_EXIST } from '../config/errorMessages';
 import { school as schoolSchema } from '../validatorsSchemes'
 import logger from "./logging";
-import { PrismaClient } from '@prisma/client';
-import { MappedSchool } from "./mapResKeys";
+import { Prisma, PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const isSchoolValid = (school: MappedSchool) => {
+export const isSchoolValid = (school: Prisma.SchoolCreateInput) => {
     try {
         const { error, value } = schoolSchema.validate(school);
 

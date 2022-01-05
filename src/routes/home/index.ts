@@ -5,7 +5,6 @@ import { HttpError } from '../../utils'
 import { RetryQueue } from '../../utils'
 import { AdminService } from '../../services/adminService'
 import { C1Service } from "../../services/c1Service";
-import { MappedSchool } from "../../utils/mapResKeys";
 import { validateSchool } from "../../utils/validations";
 
 const router = express.Router()
@@ -45,11 +44,15 @@ router.get('/schools/:OrganizationUUID', async (req: Request, res: Response) => 
         const schools = await service.getSchools(pathSegments);
         if (Array.isArray(schools)) {
             schools.forEach(school => {
-                const mappedSchool = new MappedSchool(school.SchoolName,
-                  school.SchoolUUID,
-                  school.ProgramName,
-                  school.OrganizationName,
-                  req.params.OrganizationUUID);
+                const mappedSchool = {
+                    name: school.SchoolName,
+                    clientUuid: school.SchoolUUID,
+                    programNames: school.ProgramName,
+                    organizationName: school.OrganizationName,
+                    clientOrgUuid: req.params.OrganizationUUID,
+                    shortCode: school.SchoolShortCode,
+                    klOrgUuid: req.params.OrganizationUUID
+                };
                 if (validateSchool(mappedSchool)) {
                     //insert into db
                 }
