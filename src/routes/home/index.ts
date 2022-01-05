@@ -39,31 +39,31 @@ function getSchools() {
 
 //this function should be de deleted in the future
 router.get('/schools/:OrganizationUUID', async (req: Request, res: Response) => {
-    try {
-        const pathSegments = [req.params.OrganizationUUID, 'Schools']
-        const schools = await service.getSchools(pathSegments);
-        if (Array.isArray(schools)) {
-            schools.forEach(school => {
-                const mappedSchool = {
-                    name: school.SchoolName,
-                    clientUuid: school.SchoolUUID,
-                    programNames: school.ProgramName,
-                    organizationName: school.OrganizationName,
-                    clientOrgUuid: req.params.OrganizationUUID,
-                    shortCode: school.SchoolShortCode,
-                    klOrgUuid: req.params.OrganizationUUID
-                };
-                if (validateSchool(mappedSchool)) {
-                    //insert into db
-                }
-            })
+  try {
+    const pathSegments = [req.params.OrganizationUUID, 'Schools']
+    const schools = await service.getSchools(pathSegments);
+    if (Array.isArray(schools)) {
+      schools.forEach(school => {
+        const mappedSchool = {
+          name: school.SchoolName,
+          clientUuid: school.SchoolUUID,
+          programNames: school.ProgramName,
+          organizationName: school.OrganizationName,
+          clientOrgUuid: req.params.OrganizationUUID,
+          shortCode: school.SchoolShortCode,
+          klOrgUuid: req.params.OrganizationUUID
+        };
+        if (validateSchool(mappedSchool)) {
+          //insert into db
         }
-        res.json(schools);
-    } catch (e) {
-        e instanceof HttpError
-            ? res.status(e.status).json(e)
-            : res.status(500).json(e);
+      })
     }
+    res.json(schools);
+  } catch (e) {
+    e instanceof HttpError
+      ? res.status(e.status).json(e)
+      : res.status(500).json(e);
+  }
 });
 
 // (testing purpose, will delete later) get programs from Admin User service
