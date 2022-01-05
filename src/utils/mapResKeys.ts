@@ -21,7 +21,7 @@ export class MappedSchool {
 export class MappedClass {
   name: string;
   clientUuid: string;
-  klOrgUuid?: string;
+  klOrgUuid: string;
   shortCode: string;
   schoolName: string;
   clientOrgUuid: string;
