@@ -32,7 +32,10 @@ export const isSchoolValid = (school: MappedSchool) => {
   }
 }
 
-export const isSchoolProgramValid = async (programName: string, organizationUuid: string) => {
+export const isSchoolProgramValid = async (
+  programName: string,
+  organizationUuid: string,
+) => {
   try {
     const programs = await Database.getProgramCount(programName, organizationUuid)
     const isValid = programs > 0;
@@ -50,24 +53,17 @@ export const isSchoolProgramValid = async (programName: string, organizationUuid
   }
 }
 
-export const schoolExist = async (
-  schoolName: string,
-) => {
+export const schoolExist = async (schoolName: string) => {
   try {
-    const schools = await prisma.school.count({
-      where: {
-        name: schoolName,
-      },
-    });
-    const exist = schools > 0;
+    const school = await Database.getSchoolByName(schoolName);
 
-    !exist &&
+    !school &&
       logger.error({
         school: schoolName,
         messages: SCHOOL_NOT_EXIST,
       });
 
-    return exist;
+    return !!school;
   } catch (error) {
     logger.error(error);
     return false;
@@ -79,11 +75,7 @@ export const isClassProgramsValid = async (
   classPrograms: Array<string>,
 ) => {
   try {
-    const school = await prisma.school.findFirst({
-      where: {
-        name: schoolName,
-      }
-    });
+    const school = await Database.getSchoolByName(schoolName);
 
     if (school) {
       const schoolPrograms = school.programNames;
@@ -155,7 +147,9 @@ export const checkClassesValid = async (classes: MappedClass[]) => {
       const { error, value } = classSchema.validate(cl);
 
       if (error) {
-        const errorDetails = error.details.map((detail: { message: string }) => detail.message);
+        const errorDetails = error.details.map(
+          (detail: { message: string }) => detail.message
+        );
         logger.error(JSON.stringify({ class: value, messages: errorDetails }));
         classesHaveValidSchema = false;
       }
@@ -166,4 +160,4 @@ export const checkClassesValid = async (classes: MappedClass[]) => {
     logger.error(error);
     return false;
   }
-}
+};

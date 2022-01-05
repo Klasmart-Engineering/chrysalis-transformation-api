@@ -46,41 +46,41 @@ const storeClasses = async (classes: Prisma.ClassCreateInput[]) => {
 };
 
 const getAllSchools = async (): Promise<School[]> => {
-  const schools = await prisma.school.findMany()
-  return schools
-}
+  const schools = await prisma.school.findMany();
+  return schools;
+};
 
 const getSchoolByName = async (schoolName: string): Promise<School | null> => {
-  const query = { where: { name: schoolName } }
-  const school = await prisma.school.findFirst(query)
+  const query = { where: { name: schoolName } };
+  const school = await prisma.school.findFirst(query);
 
-  return school
-}
+  return school;
+};
 
 const getProgramCount = async (programName: string, orgUuid: string): Promise<number> => {
-  const query = { where: { name: programName, clientOrgUuid: orgUuid } }
-  const programCount = await prisma.program.count(query)
+  const query = { where: { name: programName, clientOrgUuid: orgUuid } };
+  const programCount = await prisma.program.count(query);
 
-  return programCount
-}
+  return programCount;
+};
 
 const createPrograms = async (programs: Prisma.ProgramCreateInput[]) => {
   const payload = await prisma.program.createMany({
     data: programs,
     skipDuplicates: true,
-  })
+  });
 
-  return payload
-}
+  return payload;
+};
 
 const createRoles = async (roles: Prisma.RoleCreateInput[]) => {
   const payload = await prisma.role.createMany({
     data: roles,
     skipDuplicates: true,
-  })
+  });
 
-  return payload
-}
+  return payload;
+};
 
 export default {
   client: prisma,
@@ -93,4 +93,4 @@ export default {
   createRoles,
   storeSchools,
   storeClasses,
-}
+};

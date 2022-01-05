@@ -32,12 +32,12 @@ export class C1Service extends BaseRestfulService {
               this.jwtToken = response;
             })
             .catch(() => {
-              throw new Error('error to refresh token');
+              throw new Error('Failed to refresh token');
             })
         }, REFRESH_TOKEN_INTERVAL);
       })
       .catch(() => {
-        throw new Error('error to get access token');
+        throw new Error('Failed to get access token');
       });
   }
 
