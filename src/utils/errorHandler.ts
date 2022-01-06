@@ -1,4 +1,4 @@
-import logger from './logging';
+import log from './logging';
 import { RetryQueue } from './retryQueue';
 
 const errorTypes = {
@@ -32,11 +32,11 @@ export const handleError = async (error: Error, task?: CallableFunction) => {
   ) {
     if (task) {
       const retry = await retryJob(task);
-      retry.on('failed', () => logger.error(error));
+      retry.on('failed', () => log.error(error));
     } else {
-      logger.error(error);
+      log.error(error);
     }
   } else {
-    logger.error(error);
+    log.error(error);
   }
 };

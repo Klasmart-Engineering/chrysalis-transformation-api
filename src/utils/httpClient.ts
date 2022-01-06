@@ -1,4 +1,4 @@
-import axios, { Axios, AxiosResponse, Method } from 'axios';
+import axios, { Axios, Method } from 'axios';
 import createError, { HttpError } from 'http-errors';
 import { C1AuthEndpoints } from '../config/c1Endpoints';
 import log from './logging';
@@ -102,11 +102,11 @@ export class HttpClient {
     }
   }
 
-  public async get<T>(url: string): Promise<AxiosResponse<T>> {
+  public async get<T>(url: string) {
     log.debug(`Sending GET Request to ${url}`);
     return this.sendRequest<T>(url, 'GET');
   }
-  public async post<T>(url: string, body?: unknown): Promise<AxiosResponse<T>> {
+  public async post<T>(url: string, body?: unknown) {
     log.debug(`Sending POST Request to ${url}`);
     return this.sendRequest<T>(url, 'POST', body);
   }
@@ -119,7 +119,7 @@ export class HttpClient {
     url: string,
     method: Method,
     body: unknown = {}
-  ): Promise<AxiosResponse<T>> {
+  ) {
     return this._client.request<T>({
       method,
       url,
