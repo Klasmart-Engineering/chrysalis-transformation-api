@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run test:unit",
-    "test:unit": "ADMIN_SERVICE_URL=http://localhost ADMIN_SERVICE_JWT=abc mocha --require ts-node/register \"tests/unit/**/*.test.ts\" --timeout 8000 --exit",
+    "test:unit": "cross-env ADMIN_SERVICE_URL=http://localhost ADMIN_SERVICE_JWT=abc mocha --require ts-node/register \"tests/unit/**/*.test.ts\" --timeout 8000 --exit",
     "start": "ts-node src/app.ts",
     "start:dev": "nodemon",
     "lint": "eslint . --ext .ts",
@@ -63,6 +63,7 @@
     "chai-json-schema": "1.5.1",
     "chai-spies": "1.0.0",
     "commitizen": "4.2.4",
+    "cross-env": "7.0.3",
     "eslint": "8.2.0",
     "eslint-config-node": "4.1.0",
     "eslint-config-prettier": "8.3.0",
