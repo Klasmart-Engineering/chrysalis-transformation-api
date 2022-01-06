@@ -10,10 +10,10 @@ type TokenResponse = {
 };
 
 export class AuthServer {
-  hostname: string;
-  jwtToken = '';
-  refreshToken = '';
-  postData: string;
+  private hostname: string;
+  private jwtToken = '';
+  private refreshToken = '';
+  private postData: string;
 
   constructor(hostname: string, loginData: string) {
     this.hostname = hostname;

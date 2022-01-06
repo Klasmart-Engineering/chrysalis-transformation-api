@@ -19,7 +19,7 @@ describe('C1 Auth', () => {
       chai.spy.on(
         authServer,
         'login',
-        () => (authServer.jwtToken = getToken.JwtToken)
+        () => (authServer['jwtToken'] = getToken.JwtToken)
       );
     });
 
