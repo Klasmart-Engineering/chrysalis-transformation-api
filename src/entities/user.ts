@@ -1,5 +1,5 @@
 import log from '../utils/logging';
-import { userSchema } from '../validatorsSchemes';
+// import { userSchema } from '../validatorsSchemes';
 import { Prisma } from '@prisma/client';
 
 export interface IUser {
@@ -30,7 +30,7 @@ export class ValidatedUser {
       if (error) throw error;
       return new ValidatedUser(value);
     } catch (error) {
-      log.error(`School failed Validation`, {
+      log.error(`User failed Validation`, {
         id: user.UserUUID,
         error,
       });
@@ -38,14 +38,9 @@ export class ValidatedUser {
     }
   }
 
-  public mapToDatabase(): Prisma.SchoolCreateInput {
+  public mapToDatabase() {
+    // @TODO
     return {
-      name: this.data.SchoolName,
-      clientUuid: this.data.SchoolUUID,
-      organizationName: this.data.OrganizationName,
-      shortCode: this.data.SchoolShortCode,
-      createdAt: new Date(),
-      updatedAt: new Date(),
     };
   }
 }

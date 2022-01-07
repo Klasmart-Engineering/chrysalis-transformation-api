@@ -39,6 +39,33 @@ export class School {
       });
     }
   }
+
+  public static async findOneBySchoolName(name: string): Promise<School> {
+    try {
+      const school = await prisma.school.findFirst({
+        where: {
+          name,
+        },
+      });
+      if (!school) throw new Error(`School ${name} was not found`);
+      return school;
+    } catch (error) {
+      log.error('Failed to find school in database', {
+        error,
+        name,
+      });
+      throw error;
+    }
+  }
+
+  public static async schoolNameExists(name: string): Promise<boolean> {
+    try {
+      await School.findOneBySchoolName(name);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 }
 
 export class ValidatedSchool {
@@ -52,6 +79,8 @@ export class ValidatedSchool {
     try {
       const { error, value } = schoolSchema.validate(school);
       if (error) throw error;
+
+
       return new ValidatedSchool(value);
     } catch (error) {
       log.error(`School failed Validation`, {

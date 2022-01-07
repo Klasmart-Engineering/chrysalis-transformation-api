@@ -7,76 +7,145 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Check with Enrique about deleted_at, status
+
 model School {
-  id                   Int       @id @default(autoincrement())
-  name                 String    @db.VarChar(255)
-  klUuid               String?   @unique @db.Uuid              @map("kl_uuid")
-  clientUuid           String    @db.Uuid                      @map("client_uuid")
-  klOrgUuid            String?   @db.Uuid                      @map("kl_org_uuid")
-  programNames         String[]                                @map("program_names")
-  organizationName     String    @db.VarChar(255)              @map("organization_name")
-  clientOrgUuid        String?   @db.Uuid                      @map("client_org_uuid")
-  shortCode            String?   @db.VarChar(255)              @map("short_code")
-  status               String?   @db.VarChar(255)              @map("status")
-  createdAt            DateTime  @default(now())               @map("created_at")
-  updatedAt            DateTime  @updatedAt                    @map("updated_at")
-  deletedAt            DateTime?                               @map("deleted_at")
+  // C1 API
+  clientUuid String @id @map("client_uuid") @db.Uuid
+  name       String @db.VarChar(255)
 
-  @@index(clientUuid)
-  @@index(klOrgUuid)
+  clientOrgUuid String       @map("client_org_uuid") @db.Uuid
+  organization  Organization @relation(fields: [clientOrgUuid], references: [clientUuid])
 
+  shortCode String? @map("short_code") @db.VarChar(255)
+
+  programUuids String[]  @map("program_uuids") @db.Uuid
+  programs     Program[] @relation(fields: [programUuids, clientOrgUuid], references: [id])
+
+  classes Class[]
+  users   User[]
+
+  // User Service
+  klUuid String? @unique @map("kl_uuid") @db.Uuid
+
+  // Metadata
+  status    String?   @map("status") @db.VarChar(255)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+
+  @@index(klUuid)
   @@map("schools")
 }
 
 model Program {
-  id            Int       @id @default(autoincrement())
-  name          String    @db.VarChar(255)
-  klUuid        String    @unique @db.Uuid @map("kl_uuid")
-  klOrgUuid     String    @db.Uuid         @map("kl_org_uuid")
-  clientOrgUuid String?   @db.Uuid         @map("client_org_uuid")
-  client        String?   @db.VarChar(255) @map("client")
-  createdAt     DateTime  @default(now())  @map("created_at")
-  updatedAt     DateTime  @updatedAt       @map("updated_at")
-  deletedAt     DateTime?                  @map("deleted_at")
+  id String @id @default(uuid()) @db.Uuid
 
-  @@index(clientOrgUuid)
+  // C1 API
+  name String @db.VarChar(255)
 
+  clientOrgUuid String       @map("client_org_uuid") @db.Uuid
+  organization  Organization @relation(fields: [clientOrgUuid], references: [clientUuid])
+
+  classes Class[]
+  schools School[]
+
+  // User Service
+  klUuid String? @map("kl_uuid") @db.Uuid
+
+  // Metadata
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+
+  @@index([name, clientOrgUuid])
+  @@index(klUuid)
   @@map("programs")
 }
 
-model Role {
-  id            Int       @id @default(autoincrement())
-  name          String    @db.VarChar(255)
-  klUuid        String    @unique @db.Uuid            @map("kl_uuid")
-  klOrgUuid     String    @db.Uuid                    @map("kl_org_uuid")
-  system        Boolean   @db.Boolean @default(false) @map("system")
-  client        String?   @db.VarChar(255)            @map("client")
-  createdAt     DateTime  @default(now())             @map("created_at")
-  updatedAt     DateTime  @updatedAt                  @map("updated_at")
-  deletedAt     DateTime?                             @map("deleted_at")
+model Class {
+  // C1 API
+  clientUuid String  @id @map("client_uuid") @db.Uuid
+  name       String  @db.VarChar(255)
+  shortCode  String? @map("short_code") @db.VarChar(255)
 
-  @@map("roles")
+  clientOrgUuid String       @map("client_org_uuid") @db.Uuid
+  organization  Organization @relation(fields: [clientOrgUuid], references: [clientUuid])
+
+  clientSchoolUuid String @map("client_school_uuid") @db.Uuid
+  school           School @relation(fields: [clientSchoolUuid], references: [clientUuid])
+
+  programUuids String[]  @map("program_uuids") @db.Uuid
+  programs     Program[] @relation(fields: [programUuids, clientOrgUuid], references: [id])
+
+  users User[]
+
+  // User Service
+  klUuid String? @unique @map("kl_uuid") @db.Uuid
+
+  // Metadata
+  status    String?   @map("status") @db.VarChar(255)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+
+  @@index(klUuid)
+  @@map("classes")
 }
 
-model Class {
-  id               Int       @id @default(autoincrement())
-  name             String    @db.VarChar(255)
-  klUuid           String    @unique @db.Uuid @map("kl_uuid")
-  klOrgUuid        String    @db.Uuid         @map("kl_org_uuid")
-  clientUuid       String    @db.Uuid         @map("client_uuid")
-  shortCode        String?   @db.VarChar(255) @map("short_code")
-  organizationName String    @db.VarChar(255) @map("organization_name")
-  schoolName       String    @db.VarChar(255) @map("school_name")
-  programNames     String[]                   @map("program_names")
-  client           String?   @db.VarChar(255) @map("client")
-  errors           String[]
-  status           String?   @db.VarChar(255) @map("status")
-  createdAt        DateTime  @default(now())  @map("created_at")
-  updatedAt        DateTime  @updatedAt       @map("updated_at")
-  deletedAt        DateTime?                  @map("deleted_at")
+model User {
+  // C1 API
+  clientUuid String @id @map("client_uuid") @db.Uuid
 
-  @@index(klOrgUuid)
-  @@index(clientUuid)
+  givenName  String @map("given_name") @db.VarChar(255)
+  familyName String @map("family_name") @db.VarChar(255)
 
-  @@map("classes")
+  email       String? @db.VarChar(255)
+  phone       String? @db.VarChar(255)
+  dateOfBirth String? @map("date_of_birth") @db.VarChar(255)
+  gender      String? @db.VarChar(255)
+
+  clientOrgUuid String       @map("client_org_uuid") @db.Uuid
+  organization  Organization @relation(fields: [clientOrgUuid], references: [clientUuid])
+
+  clientSchoolUuid String @map("client_school_uuid") @db.Uuid
+  school           School @relation(fields: [clientSchoolUuid], references: [clientUuid])
+
+  classUuids String[] @map("class_uuids") @db.Uuid
+  classes    Class[]  @relation(fields: [classUuids], references: [clientUuid])
+
+  roles String[]
+
+  // User Service
+  klUuid String? @unique @map("kl_uuid") @db.Uuid
+
+  // Metadata
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+
+  @@index(klUuid)
+  @@map("users")
+}
+
+model Organization {
+  // C1 API
+  clientUuid String  @id @map("client_uuid") @db.Uuid
+  name       String  @db.VarChar(255)
+  klUuid     String? @unique @map("kl_uuid") @db.Uuid
+
+  schools  School[]
+  classes  Class[]
+  programs Program[]
+  users    User[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+
+  @@index(klUuid)
+  @@map("organizations")
 }

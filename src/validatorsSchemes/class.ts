@@ -7,9 +7,13 @@ export const classSchema = Joi.object({
     .max(validationRules.CLASS_NAME_MAX_LENGTH)
     .required(),
 
-  clientUuid: Joi.string().guid().required(),
+  clientUuid: Joi.string()
+  .guid({ version: ['uuidv4'] })
+  .required(),
 
-  klOrgUuid: Joi.string().guid().required(),
+  klOrgUuid: Joi.string()
+  .guid({ version: ['uuidv4'] })
+  .required(),
 
   shortCode: Joi.string().max(validationRules.CLASS_SHORT_CODE_MAX_LENGTH),
 
@@ -18,7 +22,9 @@ export const classSchema = Joi.object({
     .max(validationRules.SCHOOL_NAME_MAX_LENGTH)
     .required(),
 
-  clientOrgUuid: Joi.string().guid().required(),
+  clientOrgUuid: Joi.string()
+  .guid({ version: ['uuidv4'] })
+  .required(),
 
   programNames: Joi.array()
     .items(
@@ -30,7 +36,7 @@ export const classSchema = Joi.object({
 
   client: Joi.string().max(validationRules.CLIENT_MAX_LENGTH),
 
-  errors: Joi.array().items(Joi.string()).required(),
+  errors: Joi.array().items(Joi.string()),
 
   status: Joi.string().max(validationRules.STATUS_MAX_LENGTH),
 
