@@ -21,13 +21,13 @@ export class AuthServer {
   }
 
   private async login(path: string) {
-    const client = this.createClient(path);
+    const client = this.createClient(path, this.postData);
     try {
-      const response = (await this.makeRequest(client)) as TokenResponse;
+      const response = (await this.makeRequest(client, this.postData)) as TokenResponse;
       if (response.JwtToken) this.jwtToken = response.JwtToken;
       if (response.RefreshToken) this.refreshToken = response.RefreshToken;
     } catch (error) {
-      logger.error(error);
+      logger.error(JSON.stringify(error));
       throw new Error('Error to login');
     }
   }
@@ -37,27 +37,37 @@ export class AuthServer {
     return this.jwtToken;
   }
 
-  private tokenRefresh() {
-    //TODO to be done in CIL-62
+  private async tokenRefresh(path: string) {
+    const client = this.createClient(path, '');
+    try {
+      const response = await this.makeRequest(client, '') as TokenResponse;
+      if (response.JwtToken) this.jwtToken = response.JwtToken;
+      if (response.RefreshToken) this.refreshToken = response.RefreshToken;
+    } catch (error) {
+      logger.error(JSON.stringify(error));
+      throw new Error('Error to refresh token');
+    }
   }
 
-  async doRefreshToken() {
-    //TODO to be done in CIL-62
+  async doRefreshToken(path: string) {
+    await this.tokenRefresh(path);
+    return this.jwtToken;
   }
 
-  createClient(path: string) {
+  createClient(path: string, postData: string) {
     return {
       hostname: this.hostname,
       path: path,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Content-Length': String(this.postData.length),
+        'Content-Length': String(postData.length),
+        'Cookie': 'RefreshToken=' + this.refreshToken,
       },
     };
   }
 
-  private makeRequest(options: HttpOptions) {
+  private makeRequest(options: HttpOptions, postData?: string) {
     return new Promise((resolve, reject) => {
       const req = https.request(options, (res) => {
         const chunks: Buffer[] = [];
@@ -70,15 +80,13 @@ export class AuthServer {
           } catch (e) {
             resBody = stringBuffer;
           }
-          res.statusCode === 200
-            ? resolve(resBody)
-            : reject(new HttpError(Number(res.statusCode), resBody));
+          res.statusCode === 200 ? resolve(resBody) : reject(new HttpError(Number(res.statusCode), resBody));
         });
       });
-      req.on('error', (error) => {
+      req.on('error', error => {
         reject(new HttpError(500, error));
       });
-      req.write(this.postData);
+      req.write(postData);
       req.end();
     });
   }

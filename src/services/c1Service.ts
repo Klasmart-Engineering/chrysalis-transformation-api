@@ -7,6 +7,8 @@ const loginData = JSON.stringify({
   Password: String(process.env.C1_API_PASSWORD),
 });
 
+const REFRESH_TOKEN_INTERVAL = 600000;
+
 const authServer = new AuthServer(
   String(process.env.C1_API_HOSTNAME),
   loginData
@@ -21,7 +23,18 @@ export class C1Service extends BaseRestfulService {
     super();
     authServer
       .getAccessToken(C1AuthEndpoints.login)
-      .then((res) => (this.jwtToken = res))
+      .then((res) => {
+        this.jwtToken = res;
+        setInterval(() =>
+          authServer.doRefreshToken(C1AuthEndpoints.refresh)
+          .then(response => {
+            this.jwtToken = response;
+          })
+          .catch(() => {
+            throw new Error('error to refresh token');
+          }
+        ), REFRESH_TOKEN_INTERVAL);
+      })
       .catch(() => {
         throw new Error('error to get access token');
       });
