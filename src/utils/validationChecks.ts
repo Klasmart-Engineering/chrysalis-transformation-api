@@ -32,21 +32,16 @@ export const isSchoolValid = (school: MappedSchool) => {
   }
 }
 
-export const isSchoolProgramValid = async (
-  programName: string,
-  organizationUuid: string,
-) => {
+export const isSchoolProgramValid = async (programName: string) => {
   try {
-    const programs = await Database.getProgramCount(programName, organizationUuid)
-    const isValid = programs > 0;
+    const program = await Database.getProgramByName(programName)
 
-    !isValid && logger.error({
-      program: programName,
-      organization: organizationUuid,
+    !program && logger.error({
+      programName: programName,
       error: PROGRAM_NOT_EXIST
     });
 
-    return isValid;
+    return !!program;
   } catch (error) {
     logger.error(error);
     return false;

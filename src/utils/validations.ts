@@ -9,7 +9,7 @@ export function validateSchool(school: MappedSchool) {
   if (isSchoolValid(school)) {
     if (school.programName) {
       Object.values(school.programName).forEach(async (program) => {
-        return !(await isSchoolProgramValid(program, school.klOrgUuid));
+        return !(await isSchoolProgramValid(program));
       });
     } else {
       return false;
