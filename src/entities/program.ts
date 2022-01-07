@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import { Entity } from '.';
+import { InvalidEntityNameError } from '../utils/errors';
 
 import log from '../utils/logging';
 
@@ -27,13 +29,25 @@ export class Programs {
     }
   }
 
+  /**
+   * Checks that the name of the program is valid.
+   *
+   * @param {string} - The name of the program
+   * @returns {boolean} - Returns `true` if the program name is valid
+   */
   public isValid(name: string): boolean {
     return this.data.has(name);
   }
 
+  /**
+   * @param {string} - The name of the program
+   * @returns {string} - The associated ID for that program name. _Note. This is
+   * the database table ID, not the Client UUID OR the KidsLoop UUID._
+   * @errors If the program name is not found
+   */
   public idForProgram(name: string): ClientUuid {
     const id = this.data.get(name);
-    if (!id) throw new Error('Invalid program name');
+    if (!id) throw new InvalidEntityNameError(Entity.PROGRAM, name);
     return id;
   }
 }

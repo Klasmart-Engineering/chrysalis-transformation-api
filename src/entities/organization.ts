@@ -1,6 +1,9 @@
 import log from '../utils/logging';
-import { PrismaClient, Organization as Org } from '@prisma/client';
+import { PrismaClient, Organization, Prisma } from '@prisma/client';
 import { organizationSchema } from '../validatorsSchemes';
+import { ClientUuid } from '../utils';
+import { logError, ValidationError } from '../utils/errors';
+import { Entity } from '.';
 
 const prisma = new PrismaClient();
 
@@ -9,21 +12,77 @@ export interface IOrganization {
   OrganizationUUID: string;
 }
 
-export class Organization {
-  // @TODO
-  //
+export class OrganizationRepo {
+  /**
+   * @param {ValidatedOrganization} organization - A validated organization
+   * ready to be inserted into the database
+   * @returns {void}
+   * @throws If an error occurred while trying to create the record in the
+   * database
+   */
+  public static async createOne(
+    organization: ValidatedOrganization
+  ): Promise<void> {
+    try {
+      const org = await prisma.organization.create({
+        data: await organization.mapToDatabaseInput(),
+      });
+      if (!org)
+        throw new Error(`Unable to create organization: ${organization.name}`);
+      return;
+    } catch (error) {
+      log.error('Failed to create organization in database', {
+        error,
+        name: organization.name,
+        id: organization.clientUuid,
+      });
+      throw error;
+    }
+  }
 
-  public static async findOneByName(name: string): Promise<Org> {
+  /**
+   * @param {string} name - The name of the organization
+   * @returns {Org} The orgization information
+   * @throws If the organization was not found or a database error occurred
+   */
+  public static async findByOrganizationName(
+    name: string
+  ): Promise<Organization> {
     try {
       const org = await prisma.organization.findFirst({
         where: {
           name,
         },
       });
-      if (!org) throw new Error(`School ${name} was not found`);
+      if (!org) throw new Error(`Organization: ${name} was not found`);
       return org;
     } catch (error) {
-      log.error('Failed to find school in database', {
+      log.error('Failed to find organization in database', {
+        error,
+        name,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * @param {string} name - The name of the organization
+   * @returns {string} The Client UUID for the organization
+   */
+  public static async findOrgIdByName(name: string): Promise<string> {
+    try {
+      const org = await prisma.organization.findFirst({
+        where: {
+          name,
+        },
+        select: {
+          clientUuid: true,
+        },
+      });
+      if (!org) throw new Error(`Organization: ${name} was not found`);
+      return org.clientUuid;
+    } catch (error) {
+      log.error('Failed to find organization in database', {
         error,
         name,
       });
@@ -33,23 +92,51 @@ export class Organization {
 }
 
 export class ValidatedOrganization {
-  public data: IOrganization;
+  private data: IOrganization;
 
   private constructor(org: IOrganization) {
     this.data = org;
   }
 
-  public static validate(org: IOrganization): ValidatedOrganization {
+  get name(): string {
+    return this.data.OrganizationName;
+  }
+
+  get clientUuid(): ClientUuid {
+    return this.data.OrganizationUUID;
+  }
+
+  /**
+   * @param {IOrganization} org - The organization data to be validated
+   * @returns {ValidatedOrganization} A validated organization
+   * @throws If the organization is invalid
+   */
+  public static async validate(
+    org: IOrganization
+  ): Promise<ValidatedOrganization> {
     try {
       const { error, value } = organizationSchema.validate(org);
-      if (error) throw error;
+      if (error)
+        throw ValidationError.fromJoiError(
+          error,
+          Entity.ORGANIZATION,
+          org.OrganizationUUID
+        );
       return new ValidatedOrganization(value);
     } catch (error) {
-      log.error(`Organization failed Validation`, {
-        id: org.OrganizationUUID,
-        error,
-      });
-      throw new Error('Validation failed');
+      logError(error, Entity.ORGANIZATION);
     }
+    throw new Error('Unreachable');
+  }
+
+  /**
+   * Maps the data held internally into a format required for a database
+   * create object
+   */
+  public async mapToDatabaseInput(): Promise<Prisma.OrganizationCreateInput> {
+    return {
+      clientUuid: this.clientUuid,
+      name: this.name,
+    };
   }
 }

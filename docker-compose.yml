@@ -1,22 +1,22 @@
 version: '3.9'
 
 services:
-  server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: node-server
-    environment:
-      DATABASE_URL: postgresql://postgres:kidsloop@db:5432/mcb-integration
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    expose:
-      - '4200'
-    ports:
-      - '4200:4200'
-    depends_on:
-      - db
-      - redis
+  # server:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: node-server
+  #   environment:
+  #     DATABASE_URL: postgresql://postgres:kidsloop@db:5432/mcb-integration
+  #     REDIS_HOST: redis
+  #     REDIS_PORT: 6379
+  #   expose:
+  #     - '4200'
+  #   ports:
+  #     - '4200:4200'
+  #   depends_on:
+  #     - db
+  #     - redis
 
   db:
     container_name: postgres-db
@@ -33,4 +33,4 @@ services:
     container_name: redis-db
     image: 'redis:alpine'
     ports:
-      - "6379:6379"
+      - '6379:6379'

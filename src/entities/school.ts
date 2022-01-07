@@ -1,6 +1,10 @@
 import log from '../utils/logging';
 import { schoolSchema } from '../validatorsSchemes';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient, School } from '@prisma/client';
+import { Context } from '../utils/context';
+import { ClientUuid } from '../utils';
+import { logError, ValidationError } from '../utils/errors';
+import { Entity } from '.';
 
 export interface ISchool {
   OrganizationName: string;
@@ -13,11 +17,14 @@ export interface ISchool {
 
 const prisma = new PrismaClient();
 
-export class School {
+export class SchoolRepo {
+  /*
+   * @TODO - Looks like you can't built insert and create relations at the same
+   * time
   public static async insertMany(schools: ValidatedSchool[]): Promise<void> {
     try {
       await prisma.school.createMany({
-        data: schools.map((s) => s.mapToDatabase()),
+        data: schools.map((s) => await s.mapToDatabaseInput()),
       });
     } catch (error) {
       log.error('Failed to insert schools into database', {
@@ -26,41 +33,53 @@ export class School {
       });
     }
   }
+  */
 
-  public static async insertOne(schools: ValidatedSchool): Promise<void> {
+  public static async insertOne(school: ValidatedSchool): Promise<void> {
     try {
       await prisma.school.create({
-        data: schools.mapToDatabase(),
+        data: await school.mapToDatabaseInput(),
       });
     } catch (error) {
-      log.error('Failed to insert schools into database', {
+      log.error('Failed to insert school into database', {
         error,
-        schoolIds: [schools.data.SchoolUUID],
+        id: school.clientUuid,
+        name: school.name,
       });
     }
   }
 
-  public static async findOneBySchoolName(name: string): Promise<School> {
+  public static async findSchoolClientIdBySchoolName(
+    orgId: ClientUuid,
+    schoolName: string
+  ): Promise<ClientUuid> {
     try {
-      const school = await prisma.school.findFirst({
+      const id = await prisma.school.findFirst({
         where: {
-          name,
+          AND: [{ name: schoolName }, { clientOrgUuid: orgId }],
+        },
+        select: {
+          clientUuid: true,
         },
       });
-      if (!school) throw new Error(`School ${name} was not found`);
-      return school;
+      if (!id) throw new Error(`School ${schoolName} was not found`);
+      return id.clientUuid;
     } catch (error) {
-      log.error('Failed to find school in database', {
+      log.error('Failed to find school id in database', {
         error,
-        name,
+        name: schoolName,
+        organizationId: orgId,
       });
       throw error;
     }
   }
 
-  public static async schoolNameExists(name: string): Promise<boolean> {
+  public static async schoolNameExists(
+    orgId: ClientUuid,
+    schoolName: string
+  ): Promise<boolean> {
     try {
-      await School.findOneBySchoolName(name);
+      await SchoolRepo.findSchoolClientIdBySchoolName(orgId, schoolName);
       return true;
     } catch (_) {
       return false;
@@ -69,37 +88,70 @@ export class School {
 }
 
 export class ValidatedSchool {
-  public data: ISchool;
+  private data: ISchool;
 
   private constructor(school: ISchool) {
     this.data = school;
   }
 
-  public static validate(school: ISchool): ValidatedSchool {
-    try {
-      const { error, value } = schoolSchema.validate(school);
-      if (error) throw error;
+  get name(): string {
+    return this.data.SchoolName;
+  }
 
+  get clientUuid(): ClientUuid {
+    return this.data.SchoolUUID;
+  }
+
+  get organizationName(): string {
+    return this.data.OrganizationName;
+  }
+
+  get shortCode(): string {
+    return this.data.SchoolShortCode;
+  }
+
+  get programNames(): string[] {
+    return this.data.ProgramName;
+  }
+
+  /**
+   * @param {ISchool} org - The school data to be validated
+   * @returns {ValidatedSchool} A validated school
+   * @throws If the school is invalid
+   */
+  public static async validate(s: ISchool): Promise<ValidatedSchool> {
+    try {
+      const { error, value } = schoolSchema.validate(s);
+      if (error)
+        throw ValidationError.fromJoiError(error, Entity.SCHOOL, s.SchoolUUID);
+      const ctx = await Context.getInstance();
+      // Make sure the organization name is valid
+      await ctx.getOrganizationClientId(s.OrganizationName);
+      // Make sure all the program names are valid
+      ctx.programsAreValid(s.ProgramName);
 
       return new ValidatedSchool(value);
     } catch (error) {
-      log.error(`School failed Validation`, {
-        id: school.SchoolUUID,
-        error,
-      });
-      throw new Error('Validation failed');
+      logError(error, Entity.SCHOOL);
     }
+    throw new Error('Unreachable');
   }
 
-  public mapToDatabase(): Prisma.SchoolCreateInput {
+  /**
+   * Maps the data held internally into a format required for a database
+   * create object
+   */
+  public async mapToDatabaseInput(): Promise<Prisma.SchoolCreateInput> {
+    const ctx = await Context.getInstance();
+    const orgId = await ctx.getOrganizationClientId(this.organizationName);
+    const programIds = this.programNames.map((p) => ctx.getProgramIdByName(p));
+
     return {
-      name: this.data.SchoolName,
-      clientUuid: this.data.SchoolUUID,
-      organizationName: this.data.OrganizationName,
-      shortCode: this.data.SchoolShortCode,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      clientUuid: this.clientUuid,
+      name: this.name,
+      shortCode: this.shortCode,
+      programUuids: { set: programIds },
+      organization: { connect: { clientUuid: orgId } },
     };
   }
 }
-
