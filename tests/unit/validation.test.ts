@@ -1,6 +1,8 @@
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
 import { isSchoolValid } from '../utils/school';
-import { validSchool, invalidSchool } from '../../tests/utils/school';
+import { validSchool, invalidSchool } from '../utils/school';
+import spies from 'chai-spies';
+chai.use(spies);
 
 describe('validation', function () {
   describe('#validateSchool', function () {
