@@ -17,7 +17,7 @@ export class School {
   public static async insertMany(schools: ValidatedSchool[]): Promise<void> {
     try {
       await prisma.school.createMany({
-        data: schools.map((s) => s.mapToSql()),
+        data: schools.map((s) => s.mapToDatabase()),
       });
     } catch (error) {
       log.error('Failed to insert schools into database', {
@@ -30,7 +30,7 @@ export class School {
   public static async insertOne(schools: ValidatedSchool): Promise<void> {
     try {
       await prisma.school.create({
-        data: schools.mapToSql(),
+        data: schools.mapToDatabase(),
       });
     } catch (error) {
       log.error('Failed to insert schools into database', {
@@ -62,7 +62,7 @@ export class ValidatedSchool {
     }
   }
 
-  public mapToSql(): Prisma.SchoolCreateInput {
+  public mapToDatabase(): Prisma.SchoolCreateInput {
     return {
       name: this.data.SchoolName,
       clientUuid: this.data.SchoolUUID,
