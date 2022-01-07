@@ -8,7 +8,6 @@
     "test:unit": "cross-env ADMIN_SERVICE_URL=http://localhost ADMIN_SERVICE_JWT=abc mocha --require ts-node/register \"tests/unit/**/*.test.ts\" --timeout 8000 --exit",
     "start": "ts-node src/app.ts",
     "start:dev": "nodemon",
-    "postinstall": "npm run migrate:dev",
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
     "fmt": "npm run lint-fix && npm run prettier-format",
