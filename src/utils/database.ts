@@ -23,3 +23,24 @@ const createSchools = async (schools: Prisma.SchoolCreateInput[]) => {
     data: schools,
   });
 };
+
+export const storeClasses = async (classes: Prisma.ClassCreateInput[]) => {
+  try {
+    await createClasses(classes);
+  } catch (error) {
+    await handleError(
+      {
+        type: 'dbError',
+        entity: 'class',
+        message: JSON.stringify(error),
+      },
+      createClasses.bind(classes)
+    );
+  }
+};
+
+const createClasses = async (classes: Prisma.ClassCreateInput[]) => {
+  return await prisma.class.createMany({
+    data: classes,
+  });
+};
