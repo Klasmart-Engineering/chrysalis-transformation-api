@@ -2,31 +2,29 @@ import Joi from 'joi';
 import { validationRules } from '../config/validationRules';
 
 export const schoolSchema = Joi.object({
-  name: Joi.string()
+  OrganizationName: Joi.string()
+    .min(validationRules.ORGANIZATION_NAME_MIN_LENGTH)
+    .max(validationRules.ORGANIZATION_NAME_MAX_LENGTH)
+    .required(),
+
+  SchoolUUID: Joi.string().guid({ version: ['uuidv4'] }),
+
+  SchoolName: Joi.string()
     .min(validationRules.SCHOOL_NAME_MIN_LENGTH)
     .max(validationRules.SCHOOL_NAME_MAX_LENGTH)
     .required(),
 
-  clientUuid: Joi.string()
-    .guid({ version: ['uuidv4'] })
+  SchoolShortCode: Joi.string()
+    .max(validationRules.SHORTCODE_MAX_LENGTH)
     .required(),
 
-  klOrgUuid: Joi.string().guid({ version: ['uuidv4'] }),
-
-  programNames: Joi.array()
+  ProgramName: Joi.array()
     .items(
       Joi.string()
         .min(validationRules.PROGRAM_NAME_MIN_LENGTH)
         .max(validationRules.PROGRAM_NAME_MAX_LENGTH)
     )
+    .min(1)
+    .unique()
     .required(),
-
-  clientOrgUuid: Joi.string().guid({ version: ['uuidv4'] }),
-
-  organizationName: Joi.string()
-    .min(validationRules.ORGANIZATION_NAME_MIN_LENGTH)
-    .max(validationRules.ORGANIZATION_NAME_MAX_LENGTH)
-    .required(),
-
-  shortCode: Joi.string(),
 });

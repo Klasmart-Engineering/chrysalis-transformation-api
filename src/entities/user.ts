@@ -1,5 +1,5 @@
 import log from '../utils/logging';
-// import { userSchema } from '../validatorsSchemes';
+import { userSchema } from '../validatorsSchemes';
 import { prisma, Prisma } from '@prisma/client';
 import { ClientUuid, Context } from '../utils/context';
 

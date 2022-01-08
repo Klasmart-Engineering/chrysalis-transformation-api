@@ -2,46 +2,34 @@ import Joi from 'joi';
 import { validationRules } from '../config/validationRules';
 
 export const classSchema = Joi.object({
-  name: Joi.string()
-    .min(validationRules.CLASS_NAME_MIN_LENGTH)
-    .max(validationRules.CLASS_NAME_MAX_LENGTH)
+  OrganizationName: Joi.string()
+    .min(validationRules.ORGANIZATION_NAME_MIN_LENGTH)
+    .max(validationRules.ORGANIZATION_NAME_MAX_LENGTH)
     .required(),
 
-  clientUuid: Joi.string()
-  .guid({ version: ['uuidv4'] })
-  .required(),
+  ClassUUID: Joi.string().guid({ version: ['uuidv4'] }),
 
-  klOrgUuid: Joi.string()
-  .guid({ version: ['uuidv4'] })
-  .required(),
-
-  shortCode: Joi.string().max(validationRules.CLASS_SHORT_CODE_MAX_LENGTH),
-
-  schoolName: Joi.string()
-    .max(validationRules.SCHOOL_NAME_MIN_LENGTH)
+  ClassName: Joi.string()
+    .min(validationRules.SCHOOL_NAME_MIN_LENGTH)
     .max(validationRules.SCHOOL_NAME_MAX_LENGTH)
     .required(),
 
-  clientOrgUuid: Joi.string()
-  .guid({ version: ['uuidv4'] })
-  .required(),
+  ClassShortCode: Joi.string()
+    .max(validationRules.SHORTCODE_MAX_LENGTH)
+    .required(),
 
-  programNames: Joi.array()
+  ProgramName: Joi.array()
     .items(
       Joi.string()
         .min(validationRules.PROGRAM_NAME_MIN_LENGTH)
         .max(validationRules.PROGRAM_NAME_MAX_LENGTH)
     )
+    .min(1)
+    .unique()
     .required(),
 
-  client: Joi.string().max(validationRules.CLIENT_MAX_LENGTH),
-
-  errors: Joi.array().items(Joi.string()),
-
-  status: Joi.string().max(validationRules.STATUS_MAX_LENGTH),
-
-  organizationName: Joi.string()
-    .min(validationRules.ORGANIZATION_NAME_MIN_LENGTH)
-    .max(validationRules.ORGANIZATION_NAME_MAX_LENGTH)
+  SchoolName: Joi.string()
+    .min(validationRules.SCHOOL_NAME_MIN_LENGTH)
+    .max(validationRules.SCHOOL_NAME_MAX_LENGTH)
     .required(),
 });
