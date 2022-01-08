@@ -19,21 +19,6 @@ export interface IClass {
 const prisma = new PrismaClient();
 
 export class ClassRepo {
-  // public static async insertMany(
-  //   classDetails: ValidatedClass[]
-  // ): Promise<void> {
-  //   try {
-  //     await prisma.class.createMany({
-  //       data: classDetails.map((c) => c.mapToDatabase()),
-  //     });
-  //   } catch (error) {
-  //     log.error('Failed to insert classes into database', {
-  //       error,
-  //       classIds: classDetails.map((c) => c.data.ClassUUID),
-  //     });
-  //   }
-  // }
-
   public static async insertOne(classDetails: ValidatedClass): Promise<void> {
     try {
       await prisma.class.create({

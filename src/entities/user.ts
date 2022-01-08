@@ -1,7 +1,8 @@
 import log from '../utils/logging';
 import { userSchema } from '../validatorsSchemes';
-import { prisma, Prisma } from '@prisma/client';
-import { ClientUuid, Context } from '../utils/context';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { Context } from '../utils/context';
+import { ClientUuid } from '../utils';
 
 export interface IUser {
   OrganizationName: string;
@@ -18,22 +19,9 @@ export interface IUser {
   SchoolRoleName: string[];
 }
 
-export class UserRepo {
-  // public static async insertMany(
-  //   classDetails: ValidatedClass[]
-  // ): Promise<void> {
-  //   try {
-  //     await prisma.class.createMany({
-  //       data: classDetails.map((c) => c.mapToDatabase()),
-  //     });
-  //   } catch (error) {
-  //     log.error('Failed to insert classes into database', {
-  //       error,
-  //       classIds: classDetails.map((c) => c.data.ClassUUID),
-  //     });
-  //   }
-  // }
+const prisma = new PrismaClient();
 
+export class UserRepo {
   public static async insertOne(user: ValidatedUser): Promise<void> {
     try {
       await prisma.user.create({
