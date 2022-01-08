@@ -5,6 +5,7 @@ import { Context } from '../utils/context';
 import { ClientUuid } from '../utils';
 import { logError, ValidationError } from '../utils/errors';
 import { Entity } from '.';
+import { validate, Validator } from '../utils/validations';
 
 export interface ISchool {
   OrganizationName: string;
@@ -18,23 +19,6 @@ export interface ISchool {
 const prisma = new PrismaClient();
 
 export class SchoolRepo {
-  /*
-   * @TODO - Looks like you can't built insert and create relations at the same
-   * time
-  public static async insertMany(schools: ValidatedSchool[]): Promise<void> {
-    try {
-      await prisma.school.createMany({
-        data: schools.map((s) => await s.mapToDatabaseInput()),
-      });
-    } catch (error) {
-      log.error('Failed to insert schools into database', {
-        error,
-        schoolIds: schools.map((s) => s.data.SchoolUUID),
-      });
-    }
-  }
-  */
-
   public static async insertOne(school: ValidatedSchool): Promise<void> {
     try {
       await prisma.school.create({
@@ -87,6 +71,26 @@ export class SchoolRepo {
   }
 }
 
+export class SchoolToBeValidated implements Validator<ISchool> {
+  public schema = schoolSchema;
+  public entity = Entity.SCHOOL;
+
+  constructor(public data: ISchool) {}
+
+  getEntityId(): string {
+    return this.data.SchoolUUID;
+  }
+  getOrganizationName(): string {
+    return this.data.OrganizationName;
+  }
+  getSchoolName(): string {
+    return this.data.SchoolName;
+  }
+  getPrograms(): string[] {
+    return this.data.ProgramName;
+  }
+}
+
 export class ValidatedSchool {
   private data: ISchool;
 
@@ -120,21 +124,9 @@ export class ValidatedSchool {
    * @throws If the school is invalid
    */
   public static async validate(s: ISchool): Promise<ValidatedSchool> {
-    try {
-      const { error, value } = schoolSchema.validate(s);
-      if (error)
-        throw ValidationError.fromJoiError(error, Entity.SCHOOL, s.SchoolUUID);
-      const ctx = await Context.getInstance();
-      // Make sure the organization name is valid
-      await ctx.getOrganizationClientId(s.OrganizationName);
-      // Make sure all the program names are valid
-      ctx.programsAreValid(s.ProgramName);
-
-      return new ValidatedSchool(value);
-    } catch (error) {
-      logError(error, Entity.SCHOOL);
-    }
-    throw new Error('Unreachable');
+    const v = new SchoolToBeValidated(s);
+    const data = await validate<ISchool, SchoolToBeValidated>(v);
+    return new ValidatedSchool(data);
   }
 
   /**

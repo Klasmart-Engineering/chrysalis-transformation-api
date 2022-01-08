@@ -4,6 +4,7 @@ import { organizationSchema } from '../validatorsSchemes';
 import { ClientUuid } from '../utils';
 import { logError, ValidationError } from '../utils/errors';
 import { Entity } from '.';
+import { validate, Validator } from '../utils/validations';
 
 const prisma = new PrismaClient();
 
@@ -91,6 +92,21 @@ export class OrganizationRepo {
   }
 }
 
+export class OrganizationToBeValidated implements Validator<IOrganization> {
+  public schema = organizationSchema;
+  public entity = Entity.ORGANIZATION;
+
+  constructor(public data: IOrganization) {}
+
+  getEntityId(): string {
+    return this.data.OrganizationUUID;
+  }
+
+  getOrganizationName(): string {
+    return this.data.OrganizationName;
+  }
+}
+
 export class ValidatedOrganization {
   private data: IOrganization;
 
@@ -112,21 +128,11 @@ export class ValidatedOrganization {
    * @throws If the organization is invalid
    */
   public static async validate(
-    org: IOrganization
+    o: IOrganization
   ): Promise<ValidatedOrganization> {
-    try {
-      const { error, value } = organizationSchema.validate(org);
-      if (error)
-        throw ValidationError.fromJoiError(
-          error,
-          Entity.ORGANIZATION,
-          org.OrganizationUUID
-        );
-      return new ValidatedOrganization(value);
-    } catch (error) {
-      logError(error, Entity.ORGANIZATION);
-    }
-    throw new Error('Unreachable');
+    const v = new OrganizationToBeValidated(o);
+    const data = await validate<IOrganization, OrganizationToBeValidated>(v);
+    return new ValidatedOrganization(data);
   }
 
   /**

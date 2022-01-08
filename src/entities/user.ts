@@ -3,6 +3,8 @@ import { userSchema } from '../validatorsSchemes';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { Context } from '../utils/context';
 import { ClientUuid } from '../utils';
+import { Validator, validate } from '../utils/validations';
+import { Entity } from '.';
 
 export interface IUser {
   OrganizationName: string;
@@ -33,6 +35,30 @@ export class UserRepo {
         id: user.clientUuid,
       });
     }
+  }
+}
+
+export class UserToBeValidated implements Validator<IUser> {
+  public schema = userSchema;
+  public entity = Entity.USER;
+
+  constructor(public data: IUser) {}
+
+  getEntityId(): string {
+    return this.data.UserUUID;
+  }
+
+  getOrganizationName(): string {
+    return this.data.OrganizationName;
+  }
+  getSchoolName(): string {
+    return this.data.SchoolName;
+  }
+  getRoles(): string[] {
+    return this.data.KLRoleName;
+  }
+  getClasses(): string[] {
+    return this.data.ClassName;
   }
 }
 
@@ -92,28 +118,9 @@ export class ValidatedUser {
   }
 
   public static async validate(u: IUser): Promise<ValidatedUser> {
-    try {
-      const { error, value } = userSchema.validate(u);
-      if (error) throw error;
-      const ctx = await Context.getInstance();
-      // Make sure the organization name is valid
-      const orgId = await ctx.getOrganizationClientId(u.OrganizationName);
-      // Make sure the school name is valid
-      const schoolId = await ctx.getSchoolClientId(orgId, u.SchoolName);
-
-      // Make sure all the roles are valid
-      ctx.rolesAreValid(u.KLRoleName);
-      // Make sure all of the class names are valid
-      await ctx.classesAreValid(u.ClassName, orgId, schoolId);
-
-      return new ValidatedUser(value);
-    } catch (error) {
-      log.error(`User failed Validation`, {
-        id: u.UserUUID,
-        error,
-      });
-      throw new Error('Validation failed');
-    }
+    const v = new UserToBeValidated(u);
+    const data = await validate<IUser, UserToBeValidated>(v);
+    return new ValidatedUser(data);
   }
 
   public async mapToDatabaseInput(): Promise<Prisma.UserCreateInput> {

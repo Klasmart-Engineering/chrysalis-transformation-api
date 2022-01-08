@@ -5,6 +5,7 @@ import { Context } from '../utils/context';
 import { logError } from '../utils/errors';
 
 import log from '../utils/logging';
+import { validate, Validator } from '../utils/validations';
 import { classSchema } from '../validatorsSchemes';
 
 export interface IClass {
@@ -63,6 +64,27 @@ export class ClassRepo {
   }
 }
 
+export class ClassToBeValidated implements Validator<IClass> {
+  public schema = classSchema;
+  public entity = Entity.CLASS;
+
+  constructor(public data: IClass) {}
+
+  getEntityId(): string {
+    return this.data.ClassUUID;
+  }
+
+  getOrganizationName(): string {
+    return this.data.OrganizationName;
+  }
+  getSchoolName(): string {
+    return this.data.SchoolName;
+  }
+  getPrograms(): string[] {
+    return this.data.ProgramName;
+  }
+}
+
 export class ValidatedClass {
   private data: IClass;
 
@@ -95,22 +117,9 @@ export class ValidatedClass {
   }
 
   public static async validate(c: IClass): Promise<ValidatedClass> {
-    try {
-      const { error, value } = classSchema.validate(c);
-      if (error) throw error;
-      const ctx = await Context.getInstance();
-      // Make sure the organization name is valid
-      const orgId = await ctx.getOrganizationClientId(c.OrganizationName);
-      // Make sure the school name is valid
-      await ctx.getSchoolClientId(orgId, c.SchoolName);
-      // Make sure all the program names are valid
-      ctx.programsAreValid(c.ProgramName);
-
-      return new ValidatedClass(value);
-    } catch (error) {
-      logError(error, Entity.CLASS);
-    }
-    throw new Error('Unreachable');
+    const v = new ClassToBeValidated(c);
+    const data = await validate<IClass, ClassToBeValidated>(v);
+    return new ValidatedClass(data);
   }
 
   public async mapToDatabaseInput(): Promise<Prisma.ClassCreateInput> {
