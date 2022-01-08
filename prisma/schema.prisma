@@ -20,7 +20,7 @@ model School {
   shortCode String? @map("short_code") @db.VarChar(255)
 
   programUuids String[]  @map("program_uuids") @db.Uuid
-  programs     Program[] @relation(fields: [programUuids, clientOrgUuid], references: [id])
+  programs     Program[] @relation(fields: [programUuids, clientOrgUuid], references: [klUuid])
 
   classes Class[]
   users   User[]
@@ -41,19 +41,17 @@ model School {
 
 // Can we drop the Program table, or do we actually need it?
 model Program {
-  id String @id @default(uuid()) @db.Uuid
+  // User Service
+  klUuid String @id @map("kl_uuid") @db.Uuid
 
   // C1 API
   name String @db.VarChar(255)
 
-  clientOrgUuid String       @map("client_org_uuid") @db.Uuid
-  organization  Organization @relation(fields: [clientOrgUuid], references: [clientUuid])
+  clientOrgUuid String?       @map("client_org_uuid") @db.Uuid
+  organization  Organization? @relation(fields: [clientOrgUuid], references: [clientUuid])
 
   classes Class[]
   schools School[]
-
-  // User Service
-  klUuid String? @map("kl_uuid") @db.Uuid
 
   // Metadata
   createdAt DateTime  @default(now()) @map("created_at")
@@ -62,7 +60,6 @@ model Program {
 
 
   @@index([name, clientOrgUuid])
-  @@index(klUuid)
   @@map("programs")
 }
 
@@ -79,7 +76,7 @@ model Class {
   school           School @relation(fields: [clientSchoolUuid], references: [clientUuid])
 
   programUuids String[]  @map("program_uuids") @db.Uuid
-  programs     Program[] @relation(fields: [programUuids, clientOrgUuid], references: [id])
+  programs     Program[] @relation(fields: [programUuids, clientOrgUuid], references: [klUuid])
 
   users User[]
 

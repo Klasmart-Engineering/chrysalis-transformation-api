@@ -1,5 +1,5 @@
 import { Entity } from '.';
-import { AdminService } from '../api/adminService';
+import { AdminService } from '../api/userService';
 import { Uuid, log } from '../utils';
 import { InvalidEntityNameError } from '../utils/errors';
 
@@ -7,7 +7,6 @@ export class Role {
   constructor(
     public name: string,
     public kidsloopUuid: Uuid,
-    public system: string
   ) {}
 }
 

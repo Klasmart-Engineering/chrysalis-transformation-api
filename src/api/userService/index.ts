@@ -4,17 +4,19 @@ import {
   HttpLink,
   NormalizedCacheObject,
   from,
+  TypedDocumentNode,
+  DocumentNode,
 } from '@apollo/client/core';
 import { onError } from '@apollo/client/link/error';
 import { RetryLink } from '@apollo/client/link/retry';
 import fetch from 'cross-fetch';
 import { RawProgram, Role } from '../../entities';
-import { log } from '../../utils';
-import { GET_PROGRAMS } from './programs';
-import { GET_ROLES } from './roles';
+import { log, Uuid } from '../../utils';
+import { GET_PROGRAMS, GET_SYSTEM_PROGRAMS } from './programs';
+import { GET_ROLES, GET_SYSTEM_ROLES } from './roles';
 
-export class AdminService {
-  private static _instance: AdminService;
+export class UserService {
+  private static _instance: UserService;
   private context: object;
 
   private constructor(
@@ -89,7 +91,7 @@ export class AdminService {
         cache: new InMemoryCache(),
       });
 
-      this._instance = new AdminService(client, jwt);
+      this._instance = new UserService(client, jwt);
       log.info('Connected to KidsLoop admin service');
       return this._instance;
     } catch (error) {
@@ -103,11 +105,50 @@ export class AdminService {
   }
 
   // While loop to get all programs from Admin User service
-  async getPrograms(): Promise<RawProgram[]> {
+  async getSystemPrograms(): Promise<RawProgram[]> {
+    const transformer = ({ name, id }: { name: string; id: Uuid }) =>
+      new RawProgram(name, id);
+
+    const results = await this.traversePaginatedQuery(
+      GET_SYSTEM_PROGRAMS,
+      transformer
+    );
+
+    return results;
+  }
+
+  // While loop to get all roles from Admin User service
+  async getSystemRoles(): Promise<Role[]> {
+    const transformer = ({ id, name }: { id: Uuid; name: string }) =>
+      new Role(name, id);
+    const results = await this.traversePaginatedQuery(
+      GET_SYSTEM_ROLES,
+      transformer
+    );
+    return results;
+  }
+
+  /**
+   * A helper function to send a request to a paginated API and walk the
+   * full length of the cursor, collating all the responses before returning
+   * an array of items
+   *
+   * @param {string} query - The GraphQL query to be sent
+   * @param {function} transformer - A function that will be called on each
+   * node within the response to convert the response data into the desired format
+   * @param {object} variables - Any variables that need to be provided to the
+   * GraphQL query
+   * @returns {T[]} An array of the transformed type
+   */
+  private async traversePaginatedQuery<T, U>(
+    query: DocumentNode | TypedDocumentNode,
+    transformer: (responseData: U) => T,
+    variables?: object
+  ): Promise<T[]> {
     let hasNextPage = true;
     let cursor = '';
 
-    const programs: RawProgram[] = [];
+    const result: T[] = [];
     while (hasNextPage) {
       /**
        * Don't need to handle errors here because:
@@ -116,10 +157,11 @@ export class AdminService {
        * - 2xx errors won't exist in this case
        */
       const { data } = await this.client.query({
-        query: GET_PROGRAMS,
+        query,
         variables: {
           count: 50,
           cursor,
+          ...variables,
         },
         context: this.context,
       });
@@ -128,50 +170,10 @@ export class AdminService {
       hasNextPage = responseData.pageInfo.hasNextPage;
       cursor = responseData.pageInfo.endCursor;
 
-      for (const {
-        node: { name, id },
-      } of responseData.edges) {
-        programs.push({
-          name,
-          kidsloopUuid: id,
-        });
+      for (const node of responseData.edges) {
+        result.push(transformer(node));
       }
     }
-    return programs;
-  }
-
-  // While loop to get all roles from Admin User service
-  async getRoles(): Promise<Role[]> {
-    let hasNextPage = true;
-    let cursor = '';
-    const roles: Role[] = [];
-    while (hasNextPage) {
-      /**
-       * Don't need to handle errors here because:
-       *
-       * - 4xx/5xx were handel in `errorLink` while init `ApolloClient`
-       * - 2xx errors won't exist in this case
-       */
-      const { data } = await this.client.query({
-        query: GET_ROLES,
-        variables: {
-          count: 50,
-          cursor: cursor,
-        },
-        context: this.context,
-      });
-
-      const responseData = data.rolesConnection;
-      hasNextPage = responseData.pageInfo.hasNextPage;
-      cursor = responseData.pageInfo.endCursor;
-
-      for (const {
-        node: { name, id, system },
-      } of responseData.edges) {
-        roles.push(new Role(name, id, system));
-      }
-    }
-
-    return roles;
+    return result;
   }
 }
