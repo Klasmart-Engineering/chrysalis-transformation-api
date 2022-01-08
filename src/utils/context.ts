@@ -1,13 +1,7 @@
 import LRU from 'lru-cache';
-import { Programs } from '../entities/program';
-import { Roles } from '../entities/role';
-import { SchoolRepo } from '../entities/school';
-import { OrganizationRepo } from '../entities/organization';
-import log from '../utils/logging';
-import { ClassRepo } from '../entities/class';
+import { Programs, Roles, SchoolRepo, OrganizationRepo, ClassRepo, Entity } from '../entities';
 import { InvalidEntityNameError } from './errors';
-import { Entity } from '../entities';
-import { ClientUuid, Uuid } from '.';
+import { ClientUuid, Uuid, log } from '.';
 
 export class Context {
   private static _instance: Context;
@@ -37,7 +31,7 @@ export class Context {
       this._instance = new Context(roles, programs);
       return this._instance;
     } catch (error) {
-      log.error('Failed to initialize Context', {
+      log.error('Failed to initialize app context', {
         error,
       });
       throw error;
@@ -67,8 +61,7 @@ export class Context {
 
   /**
    * @param {string} name - The name of the program
-   * @returns The ID for the program. _Note: this is the Database UUID, not the
-   * KidsLoop UUID_
+   * @returns The KidsLoop UUID for this program
    * @errors If the program name is not found
    */
   public getProgramIdByName(name: string): Uuid {

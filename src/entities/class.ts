@@ -1,11 +1,6 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import { Entity } from '.';
-import { ClientUuid } from '../utils';
-import { Context } from '../utils/context';
-import { logError } from '../utils/errors';
-
-import log from '../utils/logging';
-import { validate, Validator } from '../utils/validations';
+import { log, validate, Validator, ClientUuid, Context } from '../utils';
 import { classSchema } from '../validatorsSchemes';
 
 export interface IClass {

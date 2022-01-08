@@ -1,8 +1,7 @@
 import { ObjectSchema } from 'joi';
-import { Context } from '.';
+import { Context, log } from '.';
 import { Entity } from '../entities';
 import { logError } from './errors';
-import log from '../utils/logging';
 
 export interface Validator<T> {
   data: T;

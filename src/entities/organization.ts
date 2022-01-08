@@ -1,10 +1,7 @@
-import log from '../utils/logging';
+import { log, validate, Validator, ClientUuid } from '../utils';
 import { PrismaClient, Organization, Prisma } from '@prisma/client';
 import { organizationSchema } from '../validatorsSchemes';
-import { ClientUuid } from '../utils';
-import { logError, ValidationError } from '../utils/errors';
 import { Entity } from '.';
-import { validate, Validator } from '../utils/validations';
 
 const prisma = new PrismaClient();
 

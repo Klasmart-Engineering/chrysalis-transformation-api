@@ -1,4 +1,4 @@
-import log from './logging';
+import { log } from '.';
 import { RetryQueue } from './retryQueue';
 
 const errorTypes = {

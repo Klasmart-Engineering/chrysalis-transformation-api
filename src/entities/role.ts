@@ -1,10 +1,15 @@
-import { PrismaClient, Role } from '@prisma/client';
 import { Entity } from '.';
+import { AdminService } from '../api/adminService';
+import { Uuid, log } from '../utils';
 import { InvalidEntityNameError } from '../utils/errors';
 
-import log from '../utils/logging';
-
-const prisma = new PrismaClient();
+export class Role {
+  constructor(
+    public name: string,
+    public kidsloopUuid: Uuid,
+    public system: string
+  ) {}
+}
 
 export class Roles {
   private static _instance: Roles;
@@ -14,7 +19,8 @@ export class Roles {
   public static async initialize(): Promise<Roles> {
     if (this._instance) return this._instance;
     try {
-      const roles = await prisma.role.findMany();
+      const adminService = await AdminService.getInstance();
+      const roles = await adminService.getRoles();
       const data = new Map();
       for (const role of roles) {
         data.set(role.name, role);
@@ -22,7 +28,7 @@ export class Roles {
       this._instance = new Roles(data);
       return this._instance;
     } catch (error) {
-      log.error('Failed to fetch roles from database', { error });
+      log.error('Failed to initialize roles', { error });
       throw new Error('Failed to initialize roles');
     }
   }
@@ -41,7 +47,6 @@ export class Roles {
   public idForRole(name: string): string {
     const role = this.data.get(name);
     if (!role) throw new InvalidEntityNameError(Entity.ROLE, name);
-    return role.klUuid;
+    return role.kidsloopUuid;
   }
 }
-

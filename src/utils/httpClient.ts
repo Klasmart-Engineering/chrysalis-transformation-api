@@ -1,7 +1,7 @@
 import axios, { Axios, Method } from 'axios';
 import createError, { HttpError } from 'http-errors';
 import { C1AuthEndpoints } from '../config/c1Endpoints';
-import log from './logging';
+import { log } from '.';
 
 type LoginPayload = {
   Username: string;

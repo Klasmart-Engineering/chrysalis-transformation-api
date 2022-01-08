@@ -1,7 +1,6 @@
 import { ValidationError as JoiError } from 'joi';
-import { ClientUuid } from './context';
+import { ClientUuid, log } from '.';
 import { Feedback, ToFeedback } from './feedback';
-import log from '../utils/logging';
 import { Entity } from '../entities';
 
 export type ValidateError = {

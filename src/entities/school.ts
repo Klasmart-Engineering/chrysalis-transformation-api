@@ -1,11 +1,7 @@
-import log from '../utils/logging';
+import { log, validate, Validator, ClientUuid, Context } from '../utils';
 import { schoolSchema } from '../validatorsSchemes';
-import { Prisma, PrismaClient, School } from '@prisma/client';
-import { Context } from '../utils/context';
-import { ClientUuid } from '../utils';
-import { logError, ValidationError } from '../utils/errors';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { Entity } from '.';
-import { validate, Validator } from '../utils/validations';
 
 export interface ISchool {
   OrganizationName: string;

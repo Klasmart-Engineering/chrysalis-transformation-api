@@ -1,10 +1,10 @@
 export enum Entity {
-    ORGANIZATION = 'Organization',
-    SCHOOL = 'School',
-    CLASS = 'Class',
-    USER = 'User',
-    ROLE = 'Role',
-    PROGRAM = 'Program'
+  ORGANIZATION = 'Organization',
+  SCHOOL = 'School',
+  CLASS = 'Class',
+  USER = 'User',
+  ROLE = 'Role',
+  PROGRAM = 'Program',
 }
 
 export * from './class';

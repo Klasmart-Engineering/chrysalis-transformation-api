@@ -1,30 +1,35 @@
-import { PrismaClient } from '@prisma/client';
 import { Entity } from '.';
+import { AdminService } from '../api/adminService';
+import { ClientUuid, Uuid, log } from '../utils';
 import { InvalidEntityNameError } from '../utils/errors';
 
-import log from '../utils/logging';
-
-const prisma = new PrismaClient();
-
-type ClientUuid = string;
+export class RawProgram {
+  constructor(public name: string, public kidsloopUuid: Uuid) {}
+}
 
 export class Programs {
   private static _instance: Programs;
 
-  private constructor(private data: Map<string, ClientUuid>) {}
+  private constructor(
+    // @TODO can we drop this?
+    private clientData: Map<string, ClientUuid>,
+    private data: Map<string, RawProgram>
+  ) {}
 
   public static async initialize(): Promise<Programs> {
     if (this._instance) return this._instance;
     try {
-      const programs = await prisma.program.findMany();
+      const adminService = await AdminService.getInstance();
+      const rawPrograms = await adminService.getPrograms();
+
       const data = new Map();
-      for (const program of programs) {
-        data.set(program.name, program.id);
+      for (const program of rawPrograms) {
+        data.set(program.name, program);
       }
-      this._instance = new Programs(data);
+      this._instance = new Programs(new Map(), data);
       return this._instance;
     } catch (error) {
-      log.error('Failed to fetch programs from database', { error });
+      log.error('Failed to initialize programs', { error });
       throw new Error('Failed to initialize programs');
     }
   }
@@ -41,14 +46,12 @@ export class Programs {
 
   /**
    * @param {string} - The name of the program
-   * @returns {string} - The associated ID for that program name. _Note. This is
-   * the database table ID, not the Client UUID OR the KidsLoop UUID._
+   * @returns {Uuid} - The KidsLoop UUID for that program
    * @errors If the program name is not found
    */
-  public idForProgram(name: string): ClientUuid {
+  public idForProgram(name: string): Uuid {
     const id = this.data.get(name);
     if (!id) throw new InvalidEntityNameError(Entity.PROGRAM, name);
-    return id;
+    return id.kidsloopUuid;
   }
 }
-
