@@ -1,23 +1,16 @@
-import { Uuid, log, Validator } from '.';
+import { Uuid, log, ClientUuid } from '.';
 import { Api } from '../api/c1Api';
-import {
-  ClassRepo,
-  ClassToBeValidated,
-  Entity,
-  OrganizationRepo,
-  OrganizationToBeValidated,
-  Programs,
-  Roles,
-  SchoolRepo,
-  SchoolToBeValidated,
-  UserRepo,
-  UserToBeValidated,
-  ValidatedOrganization,
-} from '../entities';
+import { Class, Entity, Organization, School, User } from '../entities';
+import { logError, UnexpectedError } from './errors';
 import { instanceOfToFeedback } from './feedback';
 import { Redis } from './redis';
 
 type Json = string;
+
+export enum ProcessingStage {
+  FETCH_DATA,
+  UPDATE_USER_SERVICE,
+}
 
 export interface IMessage {
   entity: Entity;
@@ -27,6 +20,7 @@ export interface IMessage {
   requestTrace: Uuid;
   attempts: number;
   cascade: boolean;
+  stage: ProcessingStage;
   fullMigration?: boolean;
 }
 
@@ -37,6 +31,7 @@ export class Message {
     public readonly requestTrace: Uuid,
     private attempts: number,
     public readonly cascade: boolean,
+    public readonly stage = ProcessingStage.FETCH_DATA,
     public readonly fullMigration = false,
     public readonly redisMessageId?: string
   ) {}
@@ -48,6 +43,7 @@ export class Message {
       requestTrace,
       attempts,
       cascade,
+      stage,
       fullMigration,
     }: IMessage = JSON.parse(data);
     return new Message(
@@ -56,6 +52,7 @@ export class Message {
       requestTrace,
       attempts,
       cascade,
+      stage,
       fullMigration,
       redisMessageId
     );
@@ -68,6 +65,7 @@ export class Message {
       requestTrace: this.requestTrace,
       attempts: this.attempts,
       cascade: this.cascade,
+      stage: this.stage,
       fullMigration: this.fullMigration,
     } as IMessage);
   }
@@ -76,92 +74,232 @@ export class Message {
     return this.attempts;
   }
 
-  public generateCascadedMessage(): Message {
-    if (!this.cascade) {
-      log.error(`Attempted to cascade a message that shouldn't have been`, {
-        error: 'Incorrect application behaviour',
-        trace: this.requestTrace,
-        entity: this.entity,
-        id: this.entityId,
-        cascade: this.cascade,
-      });
-      throw new Error('Incorrect application behaviour');
-    }
-    const newEntity: Entity = Entity.USER;
-    switch (this.entity) {
-      case Entity.ORGANIZATION:
-        newEntity = Entity.SCHOOL;
+  public async process(): Promise<void> {
+    switch (this.stage) {
+      case ProcessingStage.FETCH_DATA: {
+        await this.processFetchData();
         break;
-      case Entity.SCHOOL:
-      case Entity.CLASS:
+      }
+      case ProcessingStage.UPDATE_USER_SERVICE: {
+        // @TODO
+        break;
+      }
       default:
-        log.error(`Attempted to cascade a message that shouldn't have been`, {
-          error: 'Incorrect application behaviour',
-          trace: this.requestTrace,
-          entity: this.entity,
-          id: this.entityId,
-          cascade: this.cascade,
-        });
-        throw new Error('Incorrect application behaviour');
+        throw new Error('Unreachable');
     }
-    return new Message();
   }
 
-  public async process(): Promise<void> {
+  /**
+   * The logic behind this processing is fairly complex, but necessarily so.
+   * There are a few core concepts to be understood in-order to grasp the whole
+   * picture.
+   *
+   * # Heirarchy
+   *
+   * There is a strong heirarchy between our Entities:
+   * Organization -> School -> Class -> User
+   * Therefore all entries for the `parent entity` must have been
+   * processed BEFORE we start to process the `child entity`.
+   *
+   * For example if we try and add users before we've finished
+   * adding all of the classes. The validation on the class names
+   * (contained within the users) will fail, and therefore the
+   * users will be guaranteed to be rejected.
+   *
+   * Similarly if we try and add a class before a school, it will
+   * fail validation as a class must belong to a school.
+   *
+   * # Two method of processing
+   *
+   * ## Cascade
+   *
+   * This is intented to be used when we've done no processing for a given
+   * organization and we want to onboard absolutely everything.
+   *
+   * The path the cascade follows depends on the Entity it is initialized under:
+   * - ORGANIZATION -> School -> (1st) Classes
+   *                          -> (2nd) Users
+   *
+   * - SCHOOL -> (1st) Classes
+   *          -> (2nd) Users
+   *
+   * - CLASS -> Users
+   *
+   * - USER (No cascade possible)
+   *
+   * In the event that an error occurs anywhere along the processing chain
+   * we will NOT process any child elements of that entity. Instead we will
+   * continue with another peer of that Entity.
+   *
+   * eg. If School `A` fails, we will stop processing School `A` and everything
+   * associated to it, and move on to School `B`
+   *
+   * ## Straight Update
+   *
+   * This looks up the entity with the given ID and then processes it. Stopping
+   * as soon as it is done. We don't try and update any child or associated
+   * entities.
+   *
+   * ## Notes
+   *
+   * Both processing methods are read from the stream, and can (theoretically)
+   * be done in parallel by separate workers. However once a `Cascade` has
+   * started it must be continued on the same worker until completion or
+   * failure. This is due to the validation mentioned above and the
+   * asyncronosity of using streams, if we were to try
+   * and fan out multiple stages of the cascade to multiple workers, there's no
+   * guarantee that a child entity would be picked up to be processed before a
+   * parent one.
+   *
+   */
+  public async processFetchData(): Promise<void> {
     this.attempts += 1;
     const entity = this.entity;
     if (this.fullMigration && entity === Entity.ORGANIZATION) {
       return await this.processFullMigration();
     }
-    const parentEntityId: ClientUuid | undefined = undefined;
-    const api = 
-    while (true) {
+    try {
       switch (this.entity) {
-        case Entity.ORGANIZATION:
-          const dataToValidate = await OrganizationToBeValidated.fetch(
-            this.entityId
-          );
-          const data = await dataToValidate.validate();
-          const klOrgId = data.kidsloopUuid;
-          await OrganizationRepo.insertOne(data);
-          const programs = await Programs.initialize();
-          await programs.fetchAndStoreProgramsForOrg(klOrgId);
-          const roles = await Roles.initialize();
-          await roles.fetchAndStoreRolesForOrg(klOrgId);
-          if (this.cascade) {
-            const schoolIds = await SchoolToBeValidated.fetchAllForOrganization(data.clientUuid);
-          }
+        case Entity.ORGANIZATION: {
+          const o = await Organization.fetch(this.entityId);
+          const orgId = (await o.process()).clientUuid;
+          if (this.cascade) await this.cascadeOrganization(orgId);
           break;
-        case Entity.SCHOOL:
-          const dataToValidate = await SchoolToBeValidated.fetch(this.entityId);
-          const data = await dataToValidate.validate();
-          await SchoolRepo.insertOne(data);
+        }
+        case Entity.SCHOOL: {
+          const s = await School.fetch(this.entityId);
+          const schoolId = (await s.process()).clientUuid;
+          if (this.cascade) await this.cascadeSchool(schoolId);
           break;
-        case Entity.CLASS:
-          const dataToValidate = await ClassToBeValidated.fetch(this.entityId);
-          const data = await dataToValidate.validate();
-          await ClassRepo.insertOne(data);
+        }
+        case Entity.CLASS: {
+          const c = await Class.fetch(this.entityId);
+          const classId = (await c.process()).clientUuid;
+          if (this.cascade) await this.cascadeClass(classId);
           break;
-        case Entity.USER:
-          const dataToValidate = await UserToBeValidated.fetch(this.entityId);
-          const data = await dataToValidate.validate();
-          await UserRepo.insertOne(data);
+        }
+        case Entity.USER: {
+          const u = await User.fetch(this.entityId);
+          await u.process();
+          // Can't cascade further than a user
           break;
+        }
         default:
           // PROGRAM & ROLE should be processed when
           // processing an ORGANIZATION
+          log.warn(
+            `Was processing an incoming message but found Entity as ${this.entity} this is unexpected behaviour`
+          );
           return;
       }
-      if (!this.cascade) break;
+    } catch (e) {
+      logError(e);
+      throw e;
     }
   }
 
+  public async cascadeOrganization(orgId: ClientUuid): Promise<void> {
+    const schools = await School.fetchAllForOrganization(orgId);
+    const successfulSchools: ClientUuid[] = await this.processSchools(schools);
+    for (const s of successfulSchools) {
+      await this.cascadeSchool(s);
+    }
+  }
+
+  public async cascadeSchool(schoolId: ClientUuid): Promise<void> {
+    const classes = await Class.fetchAllForSchool(schoolId);
+
+    // This step can error and interupt the function, this is because if
+    // all the classes aren't created successfully it's likely that
+    // we will fail user validation if a user belongs to the failed class
+    await this.processClasses(classes);
+
+    const users = await User.fetchAllForSchool(schoolId);
+    await this.processUsers(users);
+  }
+
+  public async cascadeClass(classId: ClientUuid): Promise<void> {
+    const users = await User.fetchAllForClass(classId);
+    await this.processUsers(users);
+  }
+
+  private async processSchools(schools: School[]): Promise<string[]> {
+    const api = await Api.getInstance();
+    const successfulSchools: ClientUuid[] = [];
+    for (const s of schools) {
+      try {
+        await s.process();
+        successfulSchools.push(s.getEntityId());
+      } catch (e) {
+        const err = instanceOfToFeedback(e)
+          ? e
+          : new UnexpectedError(s.entity, s.data.SchoolName, s.getEntityId());
+        logError(err);
+        try {
+          await api.postFeedback(err.toFeedback());
+        } catch (_) {
+          /*logged in method call*/
+        }
+      }
+    }
+    return successfulSchools;
+  }
+
+  private async processClasses(classes: Class[]): Promise<void> {
+    let didError = false;
+    const api = await Api.getInstance();
+    for (const c of classes) {
+      try {
+        await c.process();
+      } catch (e) {
+        didError = true;
+        const err = instanceOfToFeedback(e)
+          ? e
+          : new UnexpectedError(c.entity, c.data.ClassName, c.getEntityId());
+        logError(err);
+        try {
+          await api.postFeedback(err.toFeedback());
+        } catch (_) {
+          /*logged in method call*/
+        }
+      }
+    }
+    if (didError) throw new Error('Processing errored so interrupting cascade');
+  }
+
+  private async processUsers(users: User[]): Promise<void> {
+    const api = await Api.getInstance();
+    for (const u of users) {
+      try {
+        await u.process();
+      } catch (e) {
+        const err = instanceOfToFeedback(e)
+          ? e
+          : new UnexpectedError(u.entity, '', u.getEntityId());
+        logError(err);
+        try {
+          await api.postFeedback(err.toFeedback());
+        } catch (_) {
+          /*logged in method call*/
+        }
+      }
+    }
+  }
+
+  /**
+   * This function fetches all Organizations from the API
+   * and queues each one onto the stream ready to be picked up
+   * by workers
+   *
+   * In and of itself, this function does no actual processing
+   *
+   */
   private async processFullMigration(): Promise<void> {
     log.info('Attempting to start full migration', {
       trace: this.requestTrace,
       attempts: this.processingAttempts,
     });
-    const orgs = await OrganizationToBeValidated.fetchAll();
+    const orgs = await Organization.fetchAll();
     const redis = await Redis.initialize();
     const errors = [];
     for (const org of orgs) {
@@ -172,6 +310,7 @@ export class Message {
           this.requestTrace,
           0,
           this.cascade,
+          ProcessingStage.FETCH_DATA,
           false
         );
         await redis.publishMessage(msg);
@@ -185,42 +324,5 @@ export class Message {
       trace: this.requestTrace,
     });
     return;
-  }
-}
-
-export async function process<T, V>(data: Validator<T, V>[]): Promise<void> {
-  for (const d of data) {
-    const entity = d.entity;
-    const data = d.validate();
-      switch (entity) {
-        case Entity.ORGANIZATION:
-          const data = await d.validate();
-          const klOrgId = data.kidsloopUuid;
-          await OrganizationRepo.insertOne(data);
-          const programs = await Programs.initialize();
-          await programs.fetchAndStoreProgramsForOrg(klOrgId);
-          const roles = await Roles.initialize();
-          await roles.fetchAndStoreRolesForOrg(klOrgId);
-          if (this.cascade) {
-            const schoolIds = await SchoolToBeValidated.fetchAllForOrganization(data.clientUuid);
-          }
-          break;
-        case Entity.SCHOOL:
-          const data = await d.validate();
-          await SchoolRepo.insertOne(data);
-          break;
-        case Entity.CLASS:
-          const data = await d.validate();
-          await ClassRepo.insertOne(data);
-          break;
-        case Entity.USER:
-          const data = await d.validate();
-          await UserRepo.insertOne(data);
-          break;
-        default:
-          // PROGRAM & ROLE should be processed when
-          // processing an ORGANIZATION
-          return;
-      }
   }
 }

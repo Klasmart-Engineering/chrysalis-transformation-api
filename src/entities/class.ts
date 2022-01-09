@@ -1,7 +1,14 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import { Entity } from '.';
 import { Api } from '../api/c1Api';
-import { log, validate, Validator, ClientUuid, Context } from '../utils';
+import {
+  log,
+  validate,
+  Validator,
+  ClientUuid,
+  Context,
+  ProcessChain,
+} from '../utils';
 import { classSchema } from '../validatorsSchemes';
 
 export interface IClass {
@@ -62,7 +69,7 @@ export class ClassRepo {
   }
 }
 
-export class ClassToBeValidated implements Validator<IClass, ValidatedClass> {
+export class Class implements ProcessChain<IClass, ValidatedClass> {
   public readonly schema = classSchema;
   public readonly entity = Entity.CLASS;
 
@@ -74,6 +81,16 @@ export class ClassToBeValidated implements Validator<IClass, ValidatedClass> {
 
   public async validate(): Promise<ValidatedClass> {
     return await ValidatedClass.validate(this);
+  }
+
+  public async insertOne(item: ValidatedClass): Promise<void> {
+    await ClassRepo.insertOne(item);
+  }
+
+  public async process(): Promise<ValidatedClass> {
+    const c = await this.validate();
+    await this.insertOne(c);
+    return c;
   }
 
   public getOrganizationName(): string {
@@ -90,16 +107,16 @@ export class ClassToBeValidated implements Validator<IClass, ValidatedClass> {
 
   public static async fetchAllForSchool(
     schoolId: ClientUuid
-  ): Promise<ClassToBeValidated[]> {
+  ): Promise<Class[]> {
     const api = await Api.getInstance();
     const classes = await api.getClassesBySchool(schoolId);
-    return classes.map((c) => new ClassToBeValidated(c));
+    return classes.map((c) => new Class(c));
   }
 
-  public static async fetch(id: ClientUuid): Promise<ClassToBeValidated> {
+  public static async fetch(id: ClientUuid): Promise<Class> {
     const api = await Api.getInstance();
     const c = await api.getClass(id);
-    return new ClassToBeValidated(c);
+    return new Class(c);
   }
 }
 
@@ -134,8 +151,8 @@ export class ValidatedClass {
     return this.data.ProgramName;
   }
 
-  public static async validate(v: ClassToBeValidated): Promise<ValidatedClass> {
-    const data = await validate<IClass, ClassToBeValidated, ValidatedClass>(v);
+  public static async validate(v: Class): Promise<ValidatedClass> {
+    const data = await validate<IClass, Class, ValidatedClass>(v);
     return new ValidatedClass(data);
   }
 

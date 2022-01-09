@@ -111,6 +111,48 @@ export class InvalidEntityNameError extends AppError {
   }
 }
 
+export class UnexpectedError extends AppError {
+  public isRetriable = false;
+
+  constructor(
+    public readonly entity: Entity,
+    public readonly entityName: string,
+    public readonly entityId: string
+  ) {
+    super(entity, entityId);
+  }
+
+  private generateErrorMessage(): string {
+    let msg = `An unexpected error occurred when attempting to process ${this.entity}.`;
+    if (this.entityName.length > 0) {
+      msg += `Name: ${this.entityName} |`;
+    }
+    if (this.entityId.length > 0) {
+      msg += `ID: ${this.entityId}`;
+    }
+    return msg;
+  }
+
+  public toFeedback(): Feedback {
+    return {
+      UUID: this.entityId,
+      Entity: this.entity,
+      HasSuccess: false,
+      ErrorMessage: this.generateErrorMessage(),
+    };
+  }
+
+  public log(): void {
+    if (this.hasBeenLogged) return;
+    log.error('An unexpected error occurred', {
+      error: this.generateErrorMessage(),
+      entity: this.entity,
+      retriable: this.isRetriable,
+    });
+    this.hasBeenLogged = true;
+  }
+}
+
 /**
  * A helper function to log the error appropriately before
  * re-throwing it

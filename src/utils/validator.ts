@@ -3,17 +3,17 @@ import { Context, log } from '.';
 import { Entity } from '../entities';
 import { logError, ValidationError } from './errors';
 
-export interface ProcessChain<T, V> {
-  data: T;
+export abstract class ProcessChain<T, V> {
+  abstract data: T;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  schema: ObjectSchema<any>;
-  entity: Entity;
+  abstract schema: ObjectSchema<any>;
+  abstract entity: Entity;
 
-  validate(): Promise<V>;
-  insertOne(item: V): Promise<void>;
-  process(): Promise<void>
+  abstract validate(): Promise<V>;
+  abstract insertOne(item: V): Promise<void>;
+  abstract process(): Promise<V>;
 
-  getEntityId(): string;
+  abstract getEntityId(): string;
 
   getOrganizationName?(): string;
   getSchoolName?(): string;
@@ -35,7 +35,9 @@ export interface ProcessChain<T, V> {
  * @returns Type `T` the inner data that has successfully been validated
  * @throws if any of the validations fail
  */
-export async function validate<U, T extends ProcessChain<U, V>, V>(v: T): Promise<U> {
+export async function validate<U, T extends ProcessChain<U, V>, V>(
+  v: T
+): Promise<U> {
   log.debug(`Attempting to validate ${v.entity}: ${v.getEntityId()}`);
   try {
     const { data, schema } = v;

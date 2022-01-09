@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { body, Meta, validationResult } from 'express-validator';
 import createError from 'http-errors';
 import { Redis } from '../utils/redis';
-import { Message } from '../utils/message';
+import { Message, ProcessingStage } from '../utils/message';
 import { Entity } from '../entities';
 import { API_KEY } from '../app';
 import { validate as validateUuid } from 'uuid';
@@ -36,7 +36,15 @@ router.use((req: Request, _: Response, next: NextFunction) => {
 router.post('/process-all', async (req: Request, res: Response) => {
   const trace = (req.headers.trace as string) || uuidv4();
   const redis = await Redis.initialize();
-  const msg = new Message(Entity.ORGANIZATION, 'ALL', trace, 0, true, true);
+  const msg = new Message(
+    Entity.ORGANIZATION,
+    'ALL',
+    trace,
+    0,
+    true,
+    ProcessingStage.FETCH_DATA,
+    true
+  );
   await redis.publishMessage(msg);
   res.status(200).json({ requestId: trace });
 });
@@ -84,7 +92,15 @@ async function processRequest(entity: Entity, req: Request, res: Response) {
   const ids: string[] = req.body['ids'];
 
   const messages = ids.map((id) => {
-    const msg = new Message(entity, id, trace, 0, cascade, false);
+    const msg = new Message(
+      entity,
+      id,
+      trace,
+      0,
+      cascade,
+      ProcessingStage.FETCH_DATA,
+      false
+    );
     return redis.publishMessage(msg);
   });
 

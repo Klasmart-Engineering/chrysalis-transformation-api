@@ -1,7 +1,7 @@
-import { log, validate, Validator, ClientUuid, Uuid } from '../utils';
-import { PrismaClient, Organization, Prisma } from '@prisma/client';
+import { log, validate, ClientUuid, Uuid, ProcessChain } from '../utils';
+import { PrismaClient, Organization as DbOrg, Prisma } from '@prisma/client';
 import { organizationSchema } from '../validatorsSchemes';
-import { Entity } from '.';
+import { Entity, Programs, Roles } from '.';
 import { UserService } from '../api/userService';
 import { InvalidEntityNameError, ValidationError } from '../utils/errors';
 import { Api } from '../api/c1Api';
@@ -51,9 +51,7 @@ export class OrganizationRepo {
    * @returns {Org} The orgization information
    * @throws If the organization was not found or a database error occurred
    */
-  public static async findByOrganizationName(
-    name: string
-  ): Promise<Organization> {
+  public static async findByOrganizationName(name: string): Promise<DbOrg> {
     try {
       const org = await prisma.organization.findFirst({
         where: {
@@ -125,8 +123,8 @@ export class OrganizationRepo {
   }
 }
 
-export class OrganizationToBeValidated
-  implements Validator<IOrganization, ValidatedOrganization>
+export class Organization
+  implements ProcessChain<IOrganization, ValidatedOrganization>
 {
   public readonly schema = organizationSchema;
   public readonly entity = Entity.ORGANIZATION;
@@ -138,25 +136,39 @@ export class OrganizationToBeValidated
   }
 
   public async validate(): Promise<ValidatedOrganization> {
-    return await ValidatedOrganization.validate(this);
+    const org = await ValidatedOrganization.validate(this);
+    return org;
+  }
+
+  public async insertOne(item: ValidatedOrganization): Promise<void> {
+    await OrganizationRepo.insertOne(item);
+  }
+
+  public async process(): Promise<ValidatedOrganization> {
+    const org = await this.validate();
+    const kidsloopId = org.kidsloopUuid;
+    await this.insertOne(org);
+    const programs = await Programs.initialize();
+    await programs.fetchAndStoreProgramsForOrg(kidsloopId);
+    const roles = await Roles.initialize();
+    await roles.fetchAndStoreRolesForOrg(kidsloopId);
+    return org;
   }
 
   public getOrganizationName(): string {
     return this.data.OrganizationName;
   }
 
-  public static async fetchAll(): Promise<OrganizationToBeValidated[]> {
+  public static async fetchAll(): Promise<Organization[]> {
     const api = await Api.getInstance();
     const orgs = await api.getAllOrganizations();
-    return orgs.map((o) => new OrganizationToBeValidated(o));
+    return orgs.map((o) => new Organization(o));
   }
 
-  public static async fetch(
-    id: ClientUuid
-  ): Promise<OrganizationToBeValidated> {
+  public static async fetch(id: ClientUuid): Promise<Organization> {
     const api = await Api.getInstance();
     const org = await api.getOrganization(id);
-    return new OrganizationToBeValidated(org);
+    return new Organization(org);
   }
 }
 
@@ -199,11 +211,11 @@ export class ValidatedOrganization {
    * @throws If the organization is invalid
    */
   public static async validate(
-    v: OrganizationToBeValidated
+    v: Organization
   ): Promise<ValidatedOrganization> {
     const data = await validate<
       IOrganization,
-      OrganizationToBeValidated,
+      Organization,
       ValidatedOrganization
     >(v);
     try {

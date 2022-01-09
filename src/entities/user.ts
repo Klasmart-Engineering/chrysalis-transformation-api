@@ -1,6 +1,13 @@
 import { userSchema } from '../validatorsSchemes';
 import { Prisma, PrismaClient } from '@prisma/client';
-import { log, validate, Validator, ClientUuid, Context } from '../utils';
+import {
+  log,
+  validate,
+  Validator,
+  ClientUuid,
+  Context,
+  ProcessChain,
+} from '../utils';
 import { Entity } from '.';
 import { Api } from '../api/c1Api';
 
@@ -36,7 +43,7 @@ export class UserRepo {
   }
 }
 
-export class UserToBeValidated implements Validator<IUser, ValidatedUser> {
+export class User implements ProcessChain<IUser, ValidatedUser> {
   public readonly schema = userSchema;
   public readonly entity = Entity.USER;
 
@@ -50,6 +57,15 @@ export class UserToBeValidated implements Validator<IUser, ValidatedUser> {
     return await ValidatedUser.validate(this);
   }
 
+  public async insertOne(item: ValidatedUser): Promise<void> {
+    await UserRepo.insertOne(item);
+  }
+
+  public async process(): Promise<ValidatedUser> {
+    const user = await this.validate();
+    await this.insertOne(user);
+    return user;
+  }
   public getOrganizationName(): string {
     return this.data.OrganizationName;
   }
@@ -66,26 +82,22 @@ export class UserToBeValidated implements Validator<IUser, ValidatedUser> {
     return this.data.ClassName;
   }
 
-  public static async fetchAllForSchool(
-    schoolId: ClientUuid
-  ): Promise<UserToBeValidated[]> {
+  public static async fetchAllForSchool(schoolId: ClientUuid): Promise<User[]> {
     const api = await Api.getInstance();
     const users = await api.getUsersBySchool(schoolId);
-    return users.map((u) => new UserToBeValidated(u));
+    return users.map((u) => new User(u));
   }
 
-  public static async fetchAllForClass(
-    classId: ClientUuid
-  ): Promise<UserToBeValidated[]> {
+  public static async fetchAllForClass(classId: ClientUuid): Promise<User[]> {
     const api = await Api.getInstance();
     const users = await api.getUsersByClass(classId);
-    return users.map((u) => new UserToBeValidated(u));
+    return users.map((u) => new User(u));
   }
 
-  public static async fetch(id: ClientUuid): Promise<UserToBeValidated> {
+  public static async fetch(id: ClientUuid): Promise<User> {
     const api = await Api.getInstance();
     const u = await api.getUser(id);
-    return new UserToBeValidated(u);
+    return new User(u);
   }
 }
 
@@ -144,8 +156,8 @@ export class ValidatedUser {
     return this.data.SchoolRoleName;
   }
 
-  public static async validate(v: UserToBeValidated): Promise<ValidatedUser> {
-    const data = await validate<IUser, UserToBeValidated, ValidatedUser>(v);
+  public static async validate(v: User): Promise<ValidatedUser> {
+    const data = await validate<IUser, User, ValidatedUser>(v);
     return new ValidatedUser(data);
   }
 
