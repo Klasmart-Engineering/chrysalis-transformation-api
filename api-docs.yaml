@@ -1,0 +1,268 @@
+openapi: 3.0.0
+info:
+  version: '1.0.0'
+  title: 'KidsLoop Client Onboarding'
+  description: |
+    This API is a very light-weight and is used to queue up IDs of various entities
+    that are to be onboarded onto the KidsLoop platform.
+
+    A key thing to be aware of is that this is an **asyncronous** API. At the point
+    in time that you receive a response to a request, it means that the
+    server has **acknowledged** the request and has added it to the queue **to be
+    processed**. This means that when the task is picked up at a later point
+    in time, there is still the possibility of the processing failing.
+
+    The `requestId` that is returned by all endpoints can be used as an identifier
+    to query what went wrong if something does occur.
+servers:
+  - url: 'http://localhost:4200'
+    description: 'Local development server'
+paths:
+  /v1/process-all:
+    post:
+      summary: 'Attempts to onboard everything in the target API'
+      operationId: processAll
+      tags:
+        - organization
+        - v1
+      responses:
+        '200':
+          $ref: '#/components/responses/RequestIdResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /v1/organization:
+    post:
+      summary: 'Attempts to onboard each organization provided in the body'
+      operationId: organization
+      tags:
+        - organization
+        - v1
+      parameters:
+        - in: query
+          name: cascade
+          schema:
+            type: boolean
+          required: false
+          description: 'If true, attempt to process all child entities once processing on this entity has finished'
+      requestBody:
+        description: A list of client UUIDs that should be requested from the C1 API and then onboarded
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdsToProcess'
+      responses:
+        '200':
+          $ref: '#/components/responses/RequestIdResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /v1/school:
+    post:
+      summary: 'Attempts to onboard each school provided in the body'
+      operationId: school
+      tags:
+        - school
+        - v1
+      parameters:
+        - in: query
+          name: cascade
+          schema:
+            type: boolean
+          required: false
+          description: 'If true, attempt to process all child entities once processing on this entity has finished'
+      requestBody:
+        description: A list of client UUIDs that should be requested from the C1 API and then onboarded
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdsToProcess'
+      responses:
+        '200':
+          $ref: '#/components/responses/RequestIdResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /v1/class:
+    post:
+      summary: 'Attempts to onboard each class provided in the body'
+      operationId: class
+      tags:
+        - class
+        - v1
+      parameters:
+        - in: query
+          name: cascade
+          schema:
+            type: boolean
+          required: false
+          description: 'If true, attempt to process all child entities once processing on this entity has finished'
+      requestBody:
+        description: A list of client UUIDs that should be requested from the C1 API and then onboarded
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdsToProcess'
+      responses:
+        '200':
+          $ref: '#/components/responses/RequestIdResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /v1/user:
+    post:
+      summary: 'Attempts to onboard each user provided in the body'
+      operationId: user
+      tags:
+        - user
+        - v1
+      parameters:
+        - in: query
+          name: cascade
+          schema:
+            type: boolean
+          required: false
+          description: 'If true, attempt to process all child entities once processing on this entity has finished'
+      requestBody:
+        description: A list of client UUIDs that should be requested from the C1 API and then onboarded
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdsToProcess'
+      responses:
+        '200':
+          $ref: '#/components/responses/RequestIdResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+components:
+  responses:
+    RequestIdResponse:
+      description: 'The Request ID associated with this batch of processing'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+    BadRequest:
+      description: 'Bad Request. Generally due to validation issues'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrors'
+    Unauthorized:
+      description: 'Unauthorized request.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnexpectedError:
+      description: 'Unexpected Error'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    IdsToProcess:
+      type: object
+      required:
+        - ids
+      properties:
+        id:
+          type: array
+          items:
+            type: string
+      example:
+        ids:
+          [
+            f3b6acf9-4dc8-48eb-8b69-3ea91bf2880d,
+            3c38e78c-1c22-46e7-9bd1-5741a651a0e5,
+          ]
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+      example:
+        code: 404
+        message: Not Found
+    ValidationErrors:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      example:
+        errors:
+          - value:
+              - f3b6acf9-4dc8-48eb-8b69-3ea91bf2880d
+              - 3c38e78c-1c22-46e7-9bd1-5741a651a0e
+            msg: Element 3c38e78c-1c22-46e7-9bd1-5741a651a0e at index 1 is not a valid UUID
+            param: ids
+            location: body
+    ValidationError:
+      type: object
+      required:
+        - value
+        - msg
+        - param
+        - location
+      properties:
+        value:
+          type: array
+          items:
+            type: string
+        msg:
+          type: string
+        param:
+          type: string
+        location:
+          type: string
+    Response:
+      type: object
+      required:
+        - requestId
+      properties:
+        requestId:
+          type: string
+      example:
+        requestId: 9e7866ad-d427-4d59-80bc-e62a2945a451
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+security:
+  - ApiKeyAuth: []
