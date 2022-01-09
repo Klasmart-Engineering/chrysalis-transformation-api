@@ -3,7 +3,8 @@ import { PrismaClient, Organization, Prisma } from '@prisma/client';
 import { organizationSchema } from '../validatorsSchemes';
 import { Entity } from '.';
 import { UserService } from '../api/userService';
-import { ValidationError } from '../utils/errors';
+import { InvalidEntityNameError, ValidationError } from '../utils/errors';
+import { Api } from '../api/c1Api';
 
 const prisma = new PrismaClient();
 
@@ -24,7 +25,7 @@ export class OrganizationRepo {
    * @throws If an error occurred while trying to create the record in the
    * database
    */
-  public static async createOne(
+  public static async insertOne(
     organization: ValidatedOrganization
   ): Promise<void> {
     try {
@@ -32,7 +33,7 @@ export class OrganizationRepo {
         data: await organization.mapToDatabaseInput(),
       });
       if (!org)
-        throw new Error(`Unable to create organization: ${organization.name}`);
+        throw new Error(`Unable to insert organization: ${organization.name}`);
       return;
     } catch (error) {
       log.error('Failed to create organization in database', {
@@ -124,18 +125,38 @@ export class OrganizationRepo {
   }
 }
 
-export class OrganizationToBeValidated implements Validator<IOrganization> {
-  public schema = organizationSchema;
-  public entity = Entity.ORGANIZATION;
+export class OrganizationToBeValidated
+  implements Validator<IOrganization, ValidatedOrganization>
+{
+  public readonly schema = organizationSchema;
+  public readonly entity = Entity.ORGANIZATION;
 
-  constructor(public data: IOrganization) {}
+  private constructor(public readonly data: IOrganization) {}
 
-  getEntityId(): string {
+  public getEntityId(): string {
     return this.data.OrganizationUUID;
   }
 
-  getOrganizationName(): string {
+  public async validate(): Promise<ValidatedOrganization> {
+    return await ValidatedOrganization.validate(this);
+  }
+
+  public getOrganizationName(): string {
     return this.data.OrganizationName;
+  }
+
+  public static async fetchAll(): Promise<OrganizationToBeValidated[]> {
+    const api = await Api.getInstance();
+    const orgs = await api.getAllOrganizations();
+    return orgs.map((o) => new OrganizationToBeValidated(o));
+  }
+
+  public static async fetch(
+    id: ClientUuid
+  ): Promise<OrganizationToBeValidated> {
+    const api = await Api.getInstance();
+    const org = await api.getOrganization(id);
+    return new OrganizationToBeValidated(org);
   }
 }
 
@@ -178,10 +199,13 @@ export class ValidatedOrganization {
    * @throws If the organization is invalid
    */
   public static async validate(
-    o: IOrganization
+    v: OrganizationToBeValidated
   ): Promise<ValidatedOrganization> {
-    const v = new OrganizationToBeValidated(o);
-    const data = await validate<IOrganization, OrganizationToBeValidated>(v);
+    const data = await validate<
+      IOrganization,
+      OrganizationToBeValidated,
+      ValidatedOrganization
+    >(v);
     try {
       const userService = await UserService.getInstance();
       const { klUuid, klShortCode } = await userService.getOrganization(
@@ -189,12 +213,16 @@ export class ValidatedOrganization {
       );
       return new ValidatedOrganization(data, klUuid, klShortCode);
     } catch (error) {
-      const e = new ValidationError(Entity.ORGANIZATION, o.OrganizationUUID, [
-        {
-          path: `${o.OrganizationUUID}`,
-          details: `Unable to find Organization: ${o.OrganizationName} in the system`,
-        },
-      ]);
+      const e = new ValidationError(
+        Entity.ORGANIZATION,
+        v.data.OrganizationUUID,
+        [
+          {
+            path: `${v.data.OrganizationUUID}`,
+            details: `Unable to find Organization: ${v.data.OrganizationName} in the system`,
+          },
+        ]
+      );
       e.log();
       throw e;
     }

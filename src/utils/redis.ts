@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 export class Redis {
   private static _instance: Redis;
   private consumerId: Uuid;
+  public static readonly TECHNOLOGY = 'REDIS';
 
   private constructor(
     private redis: R.Redis | R.Cluster,
@@ -17,6 +18,7 @@ export class Redis {
 
   public static async initialize(): Promise<Redis> {
     if (this._instance) return this._instance;
+    log.info('Attempting to initialize Redis stream');
     checkEnvVars();
 
     const client = await Redis.createClient();
@@ -35,7 +37,7 @@ export class Redis {
       }
       log.error('Error occured while attempting to initialize stream', {
         error: e,
-        technology: 'REDIS',
+        technology: Redis.TECHNOLOGY,
       });
     }
     log.info('Succesfully initialized Redis stream');
@@ -85,7 +87,7 @@ export class Redis {
         requestTrace: m.requestTrace,
         entity: m.entity,
         entityId: m.entityId,
-        technology: 'REDIS',
+        technology: Redis.TECHNOLOGY,
       });
       throw error;
     }
@@ -120,7 +122,7 @@ export class Redis {
     } catch (error) {
       log.error('Failed to read message from redis', {
         error,
-        technology: 'REDIS',
+        technology: Redis.TECHNOLOGY,
       });
       throw error;
     }
@@ -128,15 +130,19 @@ export class Redis {
 
   public async acknowledgeMessage(msg: Message): Promise<void> {
     try {
-      await this.redis.xack(this.stream, this.consumerGroup, msg.redisMessage!);
+      await this.redis.xack(
+        this.stream,
+        this.consumerGroup,
+        msg.redisMessageId!
+      );
     } catch (error) {
       log.error('Failed to acknowledge message as read from redis', {
         error,
         entity: msg.entity,
         entityId: msg.entityId,
         requestTrace: msg.requestTrace,
-        redisMessageId: msg.redisMessage,
-        technology: 'REDIS',
+        redisMessageId: msg.redisMessageId,
+        technology: Redis.TECHNOLOGY,
       });
       throw error;
     }
@@ -154,7 +160,10 @@ function checkEnvVars(): void {
     if (!env || env.length === 0) {
       log.error(
         `Invalid environment variable provided, please check ${envVar}`,
-        { error: 'invalid/missing environment variable' }
+        {
+          error: 'invalid/missing environment variable',
+          technology: Redis.TECHNOLOGY,
+        }
       );
       throw new Error(`Invalid ${envVar}`);
     }

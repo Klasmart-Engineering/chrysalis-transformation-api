@@ -13,7 +13,7 @@ import fetch from 'cross-fetch';
 import { RawProgram, Role } from '../../entities';
 import { ClientUuid, log, Uuid } from '../../utils';
 import { GET_ORGANIZATION } from './organization';
-import { GET_SYSTEM_PROGRAMS } from './programs';
+import { GET_PROGRAMS_BY_ORGANIZATION, GET_SYSTEM_PROGRAMS } from './programs';
 import { GET_ORGANIZATION_ROLES, GET_SYSTEM_ROLES } from './roles';
 
 export class UserService {
@@ -105,7 +105,6 @@ export class UserService {
     return this._client;
   }
 
-  // While loop to get all programs from Admin User service
   public async getSystemPrograms(): Promise<RawProgram[]> {
     const transformer = ({ name, id }: { name: string; id: Uuid }) =>
       new RawProgram(name, id);
@@ -118,7 +117,19 @@ export class UserService {
     return results;
   }
 
-  // While loop to get all roles from Admin User service
+  public async getOrganizationPrograms(
+    orgId: ClientUuid
+  ): Promise<RawProgram[]> {
+    const transformer = ({ id, name }: { id: Uuid; name: string }) =>
+      new RawProgram(name, id, false, orgId);
+    const results = await this.traversePaginatedQuery(
+      GET_PROGRAMS_BY_ORGANIZATION,
+      transformer,
+      { orgId }
+    );
+    return results;
+  }
+
   public async getSystemRoles(): Promise<Role[]> {
     const transformer = ({ id, name }: { id: Uuid; name: string }) =>
       new Role(name, id, true);
@@ -129,7 +140,6 @@ export class UserService {
     return results;
   }
 
-  // While loop to get all roles from Admin User service
   public async getOrganizationRoles(orgId: ClientUuid): Promise<Role[]> {
     const transformer = ({ id, name }: { id: Uuid; name: string }) =>
       new Role(name, id, false, orgId);

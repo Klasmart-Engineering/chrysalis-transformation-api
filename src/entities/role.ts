@@ -81,6 +81,28 @@ export class Roles {
   }
 
   /**
+   * Fetch all organization roles from the User Service and store them in
+   * CIL DB.
+   *
+   * @param {ClientUuid} orgId - The KidsLoop UUID for the organization you want
+   * to fetch the roles for
+   * @throws if either the network call or the database calls fail
+   */
+  public async fetchAndStoreRolesForOrg(orgId: ClientUuid): Promise<void> {
+    const userService = await UserService.getInstance();
+    const roles = await userService.getOrganizationRoles(orgId);
+    const errors = [];
+    for (const r of roles) {
+      try {
+        await RoleRepo.insertOne(r);
+      } catch (e) {
+        errors.push(e);
+      }
+    }
+    if (errors.length > 0) throw errors;
+  }
+
+  /**
    * Checks that the name of the role is valid given the provided arguments.
    *
    * @param {string} name - The name of the role

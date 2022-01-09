@@ -84,6 +84,28 @@ export class Programs {
   }
 
   /**
+   * Fetch all organization programs from the User Service and store them in
+   * CIL DB.
+   *
+   * @param {ClientUuid} orgId - The KidsLoop UUID for the organization you want
+   * to fetch the programs for
+   * @throws if either the network call or the database calls fail
+   */
+  public async fetchAndStoreProgramsForOrg(orgId: ClientUuid): Promise<void> {
+    const userService = await UserService.getInstance();
+    const programs = await userService.getOrganizationPrograms(orgId);
+    const errors = [];
+    for (const p of programs) {
+      try {
+        await ProgramRepo.insertOne(p);
+      } catch (e) {
+        errors.push(e);
+      }
+    }
+    if (errors.length > 0) throw errors;
+  }
+
+  /**
    * Checks that the name of the program is valid given the provided arguments.
    *
    * @param {string} name - The name of the program

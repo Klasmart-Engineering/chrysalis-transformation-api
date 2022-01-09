@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import { Entity } from '.';
+import { Api } from '../api/c1Api';
 import { log, validate, Validator, ClientUuid, Context } from '../utils';
 import { classSchema } from '../validatorsSchemes';
 
@@ -61,24 +62,44 @@ export class ClassRepo {
   }
 }
 
-export class ClassToBeValidated implements Validator<IClass> {
-  public schema = classSchema;
-  public entity = Entity.CLASS;
+export class ClassToBeValidated implements Validator<IClass, ValidatedClass> {
+  public readonly schema = classSchema;
+  public readonly entity = Entity.CLASS;
 
-  constructor(public data: IClass) {}
+  private constructor(public readonly data: IClass) {}
 
-  getEntityId(): string {
+  public getEntityId(): string {
     return this.data.ClassUUID;
   }
 
-  getOrganizationName(): string {
+  public async validate(): Promise<ValidatedClass> {
+    return await ValidatedClass.validate(this);
+  }
+
+  public getOrganizationName(): string {
     return this.data.OrganizationName;
   }
-  getSchoolName(): string {
+
+  public getSchoolName(): string {
     return this.data.SchoolName;
   }
-  getPrograms(): string[] {
+
+  public getPrograms(): string[] {
     return this.data.ProgramName;
+  }
+
+  public static async fetchAllForSchool(
+    schoolId: ClientUuid
+  ): Promise<ClassToBeValidated[]> {
+    const api = await Api.getInstance();
+    const classes = await api.getClassesBySchool(schoolId);
+    return classes.map((c) => new ClassToBeValidated(c));
+  }
+
+  public static async fetch(id: ClientUuid): Promise<ClassToBeValidated> {
+    const api = await Api.getInstance();
+    const c = await api.getClass(id);
+    return new ClassToBeValidated(c);
   }
 }
 
@@ -113,9 +134,8 @@ export class ValidatedClass {
     return this.data.ProgramName;
   }
 
-  public static async validate(c: IClass): Promise<ValidatedClass> {
-    const v = new ClassToBeValidated(c);
-    const data = await validate<IClass, ClassToBeValidated>(v);
+  public static async validate(v: ClassToBeValidated): Promise<ValidatedClass> {
+    const data = await validate<IClass, ClassToBeValidated, ValidatedClass>(v);
     return new ValidatedClass(data);
   }
 
