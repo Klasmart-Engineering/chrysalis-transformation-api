@@ -3,7 +3,7 @@ import { PrismaClient, Organization as DbOrg, Prisma } from '@prisma/client';
 import { organizationSchema } from '../validatorsSchemes';
 import { Entity, Programs, Roles } from '.';
 import { UserService } from '../api/userService';
-import { InvalidEntityNameError, ValidationError } from '../utils/errors';
+import { ValidationError } from '../utils/errors';
 import { Api } from '../api/c1Api';
 
 const prisma = new PrismaClient();

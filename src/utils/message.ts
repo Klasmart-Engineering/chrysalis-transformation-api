@@ -1,5 +1,6 @@
 import { Uuid, log, ClientUuid } from '.';
 import { Api } from '../api/c1Api';
+import { MESSAGE_PROCESSING_ATTEMPTS } from '../consumer';
 import { Class, Entity, Organization, School, User } from '../entities';
 import { logError, UnexpectedError } from './errors';
 import { instanceOfToFeedback } from './feedback';
@@ -32,7 +33,7 @@ export class Message {
     private attempts: number,
     public readonly cascade: boolean,
     public readonly stage = ProcessingStage.FETCH_DATA,
-    public readonly fullMigration = false,
+    private readonly fullMigration = false,
     public readonly redisMessageId?: string
   ) {}
 
@@ -152,7 +153,7 @@ export class Message {
    * parent one.
    *
    */
-  public async processFetchData(): Promise<void> {
+  private async processFetchData(): Promise<void> {
     this.attempts += 1;
     const entity = this.entity;
     if (this.fullMigration && entity === Entity.ORGANIZATION) {
@@ -198,7 +199,7 @@ export class Message {
     }
   }
 
-  public async cascadeOrganization(orgId: ClientUuid): Promise<void> {
+  private async cascadeOrganization(orgId: ClientUuid): Promise<void> {
     const schools = await School.fetchAllForOrganization(orgId);
     const successfulSchools: ClientUuid[] = await this.processSchools(schools);
     for (const s of successfulSchools) {
@@ -206,7 +207,7 @@ export class Message {
     }
   }
 
-  public async cascadeSchool(schoolId: ClientUuid): Promise<void> {
+  private async cascadeSchool(schoolId: ClientUuid): Promise<void> {
     const classes = await Class.fetchAllForSchool(schoolId);
 
     // This step can error and interupt the function, this is because if
@@ -218,7 +219,7 @@ export class Message {
     await this.processUsers(users);
   }
 
-  public async cascadeClass(classId: ClientUuid): Promise<void> {
+  private async cascadeClass(classId: ClientUuid): Promise<void> {
     const users = await User.fetchAllForClass(classId);
     await this.processUsers(users);
   }
@@ -236,7 +237,9 @@ export class Message {
           : new UnexpectedError(s.entity, s.data.SchoolName, s.getEntityId());
         logError(err);
         try {
-          await api.postFeedback(err.toFeedback());
+          if (this.processingAttempts === MESSAGE_PROCESSING_ATTEMPTS) {
+            await api.postFeedback(err.toFeedback());
+          }
         } catch (_) {
           /*logged in method call*/
         }
@@ -258,7 +261,9 @@ export class Message {
           : new UnexpectedError(c.entity, c.data.ClassName, c.getEntityId());
         logError(err);
         try {
-          await api.postFeedback(err.toFeedback());
+          if (this.processingAttempts === MESSAGE_PROCESSING_ATTEMPTS) {
+            await api.postFeedback(err.toFeedback());
+          }
         } catch (_) {
           /*logged in method call*/
         }
@@ -278,7 +283,9 @@ export class Message {
           : new UnexpectedError(u.entity, '', u.getEntityId());
         logError(err);
         try {
-          await api.postFeedback(err.toFeedback());
+          if (this.processingAttempts === MESSAGE_PROCESSING_ATTEMPTS) {
+            await api.postFeedback(err.toFeedback());
+          }
         } catch (_) {
           /*logged in method call*/
         }

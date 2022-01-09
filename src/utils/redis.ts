@@ -3,10 +3,14 @@ import { log, Uuid } from '.';
 import { Message } from './message';
 import { v4 as uuidv4 } from 'uuid';
 
+// 3 minutes
+const STALE_MESSAGE = 60 * 1000 * 3;
+
 export class Redis {
   private static _instance: Redis;
   private consumerId: Uuid;
   public static readonly TECHNOLOGY = 'REDIS';
+  private counter = 0;
 
   private constructor(
     private redis: R.Redis | R.Cluster,
@@ -80,7 +84,7 @@ export class Redis {
   public async publishMessage(m: Message): Promise<void> {
     try {
       const payload = m.toJson();
-      await this.redis.xadd(this.stream, '*', 'event', payload);
+      await this.redis.xadd(this.stream, '*', 'JSON', payload);
     } catch (error) {
       log.error('Failed to publish message from redis', {
         error,
@@ -97,6 +101,15 @@ export class Redis {
    * Tries to read an unread message from the queue.
    */
   public async readMessage(): Promise<Message> {
+    log.silly('Attempting to read message from stream');
+    if (this.incrementCounter() === 0) {
+      try {
+        const msg = await this.tryAndClaimStaleMessage();
+        return msg;
+      } catch (_) {
+        /* Logged in function */
+      }
+    }
     try {
       const m = await this.redis.xreadgroup(
         'GROUP',
@@ -147,6 +160,48 @@ export class Redis {
       throw error;
     }
   }
+
+  private async tryAndClaimStaleMessage(): Promise<Message> {
+    log.silly('Trying to claim stale message');
+    try {
+      const m = await this.redis.xautoclaim(
+        this.stream,
+        this.consumerGroup,
+        this.consumerId,
+        STALE_MESSAGE,
+        '0-0',
+        'COUNT',
+        1
+      );
+
+      if (!m || m[1].length === 0) throw new Error('No messages in stream');
+      if (m[1].length > 1)
+        throw new Error('Received more messages than expected');
+
+      const msgId = m[1][0][0];
+      const msg = m[1][0][1][1];
+      const message = Message.parse(msg, msgId);
+
+      return message;
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith('No messages'))
+        throw error;
+      log.warn('Failed to claim stale message from redis', {
+        error,
+        technology: Redis.TECHNOLOGY,
+      });
+      throw error;
+    }
+  }
+
+  private incrementCounter(): number {
+    const countToReturn = this.counter;
+    if (this.counter === 10) {
+      this.counter = 0;
+    }
+    this.counter += 1;
+    return countToReturn;
+  }
 }
 
 function checkEnvVars(): void {
@@ -169,11 +224,3 @@ function checkEnvVars(): void {
     }
   }
 }
-
-// async function main() {
-//   const r = await Redis.initialize();
-//   const message = new Message(Entity.CLASS, '1234', '123', 0, false);
-//   // await r.publishMessage(message);
-//   await r.readMessage();
-// }
-// main();

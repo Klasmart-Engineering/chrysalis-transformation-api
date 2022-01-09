@@ -84,7 +84,7 @@ export class Programs {
   }
 
   /**
-   * Fetch all organization programs from the User Service and store them in
+   * Fetch all organization programs from the User Service and store them in 
    * CIL DB.
    *
    * @param {ClientUuid} orgId - The KidsLoop UUID for the organization you want

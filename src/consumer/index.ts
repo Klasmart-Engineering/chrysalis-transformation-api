@@ -1,28 +1,33 @@
 import { sleep } from '../utils';
-import { AppError } from '../utils/errors';
-import { Message } from '../utils/message';
+import { logError } from '../utils/errors';
 import { Redis } from '../utils/redis';
 
-const ATTEMPTS = 3;
+export const MESSAGE_PROCESSING_ATTEMPTS = 3;
 
 export async function processStream(): Promise<void> {
   const redis = await Redis.initialize();
   try {
     const msg = await redis.readMessage();
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      try {
-        await msg.process();
-        break;
-      } catch (error) {
-        if (msg.processingAttempts === ATTEMPTS) throw error;
-      }
+    if (msg.processingAttempts >= MESSAGE_PROCESSING_ATTEMPTS) {
+      await redis.acknowledgeMessage(msg);
     }
+    let didFail = false;
+    try {
+      await msg.process();
+    } catch (error) {
+      logError(error);
+      didFail = true;
+    }
+    // Regardless of whether it succeeds or fails we acknowledge the message
     await redis.acknowledgeMessage(msg);
+    if (didFail) {
+      await redis.publishMessage(msg);
+    }
   } catch (error) {
     if (error instanceof Error && error.message === 'No messages in stream') {
-      await sleep(500);
+      await sleep(1000);
       return;
     }
+    logError(error);
   }
 }

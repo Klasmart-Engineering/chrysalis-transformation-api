@@ -1,13 +1,6 @@
 import { userSchema } from '../validatorsSchemes';
 import { Prisma, PrismaClient } from '@prisma/client';
-import {
-  log,
-  validate,
-  Validator,
-  ClientUuid,
-  Context,
-  ProcessChain,
-} from '../utils';
+import { log, validate, ClientUuid, Context, ProcessChain } from '../utils';
 import { Entity } from '.';
 import { Api } from '../api/c1Api';
 

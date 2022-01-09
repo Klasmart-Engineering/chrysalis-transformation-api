@@ -19,8 +19,7 @@ model School {
 
   shortCode String? @map("short_code") @db.VarChar(255)
 
-  programUuids String[]  @map("program_uuids") @db.Uuid
-  programs     Program[] @relation(fields: [programUuids, clientOrgUuid], references: [klUuid])
+  programUuids String[] @map("program_uuids") @db.Uuid
 
   classes Class[]
   users   User[]
@@ -50,9 +49,6 @@ model Program {
   clientOrgUuid String?       @map("client_org_uuid") @db.Uuid
   organization  Organization? @relation(fields: [clientOrgUuid], references: [clientUuid])
 
-  classes Class[]
-  schools School[]
-
   // Metadata
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
@@ -73,8 +69,6 @@ model Role {
 
   clientOrgUuid String?       @map("client_org_uuid") @db.Uuid
   organization  Organization? @relation(fields: [clientOrgUuid], references: [clientUuid])
-
-  users User[]
 
   // Metadata
   createdAt DateTime  @default(now()) @map("created_at")
@@ -97,10 +91,7 @@ model Class {
   clientSchoolUuid String @map("client_school_uuid") @db.Uuid
   school           School @relation(fields: [clientSchoolUuid], references: [clientUuid])
 
-  programUuids String[]  @map("program_uuids") @db.Uuid
-  programs     Program[] @relation(fields: [programUuids, clientOrgUuid], references: [klUuid])
-
-  users User[]
+  programUuids String[] @map("program_uuids") @db.Uuid
 
   // User Service
   klUuid String? @unique @map("kl_uuid") @db.Uuid
@@ -135,10 +126,8 @@ model User {
   school           School @relation(fields: [clientSchoolUuid], references: [clientUuid])
 
   classUuids String[] @map("class_uuids") @db.Uuid
-  classes    Class[]  @relation(fields: [classUuids], references: [clientUuid])
 
   roleUuids String[] @map("role_uuids") @db.Uuid
-  roles     Role[]   @relation(fields: [roleUuids], references: [klUuid])
 
   // User Service
   klUuid String? @unique @map("kl_uuid") @db.Uuid
@@ -154,8 +143,8 @@ model User {
 
 model Organization {
   // C1 API
-  clientUuid String  @id @map("client_uuid") @db.Uuid
-  name       String  @db.VarChar(255)
+  clientUuid String @id @map("client_uuid") @db.Uuid
+  name       String @db.VarChar(255)
   klUuid     String @unique @map("kl_uuid") @db.Uuid
 
   klShortCode String? @map("kl_short_code") @db.VarChar(255)
