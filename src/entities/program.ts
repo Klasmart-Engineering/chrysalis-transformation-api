@@ -1,7 +1,7 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import LRU from 'lru-cache';
-import { Entity } from '.';
-import { UserService } from '../api/userService';
+import { ClassRepo, Entity, SchoolRepo } from '.';
+import { AdminService } from '../api/adminService';
 import { ClientUuid, Uuid, log } from '../utils';
 import { ValidationError } from '../utils/errors';
 
@@ -56,8 +56,8 @@ export class Programs {
   public static async initialize(): Promise<Programs> {
     if (this._instance) return this._instance;
     try {
-      const userService = await UserService.getInstance();
-      const systemPrograms = await userService.getSystemPrograms();
+      const adminService = await AdminService.getInstance();
+      const systemPrograms = await adminService.getSystemPrograms();
 
       const system = new Map();
       for (const program of systemPrograms) {
@@ -84,7 +84,7 @@ export class Programs {
   }
 
   /**
-   * Fetch all organization programs from the User Service and store them in 
+   * Fetch all organization programs from the Admin Service and store them in
    * CIL DB.
    *
    * @param {ClientUuid} orgId - The KidsLoop UUID for the organization you want
@@ -92,8 +92,8 @@ export class Programs {
    * @throws if either the network call or the database calls fail
    */
   public async fetchAndStoreProgramsForOrg(orgId: ClientUuid): Promise<void> {
-    const userService = await UserService.getInstance();
-    const programs = await userService.getOrganizationPrograms(orgId);
+    const adminService = await AdminService.getInstance();
+    const programs = await adminService.getOrganizationPrograms(orgId);
     const errors = [];
     for (const p of programs) {
       try {
@@ -324,31 +324,32 @@ export class ProgramRepo {
     try {
       const program = await prisma.program.findFirst({
         where: {
-          name: programName,
-          clientOrgUuid: org,
+          AND: [{ name: programName }, { clientOrgUuid: org }],
         },
         select: {
           klUuid: true,
           name: true,
           clientOrgUuid: true,
-          classes: {
-            select: { clientUuid: true },
-          },
-          schools: {
-            select: { clientUuid: true },
-          },
         },
       });
       if (!program)
         throw new Error(
           `Program ${programName} not found for Organization ${org}`
         );
+      const schools = await SchoolRepo.getSchoolIdsWithProgram(
+        program.klUuid,
+        program.clientOrgUuid!
+      );
+      const classes = await ClassRepo.getClassIdsWithProgram(
+        program.klUuid,
+        program.clientOrgUuid!
+      );
       return new Program(
         program.klUuid,
         program.name,
         program.clientOrgUuid!,
-        program.classes.map((c) => c.clientUuid),
-        program.schools.map((s) => s.clientUuid)
+        classes,
+        schools
       );
     } catch (error) {
       let logLevel = 'error';
@@ -364,49 +365,6 @@ export class ProgramRepo {
         {
           error,
           programName,
-          organisationId: org,
-          entity: Entity.PROGRAM,
-        }
-      );
-      throw error;
-    }
-  }
-
-  public static async findManyByOrganizationId(
-    org: OrganizationId
-  ): Promise<Program[]> {
-    try {
-      const programs = await prisma.program.findMany({
-        where: {
-          clientOrgUuid: org,
-        },
-        select: {
-          klUuid: true,
-          name: true,
-          clientOrgUuid: true,
-          classes: {
-            select: { clientUuid: true },
-          },
-          schools: {
-            select: { clientUuid: true },
-          },
-        },
-      });
-      return programs.map(
-        ({ klUuid, name, classes, clientOrgUuid, schools }) =>
-          new Program(
-            klUuid,
-            name,
-            clientOrgUuid!, // Okay to assert this always exists due to the query above
-            classes.map((c) => c.clientUuid),
-            schools.map((s) => s.clientUuid)
-          )
-      );
-    } catch (error) {
-      log.error(
-        'Failed to find programs in database when searching with organisation id',
-        {
-          error,
           organisationId: org,
           entity: Entity.PROGRAM,
         }

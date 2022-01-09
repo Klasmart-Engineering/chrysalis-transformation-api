@@ -2,7 +2,7 @@ import { log, validate, ClientUuid, Uuid, ProcessChain } from '../utils';
 import { PrismaClient, Organization as DbOrg, Prisma } from '@prisma/client';
 import { organizationSchema } from '../validatorsSchemes';
 import { Entity, Programs, Roles } from '.';
-import { UserService } from '../api/userService';
+import { AdminService } from '../api/adminService';
 import { ValidationError } from '../utils/errors';
 import { Api } from '../api/c1Api';
 
@@ -219,7 +219,7 @@ export class ValidatedOrganization {
       ValidatedOrganization
     >(v);
     try {
-      const userService = await UserService.getInstance();
+      const userService = await AdminService.getInstance();
       const { klUuid, klShortCode } = await userService.getOrganization(
         data.OrganizationName
       );

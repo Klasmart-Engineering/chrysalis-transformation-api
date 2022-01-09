@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { Entity } from '.';
-import { UserService } from '../api/userService';
+import { AdminService } from '../api/adminService';
 import { ClientUuid, Uuid, log } from '../utils';
 import { ValidationError } from '../utils/errors';
 
@@ -53,8 +53,8 @@ export class Roles {
   public static async initialize(): Promise<Roles> {
     if (this._instance) return this._instance;
     try {
-      const userService = await UserService.getInstance();
-      const systemRoles = await userService.getSystemRoles();
+      const adminService = await AdminService.getInstance();
+      const systemRoles = await adminService.getSystemRoles();
 
       const system = new Map();
       for (const role of systemRoles) {
@@ -81,7 +81,7 @@ export class Roles {
   }
 
   /**
-   * Fetch all organization roles from the User Service and store them in
+   * Fetch all organization roles from the Admin Service and store them in
    * CIL DB.
    *
    * @param {ClientUuid} orgId - The KidsLoop UUID for the organization you want
@@ -89,8 +89,8 @@ export class Roles {
    * @throws if either the network call or the database calls fail
    */
   public async fetchAndStoreRolesForOrg(orgId: ClientUuid): Promise<void> {
-    const userService = await UserService.getInstance();
-    const roles = await userService.getOrganizationRoles(orgId);
+    const adminService = await AdminService.getInstance();
+    const roles = await adminService.getOrganizationRoles(orgId);
     const errors = [];
     for (const r of roles) {
       try {

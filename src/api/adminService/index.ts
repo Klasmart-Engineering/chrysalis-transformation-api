@@ -16,8 +16,8 @@ import { GET_ORGANIZATION } from './organization';
 import { GET_PROGRAMS_BY_ORGANIZATION, GET_SYSTEM_PROGRAMS } from './programs';
 import { GET_ORGANIZATION_ROLES, GET_SYSTEM_ROLES } from './roles';
 
-export class UserService {
-  private static _instance: UserService;
+export class AdminService {
+  private static _instance: AdminService;
   private context: object;
 
   private constructor(
@@ -92,7 +92,7 @@ export class UserService {
         cache: new InMemoryCache(),
       });
 
-      this._instance = new UserService(client, jwt);
+      this._instance = new AdminService(client, jwt);
       log.info('Connected to KidsLoop admin service');
       return this._instance;
     } catch (error) {

@@ -1,7 +1,14 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import { Entity } from '.';
 import { Api } from '../api/c1Api';
-import { log, validate, ClientUuid, Context, ProcessChain } from '../utils';
+import {
+  log,
+  validate,
+  ClientUuid,
+  Context,
+  ProcessChain,
+  Uuid,
+} from '../utils';
 import { classSchema } from '../validatorsSchemes';
 
 export interface IClass {
@@ -56,6 +63,34 @@ export class ClassRepo {
         error,
         name: className,
         entity: Entity.CLASS,
+      });
+      throw error;
+    }
+  }
+
+  public static async getClassIdsWithProgram(
+    programId: Uuid,
+    clientOrgUuid: ClientUuid
+  ): Promise<ClientUuid[]> {
+    try {
+      const classes = await prisma.class.findMany({
+        where: {
+          clientOrgUuid,
+          programUuids: {
+            has: programId,
+          },
+        },
+        select: {
+          clientUuid: true,
+        },
+      });
+      return classes.map((c) => c.clientUuid);
+    } catch (error) {
+      log.error('Failed to find classes with the given program id', {
+        error,
+        organizationId: clientOrgUuid,
+        entity: Entity.CLASS,
+        programId,
       });
       throw error;
     }

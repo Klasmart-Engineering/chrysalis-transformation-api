@@ -1,4 +1,11 @@
-import { log, validate, ClientUuid, Context, ProcessChain } from '../utils';
+import {
+  log,
+  validate,
+  ClientUuid,
+  Context,
+  ProcessChain,
+  Uuid,
+} from '../utils';
 import { schoolSchema } from '../validatorsSchemes';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { Entity } from '.';
@@ -66,6 +73,34 @@ export class SchoolRepo {
       return true;
     } catch (_) {
       return false;
+    }
+  }
+
+  public static async getSchoolIdsWithProgram(
+    programId: Uuid,
+    clientOrgUuid: ClientUuid
+  ): Promise<ClientUuid[]> {
+    try {
+      const schools = await prisma.school.findMany({
+        where: {
+          clientOrgUuid,
+          programUuids: {
+            has: programId,
+          },
+        },
+        select: {
+          clientUuid: true,
+        },
+      });
+      return schools.map((s) => s.clientUuid);
+    } catch (error) {
+      log.error('Failed to find schools with the given program id', {
+        error,
+        organizationId: clientOrgUuid,
+        entity: Entity.SCHOOL,
+        programId,
+      });
+      throw error;
     }
   }
 }
