@@ -5,6 +5,7 @@ export enum C1Endpoints {
   singleClass = `/KL/Class`,
   user = `/KL/User`,
   users = `/KL/Users`,
+  feedback = `/KL/FeedBack`,
 }
 
 export enum C1AuthEndpoints {

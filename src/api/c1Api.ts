@@ -4,6 +4,7 @@ import { IOrganization } from '../entities/organization';
 import { ISchool } from '../entities/school';
 import { IUser } from '../entities/user';
 import { HttpClient } from '../utils';
+import { Feedback } from '../utils/feedback';
 
 export class Api {
   private static _instance: Api;
@@ -72,5 +73,9 @@ export class Api {
       `${C1Endpoints.users}/${id}/School`
     );
     return data;
+  }
+
+  public async postFeedback(payload: Feedback): Promise<void> {
+    await this.client.post(C1Endpoints.feedback, payload);
   }
 }
