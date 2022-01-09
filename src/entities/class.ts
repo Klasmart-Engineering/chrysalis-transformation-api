@@ -25,6 +25,7 @@ export class ClassRepo {
         error,
         id: classDetails.clientUuid,
         name: classDetails.name,
+        entity: Entity.CLASS,
       });
     }
   }
@@ -53,6 +54,7 @@ export class ClassRepo {
       log.error('Failed to find class id in database', {
         error,
         name: className,
+        entity: Entity.CLASS,
       });
       throw error;
     }
@@ -121,7 +123,9 @@ export class ValidatedClass {
     const ctx = await Context.getInstance();
     const orgId = await ctx.getOrganizationClientId(this.organizationName);
     const schoolId = await ctx.getSchoolClientId(orgId, this.schoolName);
-    const programIds = this.programNames.map((p) => ctx.getProgramIdByName(p));
+    const programIds = await Promise.all(
+      this.programNames.map(async (p) => await ctx.getProgramIdByName(p, orgId))
+    );
 
     return {
       clientUuid: this.clientUuid,

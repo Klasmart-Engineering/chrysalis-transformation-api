@@ -25,6 +25,7 @@ export class SchoolRepo {
         error,
         id: school.clientUuid,
         name: school.name,
+        entity: Entity.SCHOOL,
       });
     }
   }
@@ -49,6 +50,7 @@ export class SchoolRepo {
         error,
         name: schoolName,
         organizationId: orgId,
+        entity: Entity.SCHOOL,
       });
       throw error;
     }
@@ -78,9 +80,6 @@ export class SchoolToBeValidated implements Validator<ISchool> {
   }
   getOrganizationName(): string {
     return this.data.OrganizationName;
-  }
-  getSchoolName(): string {
-    return this.data.SchoolName;
   }
   getPrograms(): string[] {
     return this.data.ProgramName;
@@ -132,7 +131,9 @@ export class ValidatedSchool {
   public async mapToDatabaseInput(): Promise<Prisma.SchoolCreateInput> {
     const ctx = await Context.getInstance();
     const orgId = await ctx.getOrganizationClientId(this.organizationName);
-    const programIds = this.programNames.map((p) => ctx.getProgramIdByName(p));
+    const programIds = await Promise.all(
+      this.programNames.map(async (p) => await ctx.getProgramIdByName(p, orgId))
+    );
 
     return {
       clientUuid: this.clientUuid,

@@ -5,7 +5,12 @@ export const GET_SYSTEM_ROLES = gql`
     rolesConnection(
       direction: FORWARD
       directionArgs: { count: $count, cursor: $cursor }
-      filter: { AND : [{ status: { operator: eq, value: "active" } }, { system : { operator: eq, value: true }}] }
+      filter: {
+        AND: [
+          { status: { operator: eq, value: "active" } }
+          { system: { operator: eq, value: true } }
+        ]
+      }
     ) {
       totalCount
       pageInfo {
@@ -24,12 +29,17 @@ export const GET_SYSTEM_ROLES = gql`
   }
 `;
 
-export const GET_ROLES = gql`
-  query getRoles($count: PageSize, $cursor: String) {
+export const GET_ORGANIZATION_ROLES = gql`
+  query getRoles($count: PageSize, $cursor: String, $orgId: UUID!) {
     rolesConnection(
       direction: FORWARD
       directionArgs: { count: $count, cursor: $cursor }
-      filter: { status: { operator: eq, value: "active" } }
+      filter: {
+        AND: [
+          { status: { operator: eq, value: "active" } }
+          { organizationId: { operator: eq, value: $orgId } }
+        ]
+      }
     ) {
       totalCount
       pageInfo {

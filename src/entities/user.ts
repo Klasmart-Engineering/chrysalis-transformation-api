@@ -125,7 +125,9 @@ export class ValidatedUser {
     const orgId = await ctx.getOrganizationClientId(this.organizationName);
     const schoolId = await ctx.getSchoolClientId(orgId, this.schoolName);
     const classIds = await Promise.all(
-      this.classNames.map(async (c) => ctx.getClassClientId(orgId, schoolId, c))
+      this.classNames.map(
+        async (c) => await ctx.getClassClientId(orgId, schoolId, c)
+      )
     );
 
     return {

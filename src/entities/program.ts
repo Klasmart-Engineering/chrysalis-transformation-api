@@ -39,6 +39,12 @@ export class RawProgram {
   }
 }
 
+/**
+ * NOTE:
+ * This assumes that the custom programs have been already added to the Program
+ * Table. This should be done at the point in time that each Organization is
+ * added to the Organization Table
+ */
 export class Programs {
   private static _instance: Programs;
 
@@ -60,7 +66,10 @@ export class Programs {
       this._instance = new Programs(system, new ProgramHashMap());
       return this._instance;
     } catch (error) {
-      log.error('Failed to initialize programs', { error });
+      log.error('Failed to initialize programs', {
+        error,
+        entity: Entity.PROGRAM,
+      });
       throw new Error('Failed to initialize programs');
     }
   }
@@ -102,6 +111,7 @@ export class Programs {
           orgId,
           schoolId,
           classId,
+          entity: Entity.PROGRAM,
         }
       );
     }
@@ -113,6 +123,7 @@ export class Programs {
       orgId,
       schoolId,
       classId,
+      entity: Entity.PROGRAM,
     });
     throw new ValidationError(Entity.PROGRAM, name, [
       {
@@ -196,6 +207,7 @@ class ProgramHashMap {
       log.warn(`Failed to find Program ${name} for Organization: ${org}`, {
         error,
         details: 'Checked both cache and database and found no valid entry',
+        entity: Entity.PROGRAM,
       });
       throw new Error(
         `Organization ${org} does not have an entry for program ${name}`
@@ -278,6 +290,7 @@ export class ProgramRepo {
         error,
         id: program.kidsloopUuid,
         name: program.name,
+        entity: Entity.PROGRAM,
       });
     }
   }
@@ -330,6 +343,7 @@ export class ProgramRepo {
           error,
           programName,
           organisationId: org,
+          entity: Entity.PROGRAM,
         }
       );
       throw error;
@@ -372,6 +386,7 @@ export class ProgramRepo {
         {
           error,
           organisationId: org,
+          entity: Entity.PROGRAM,
         }
       );
       throw error;

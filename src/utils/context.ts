@@ -1,5 +1,12 @@
 import LRU from 'lru-cache';
-import { Programs, Roles, SchoolRepo, OrganizationRepo, ClassRepo, Entity } from '../entities';
+import {
+  Programs,
+  Roles,
+  SchoolRepo,
+  OrganizationRepo,
+  ClassRepo,
+  Entity,
+} from '../entities';
 import { InvalidEntityNameError } from './errors';
 import { ClientUuid, Uuid, log } from '.';
 
@@ -40,20 +47,29 @@ export class Context {
 
   /**
    * @param {string} name - The name of the role
+   * @param {string} orgId - The client UUID for the organization
    * @returns {boolean} `true` if the role is valid
-   * @errors If the role is invalid
    */
-  public roleIsValid(name: string): boolean {
-    return this.roles.isValid(name);
+  public async roleIsValid(name: string, orgId: ClientUuid): Promise<boolean> {
+    return await this.roles.roleIsValid(name, orgId);
   }
 
   /**
    * @param {string[]} roles - The role names to be validated
+   * @param {string} orgId - The client UUID for the organization
    * @errors If any of the roles are invalid
    */
-  public rolesAreValid(roles: string[]): void {
-    const results = roles
-      .map((r) => ({ name: r, valid: this.roleIsValid(r) }))
+  public async rolesAreValid(
+    roles: string[],
+    orgId: ClientUuid
+  ): Promise<void> {
+    const validRoles = await Promise.all(
+      roles.map(async (r) => ({
+        name: r,
+        valid: await this.roleIsValid(r, orgId),
+      }))
+    );
+    const results = validRoles
       .filter((r) => !r.valid)
       .map(({ name }) => new InvalidEntityNameError(Entity.ROLE, name));
     if (results.length > 0) throw results;
@@ -61,24 +77,53 @@ export class Context {
 
   /**
    * @param {string} name - The name of the program
+   * @param {string} orgId - The client UUID for the organization
    * @returns The KidsLoop UUID for this program
    * @errors If the program name is not found
    */
-  public getProgramIdByName(name: string): Uuid {
-    return this.programs.idForProgram(name);
+  public async getProgramIdByName(
+    name: string,
+    orgId: ClientUuid
+  ): Promise<Uuid> {
+    return await this.programs.getIdForProgram(name, orgId);
   }
 
-  public programIsValid(name: string): boolean {
-    return this.programs.isValid(name);
+  /**
+   * @param {string} name - The program name to be validated
+   * @param {string} orgId - The client UUID for the organization
+   * @param {string?} schoolId - The client UUID of the school (optional)
+   * @param {string?} classId - The client UUID of the class (optional)
+   * @returns {boolean} `true` is the program name is valid
+   */
+  public async programIsValid(
+    name: string,
+    orgId: ClientUuid,
+    schoolId?: ClientUuid,
+    classId?: ClientUuid
+  ): Promise<boolean> {
+    return await this.programs.programIsValid(name, orgId, schoolId, classId);
   }
 
   /**
    * @param {string[]} programs - The program names to be validated
+   * @param {string} orgId - The client UUID for the organization
+   * @param {string?} schoolId - The client UUID of the school (optional)
+   * @param {string?} classId - The client UUID of the class (optional)
    * @errors If any of the programs are invalid
    */
-  public programsAreValid(programs: string[]): void {
-    const results = programs
-      .map((p) => ({ name: p, valid: this.programIsValid(p) }))
+  public async programsAreValid(
+    programs: string[],
+    orgId: ClientUuid,
+    schoolId?: ClientUuid,
+    classId?: ClientUuid
+  ): Promise<void> {
+    const validPrograms = await Promise.all(
+      programs.map(async (p) => ({
+        name: p,
+        valid: await this.programIsValid(p, orgId, schoolId, classId),
+      }))
+    );
+    const results = validPrograms
       .filter((p) => !p.valid)
       .map(({ name }) => new InvalidEntityNameError(Entity.PROGRAM, name));
     if (results.length > 0) throw results;

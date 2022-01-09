@@ -1,7 +1,7 @@
 import { ObjectSchema } from 'joi';
 import { Context, log } from '.';
 import { Entity } from '../entities';
-import { logError } from './errors';
+import { logError, ValidationError } from './errors';
 
 export interface Validator<T> {
   data: T;
@@ -41,31 +41,45 @@ export async function validate<U, T extends Validator<U>>(v: T): Promise<U> {
 
     const ctx = await Context.getInstance();
 
-    // @TODO - This doesn't currently validate that these
-    // programs exist in a parent organization & parent school
-    // it simply checks they're valid KidsLoop Program Names
-    if (v.getPrograms) {
-      ctx.programsAreValid(v.getPrograms());
-    }
-
-    if (v.getRoles) {
-      ctx.rolesAreValid(v.getRoles());
-    }
-
     // Make sure the organization name is valid
     if (!v.getOrganizationName) return data;
     const orgId = await ctx.getOrganizationClientId(v.getOrganizationName());
 
     // Make sure the school name is valid
-    if (!v.getSchoolName) return data;
-    const schoolId = await ctx.getSchoolClientId(orgId, v.getSchoolName());
+    let schoolId = undefined;
+    if (v.getSchoolName) {
+      schoolId = await ctx.getSchoolClientId(orgId, v.getSchoolName());
+    }
 
+    let classId = undefined;
     if (v.getClassName) {
-      await ctx.getClassClientId(v.getClassName(), orgId, schoolId);
+      if (!schoolId)
+        throw new ValidationError(v.entity, v.getEntityId(), [
+          {
+            path: `${orgId}.ERROR`,
+            details: `Attempted to validate the class for entity ${v.entity} however no valid schoolId was found`,
+          },
+        ]);
+      classId = await ctx.getClassClientId(v.getClassName(), orgId, schoolId);
     }
 
     if (v.getClasses) {
+      if (!schoolId)
+        throw new ValidationError(v.entity, v.getEntityId(), [
+          {
+            path: `${orgId}.ERROR`,
+            details: `Attempted to validate classes of entity ${v.entity} the  however no valid schoolId was found`,
+          },
+        ]);
       await ctx.classesAreValid(v.getClasses(), orgId, schoolId);
+    }
+
+    if (v.getPrograms) {
+      await ctx.programsAreValid(v.getPrograms(), orgId, schoolId, classId);
+    }
+
+    if (v.getRoles) {
+      await ctx.rolesAreValid(v.getRoles(), orgId);
     }
 
     log.debug(`Validation for ${v.entity}: ${v.getEntityId()} successful`);

@@ -11,9 +11,10 @@ import { onError } from '@apollo/client/link/error';
 import { RetryLink } from '@apollo/client/link/retry';
 import fetch from 'cross-fetch';
 import { RawProgram, Role } from '../../entities';
-import { log, Uuid } from '../../utils';
-import { GET_PROGRAMS, GET_SYSTEM_PROGRAMS } from './programs';
-import { GET_ROLES, GET_SYSTEM_ROLES } from './roles';
+import { ClientUuid, log, Uuid } from '../../utils';
+import { GET_ORGANIZATION } from './organization';
+import { GET_SYSTEM_PROGRAMS } from './programs';
+import { GET_ORGANIZATION_ROLES, GET_SYSTEM_ROLES } from './roles';
 
 export class UserService {
   private static _instance: UserService;
@@ -105,7 +106,7 @@ export class UserService {
   }
 
   // While loop to get all programs from Admin User service
-  async getSystemPrograms(): Promise<RawProgram[]> {
+  public async getSystemPrograms(): Promise<RawProgram[]> {
     const transformer = ({ name, id }: { name: string; id: Uuid }) =>
       new RawProgram(name, id);
 
@@ -118,14 +119,52 @@ export class UserService {
   }
 
   // While loop to get all roles from Admin User service
-  async getSystemRoles(): Promise<Role[]> {
+  public async getSystemRoles(): Promise<Role[]> {
     const transformer = ({ id, name }: { id: Uuid; name: string }) =>
-      new Role(name, id);
+      new Role(name, id, true);
     const results = await this.traversePaginatedQuery(
       GET_SYSTEM_ROLES,
       transformer
     );
     return results;
+  }
+
+  // While loop to get all roles from Admin User service
+  public async getOrganizationRoles(orgId: ClientUuid): Promise<Role[]> {
+    const transformer = ({ id, name }: { id: Uuid; name: string }) =>
+      new Role(name, id, false, orgId);
+    const results = await this.traversePaginatedQuery(
+      GET_ORGANIZATION_ROLES,
+      transformer,
+      { orgId }
+    );
+    return results;
+  }
+
+  public async getOrganization(
+    orgName: string
+  ): Promise<{ klUuid: Uuid; klShortCode: string }> {
+    const transformer = ({
+      id,
+      shortCode,
+    }: {
+      id: string;
+      shortCode: string;
+    }) => ({
+      klUuid: id,
+      klShortCode: shortCode,
+    });
+    const org = await this.traversePaginatedQuery(
+      GET_ORGANIZATION,
+      transformer,
+      { orgName }
+    );
+    if (org.length > 1)
+      throw new Error(
+        `Unexpectedly found more than one organization with the name ${orgName}, unable to identify which one should be used`
+      );
+    if (org.length === 0) throw new Error(`Organization ${orgName} not found`);
+    return org[0];
   }
 
   /**

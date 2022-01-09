@@ -63,6 +63,28 @@ model Program {
   @@map("programs")
 }
 
+// Can we drop the Program table, or do we actually need it?
+model Role {
+  // User Service
+  klUuid String @id @map("kl_uuid") @db.Uuid
+
+  // C1 API
+  name String @db.VarChar(255)
+
+  clientOrgUuid String?       @map("client_org_uuid") @db.Uuid
+  organization  Organization? @relation(fields: [clientOrgUuid], references: [clientUuid])
+
+  users User[]
+
+  // Metadata
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([name, clientOrgUuid])
+  @@map("roles")
+}
+
 model Class {
   // C1 API
   clientUuid String  @id @map("client_uuid") @db.Uuid
@@ -115,7 +137,8 @@ model User {
   classUuids String[] @map("class_uuids") @db.Uuid
   classes    Class[]  @relation(fields: [classUuids], references: [clientUuid])
 
-  roles String[]
+  roleUuids String[] @map("role_uuids") @db.Uuid
+  roles     Role[]   @relation(fields: [roleUuids], references: [klUuid])
 
   // User Service
   klUuid String? @unique @map("kl_uuid") @db.Uuid
@@ -133,12 +156,15 @@ model Organization {
   // C1 API
   clientUuid String  @id @map("client_uuid") @db.Uuid
   name       String  @db.VarChar(255)
-  klUuid     String? @unique @map("kl_uuid") @db.Uuid
+  klUuid     String @unique @map("kl_uuid") @db.Uuid
+
+  klShortCode String? @map("kl_short_code") @db.VarChar(255)
 
   schools  School[]
   classes  Class[]
   programs Program[]
   users    User[]
+  roles    Role[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
