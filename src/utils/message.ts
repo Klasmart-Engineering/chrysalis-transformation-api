@@ -55,4 +55,3 @@ export class Message {
     } as IMessage);
   }
 }
-

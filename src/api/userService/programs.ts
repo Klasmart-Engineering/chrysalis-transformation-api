@@ -5,7 +5,12 @@ export const GET_SYSTEM_PROGRAMS = gql`
     programsConnection(
       direction: FORWARD
       directionArgs: { count: $count, cursor: $cursor }
-      filter: { AND : [{ status: { operator: eq, value: "active" } }, { system : { operator: eq, value: true }}] }
+      filter: {
+        AND: [
+          { status: { operator: eq, value: "active" } }
+          { system: { operator: eq, value: true } }
+        ]
+      }
     ) {
       totalCount
       pageInfo {
@@ -25,11 +30,20 @@ export const GET_SYSTEM_PROGRAMS = gql`
 `;
 
 export const GET_PROGRAMS_BY_ORGANIZATION = gql`
-  query getProgramsByOrganization($count: PageSize, $cursor: String, $orgId: UUID!) {
+  query getProgramsByOrganization(
+    $count: PageSize
+    $cursor: String
+    $orgId: UUID!
+  ) {
     programsConnection(
       direction: FORWARD
       directionArgs: { count: $count, cursor: $cursor }
-      filter: { AND : [{ status: { operator: eq, value: "active" } }, { organizationId : { operator: eq, value: $orgId }}] }
+      filter: {
+        AND: [
+          { status: { operator: eq, value: "active" } }
+          { organizationId: { operator: eq, value: $orgId } }
+        ]
+      }
     ) {
       totalCount
       pageInfo {
