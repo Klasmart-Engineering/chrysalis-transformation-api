@@ -1,6 +1,17 @@
-# Welcome to the mcb integration layer!
+# Welcome to the MCB Client Integration Layer!
 
 - Follow installation & running instructions below.
+
+## Architecture
+
+![architecture](diagrams/architecture.png)
+
+## TODO - Generalize the API
+
+In order to support multiple clients, the code needs to be updated to generate a
+unique REDIS stream for each client. Then based off authentication of the
+request maker, you choose the appropriate stream to publish the message to.
+Workers can then be specific to each client.
 
 # Installation
 
@@ -14,7 +25,7 @@ Install postgres:
 
 Install redis:
 
--   `docker run -d --name=redis-database -p 6379:6379 redis:alpine`
+- `docker run -d --name=redis-database -p 6379:6379 redis:alpine`
 
 Install dependencies:
 
@@ -34,7 +45,7 @@ Start postgres:
 
 Start redis:
 
--  `docker start redis-database`
+- `docker start redis-database`
 
 Start the application:
 
@@ -48,4 +59,6 @@ You can also run the application with its dependencies through a docker-compose.
 - `docker-compose up`
 
 ### Migration
+
 - `npm run migrate:dev`
+
