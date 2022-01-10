@@ -2,6 +2,7 @@ import R from 'ioredis';
 import { log, Uuid } from '.';
 import { Message } from './message';
 import { v4 as uuidv4 } from 'uuid';
+import { logError } from './errors';
 
 // 3 minutes
 const STALE_MESSAGE = 60 * 1000 * 3;
@@ -45,7 +46,8 @@ export class Redis {
       });
     }
     log.info('Succesfully initialized Redis stream');
-    return new Redis(client, stream, consumerGroup);
+    this._instance = new Redis(client, stream, consumerGroup);
+    return this._instance;
   }
 
   public static async createClient(): Promise<R.Redis | R.Cluster> {
@@ -133,10 +135,9 @@ export class Redis {
 
       return message;
     } catch (error) {
-      log.error('Failed to read message from redis', {
-        error,
-        technology: Redis.TECHNOLOGY,
-      });
+      if (error instanceof Error && error.message.startsWith('No messages'))
+        throw error;
+      logError(error, undefined, 'Failed to read message from redis');
       throw error;
     }
   }

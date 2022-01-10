@@ -3,7 +3,7 @@ import LRU from 'lru-cache';
 import { ClassRepo, Entity, SchoolRepo } from '.';
 import { AdminService } from '../api/adminService';
 import { ClientUuid, Uuid, log } from '../utils';
-import { ValidationError } from '../utils/errors';
+import { logError, ValidationError } from '../utils/errors';
 
 type ProgramName = string;
 
@@ -66,10 +66,7 @@ export class Programs {
       this._instance = new Programs(system, new ProgramHashMap());
       return this._instance;
     } catch (error) {
-      log.error('Failed to initialize programs', {
-        error,
-        entity: Entity.PROGRAM,
-      });
+      logError(error, Entity.PROGRAM, 'Failed to initialize programs');
       throw new Error('Failed to initialize programs');
     }
   }

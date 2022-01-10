@@ -24,7 +24,7 @@ export class AdminService {
     private _client: ApolloClient<NormalizedCacheObject>,
     jwt: string
   ) {
-    this.context = { headers: { authorization: `Bearer ${jwt}` } };
+    this.context = { headers: { authorization: jwt } };
   }
 
   public static async getInstance() {
@@ -59,7 +59,7 @@ export class AdminService {
         retryIf: (error, _operation) => !!error,
       },
     });
-    const errorLink = onError(({ graphQLErrors, networkError }) => {
+    const errorLink = onError(({ graphQLErrors, networkError, response }) => {
       /**
        * GraphQL errors, will not retry
        *
@@ -82,6 +82,12 @@ export class AdminService {
       if (networkError)
         log.error(`Network error while attempting a GraphQL call`, {
           error: networkError,
+          api: 'admin',
+        });
+
+      if (response)
+        log.error(`Received response but found an error`, {
+          error: response,
           api: 'admin',
         });
     });
@@ -107,13 +113,13 @@ export class AdminService {
 
   public async getSystemPrograms(): Promise<RawProgram[]> {
     const transformer = ({ name, id }: { name: string; id: Uuid }) =>
-      new RawProgram(name, id);
+      new RawProgram(name, id, true);
 
     const results = await this.traversePaginatedQuery(
       GET_SYSTEM_PROGRAMS,
-      transformer
+      transformer,
+      'programsConnection'
     );
-
     return results;
   }
 
@@ -125,6 +131,7 @@ export class AdminService {
     const results = await this.traversePaginatedQuery(
       GET_PROGRAMS_BY_ORGANIZATION,
       transformer,
+      'programsConnection',
       { orgId }
     );
     return results;
@@ -135,7 +142,8 @@ export class AdminService {
       new Role(name, id, true);
     const results = await this.traversePaginatedQuery(
       GET_SYSTEM_ROLES,
-      transformer
+      transformer,
+      'rolesConnection'
     );
     return results;
   }
@@ -146,6 +154,7 @@ export class AdminService {
     const results = await this.traversePaginatedQuery(
       GET_ORGANIZATION_ROLES,
       transformer,
+      'rolesConnection',
       { orgId }
     );
     return results;
@@ -167,6 +176,7 @@ export class AdminService {
     const org = await this.traversePaginatedQuery(
       GET_ORGANIZATION,
       transformer,
+      'organizationConnection',
       { orgName }
     );
     if (org.length > 1)
@@ -192,6 +202,7 @@ export class AdminService {
   private async traversePaginatedQuery<T, U>(
     query: DocumentNode | TypedDocumentNode,
     transformer: (responseData: U) => T,
+    connectionName: string,
     variables?: object
   ): Promise<T[]> {
     let hasNextPage = true;
@@ -215,11 +226,11 @@ export class AdminService {
         context: this.context,
       });
 
-      const responseData = data.programsConnection;
+      const responseData = data[connectionName];
       hasNextPage = responseData.pageInfo.hasNextPage;
       cursor = responseData.pageInfo.endCursor;
 
-      for (const node of responseData.edges) {
+      for (const { node } of responseData.edges) {
         result.push(transformer(node));
       }
     }

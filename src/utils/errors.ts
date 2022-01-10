@@ -161,19 +161,31 @@ export class UnexpectedError extends AppError {
  * @param {Entity} entity - The entity that was being processed while this failed
  * @throws This function will always throw an error
  */
-export function logError(error: unknown, entity?: Entity): void {
+export function logError(
+  error: unknown,
+  entity?: Entity,
+  msg?: string,
+  props?: object
+): void {
   if (Array.isArray(error)) {
     for (const e of error) {
-      logError(e, entity);
+      logError(e, entity, msg, props);
     }
-    throw error;
   }
 
   if (error instanceof AppError) {
     error.log();
+  } else if (error instanceof Error) {
+    log.error(msg || `Unknown error occurred for entity: ${entity}`, {
+      error: error.message,
+      entity,
+      ...props,
+    });
   } else {
-    log.error(`Unknown error occurred for entity: ${entity}`, { error });
+    log.error(msg || `Unknown error occurred for entity: ${entity}`, {
+      error,
+      entity,
+      ...props,
+    });
   }
-
-  throw error;
 }
