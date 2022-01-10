@@ -1,8 +1,17 @@
 import { Entity } from '..';
 import { AdminService } from '../../api/adminService';
-import { ClientUuid, Uuid, log } from '../../utils';
-import { logError, ValidationError } from '../../utils/errors';
-import { ProgramName, OrganizationId, SchoolId, ClassId, ProgramRepo } from '.';
+import { Category, ValidationError } from '../../utils/errors';
+import {
+  ClientUuid,
+  Uuid,
+  log,
+  ProgramName,
+  OrganizationId,
+  SchoolId,
+  ClassId,
+  logError,
+} from '../../utils';
+import { ProgramRepo } from '.';
 import { ProgramHashMap } from './hashMap';
 
 /**
@@ -33,8 +42,15 @@ export class Programs {
       this._instance = new Programs(system, new ProgramHashMap());
       return this._instance;
     } catch (error) {
-      logError(error, Entity.PROGRAM, 'Failed to initialize programs');
-      throw new Error('Failed to initialize programs');
+      throw logError(
+        error,
+        Entity.PROGRAM,
+        'NOT VALID',
+        Category.ADMIN_SERVICE,
+        {
+          msg: 'Failed to initialize programs',
+        }
+      );
     }
   }
 
@@ -103,15 +119,7 @@ export class Programs {
     }
     const id = this.systemPrograms.get(name);
     if (id) return id;
-    log.error(`Invalid program name: ${name}`, {
-      error: 'Invalid program name',
-      programName: name,
-      orgId,
-      schoolId,
-      classId,
-      entity: Entity.PROGRAM,
-    });
-    throw new ValidationError(Entity.PROGRAM, name, [
+    const error = new ValidationError(Entity.PROGRAM, name, [
       {
         path: [orgId, schoolId, classId].filter((a) => !!a).join('.'),
         details: `No valid entry was found for program name: ${name}, with organization ID ${orgId}, schoolId: ${schoolId} and classId: ${classId}.
@@ -119,6 +127,14 @@ export class Programs {
           In-order for a program to be valid the entities parents MUST also contain that program name`,
       },
     ]);
+    throw logError(error, Entity.PROGRAM, 'UNKNOWN', Category.APP, {
+      props: {
+        programName: name,
+        orgId,
+        schoolId,
+        classId,
+      },
+    });
   }
 
   /**

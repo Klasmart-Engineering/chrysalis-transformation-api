@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { log } from '../../utils';
+import { Entity } from '..';
+import { Category, logError } from '../../utils';
 import { ValidatedUser } from './validated';
 
 const prisma = new PrismaClient();
@@ -11,9 +12,8 @@ export class UserRepo {
         data: await user.mapToDatabaseInput(),
       });
     } catch (error) {
-      log.error('Failed to insert class into database', {
-        error,
-        id: user.clientUuid,
+      throw logError(error, Entity.USER, user.clientUuid, Category.POSTGRES, {
+        msg: 'Failed to create user in database',
       });
     }
   }

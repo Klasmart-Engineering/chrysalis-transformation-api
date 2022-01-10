@@ -34,6 +34,14 @@ export class Organization
     await OrganizationRepo.insertOne(item);
   }
 
+  /**
+   * This processing method is slightly more involved than the others.
+   *
+   * This is because at the time of creation of an organization, we also
+   * need to fetch all the programs and roles that are registered for that
+   * organization and write them to CIL DB
+   *
+   */
   public async process(): Promise<ValidatedOrganization> {
     const org = await this.validate();
     const kidsloopId = org.kidsloopUuid;

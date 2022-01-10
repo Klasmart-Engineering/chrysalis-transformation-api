@@ -1,7 +1,13 @@
 import { ClassRepo, Entity, SchoolRepo } from '../';
-import { log } from '../../utils';
+import {
+  Category,
+  log,
+  logError,
+  OrganizationId,
+  ProgramName,
+} from '../../utils';
 import { RawProgram } from './rawProgram';
-import { ProgramName, OrganizationId, Program } from '.';
+import { Program } from '.';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -13,12 +19,16 @@ export class ProgramRepo {
         data: await program.mapToDatabaseInput(),
       });
     } catch (error) {
-      log.error('Failed to insert program into database', {
+      throw logError(
         error,
-        id: program.kidsloopUuid,
-        name: program.name,
-        entity: Entity.PROGRAM,
-      });
+        Entity.PROGRAM,
+        program.kidsloopUuid,
+        Category.POSTGRES,
+        {
+          msg: 'Failed to insert program into database',
+          props: { name: program.name },
+        }
+      );
     }
   }
 
@@ -37,10 +47,7 @@ export class ProgramRepo {
           clientOrgUuid: true,
         },
       });
-      if (!program)
-        throw new Error(
-          `Program ${programName} not found for Organization ${org}`
-        );
+      if (!program) throw new Error('Program not found');
       const schools = await SchoolRepo.getSchoolIdsWithProgram(
         program.klUuid,
         program.clientOrgUuid!
@@ -57,24 +64,23 @@ export class ProgramRepo {
         schools
       );
     } catch (error) {
-      let logLevel = 'error';
-      if (
-        error instanceof Error &&
-        error.message.startsWith(`Program ${programName}`)
-      ) {
-        logLevel = 'warn';
+      if (error instanceof Error && error.message === `Program not found`) {
+        log.warn(
+          'Failed to find program in database when searching with organisation id',
+          {
+            error,
+            programName,
+            organisationId: org,
+            entity: Entity.PROGRAM,
+          }
+        );
+        throw error;
+      } else {
+        throw logError(error, Entity.PROGRAM, 'UNKNOWN', Category.POSTGRES, {
+          msg: `Program ${programName} not found for Organization ${org}`,
+          props: { name: programName },
+        });
       }
-      log.log(
-        logLevel,
-        'Failed to find program in database when searching with organisation id',
-        {
-          error,
-          programName,
-          organisationId: org,
-          entity: Entity.PROGRAM,
-        }
-      );
-      throw error;
     }
   }
 }

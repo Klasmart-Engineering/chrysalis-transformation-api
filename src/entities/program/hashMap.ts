@@ -1,14 +1,17 @@
 import LRU from 'lru-cache';
 import { Entity } from '../';
-import { ClientUuid, Uuid, log } from '../../utils';
 import {
+  ClientUuid,
+  Uuid,
+  log,
   ProgramName,
   OrganizationId,
-  Program,
   SchoolId,
   ClassId,
-  ProgramRepo,
-} from '.';
+  Category,
+} from '../../utils';
+import { Program, ProgramRepo } from '.';
+import { InvalidEntityNameError } from '../../utils/errors';
 
 export class ProgramHashMap {
   private map = new Map<ProgramName, Map<OrganizationId, Program>>();
@@ -55,9 +58,10 @@ export class ProgramHashMap {
       return program;
     } catch (error) {
       log.warn(`Failed to find Program ${name} for Organization: ${org}`, {
-        error,
+        error: error instanceof Error ? error.message : error,
         details: 'Checked both cache and database and found no valid entry',
         entity: Entity.PROGRAM,
+        category: Category.APP,
       });
       throw new Error(
         `Organization ${org} does not have an entry for program ${name}`
@@ -110,9 +114,9 @@ export class ProgramHashMap {
   ): Promise<Program> {
     const key = this.generateHaveCheckedKey(name, orgId);
     if (this.haveChecked.has(key))
-      throw Error(
-        'Have checked storage recently for the organization and it was not found'
-      );
+      new InvalidEntityNameError(Entity.PROGRAM, name, {
+        organizationId: orgId,
+      });
     const program = await ProgramRepo.findProgramByNameForOrganization(
       name,
       orgId

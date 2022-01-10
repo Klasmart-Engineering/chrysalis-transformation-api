@@ -1,28 +1,38 @@
 import { ValidationError as JoiError } from 'joi';
 import { ClientUuid, log } from '.';
-import { Feedback, ToFeedback } from './feedback';
 import { Entity } from '../entities';
+
+export enum Category {
+  APP = 'App',
+  REDIS = 'Redis',
+  POSTGRES = 'Postgres',
+  ADMIN_SERVICE = 'Admin Service',
+  C1_API = 'C1 API',
+  UNKNOWN = 'Unknown',
+}
 
 export type ValidateError = {
   path: string;
   details: string;
 };
 
-export abstract class AppError implements ToFeedback {
+export abstract class AppError {
   public abstract isRetriable: boolean;
   protected hasBeenLogged = false;
+  public abstract category: Category;
 
   constructor(
     public readonly entity: Entity,
     public readonly entityId: ClientUuid
   ) {}
 
-  public abstract toFeedback(): Feedback;
-  public abstract log(): void;
+  public abstract toFeedback(): string;
+  public abstract log(props?: object): void;
 }
 
 export class ValidationError extends AppError {
-  public isRetriable = false;
+  public readonly isRetriable = false;
+  public readonly category = Category.APP;
 
   constructor(
     public readonly entity: Entity,
@@ -47,16 +57,11 @@ export class ValidationError extends AppError {
     return new ValidationError(entity, entityId, errors);
   }
 
-  public toFeedback(): Feedback {
-    return {
-      UUID: this.entityId,
-      Entity: this.entityId,
-      HasSuccess: false,
-      ErrorMessage: JSON.stringify(this.errors),
-    };
+  public toFeedback(): string {
+    return JSON.stringify(this.errors);
   }
 
-  public log(): void {
+  public log(props?: object): void {
     if (this.hasBeenLogged) return;
     log.error(`Validation error for entity: ${this.entity}`, {
       error: 'Validation error',
@@ -64,6 +69,8 @@ export class ValidationError extends AppError {
       id: this.entityId,
       details: this.errors,
       retriable: this.isRetriable,
+      category: this.category,
+      ...props,
     });
     this.hasBeenLogged = true;
   }
@@ -76,7 +83,8 @@ export type InvalidEntityOpts = {
 };
 
 export class InvalidEntityNameError extends AppError {
-  public isRetriable = false;
+  public readonly isRetriable = false;
+  public readonly category = Category.APP;
 
   constructor(
     public readonly entity: Entity,
@@ -87,16 +95,11 @@ export class InvalidEntityNameError extends AppError {
     super(entity, entityId);
   }
 
-  public toFeedback(): Feedback {
-    return {
-      UUID: this.entityId,
-      Entity: this.entity,
-      HasSuccess: false,
-      ErrorMessage: `Tried to look up entity: ${this.entity} using the entity name: ${this.entityName} however no valid mapping was found`,
-    };
+  public toFeedback(): string {
+    return `Tried to look up entity: ${this.entity} using the entity name: ${this.entityName} however no valid mapping was found`;
   }
 
-  public log(): void {
+  public log(props?: object): void {
     if (this.hasBeenLogged) return;
     log.error(
       `Tried to look-up entity ${this.entity} using name ${this.entityName}, however no valid entity was found`,
@@ -104,7 +107,9 @@ export class InvalidEntityNameError extends AppError {
         error: 'Entity not found',
         entity: this.entity,
         retriable: this.isRetriable,
+        category: this.category,
         ...this.details,
+        ...props,
       }
     );
     this.hasBeenLogged = true;
@@ -112,7 +117,8 @@ export class InvalidEntityNameError extends AppError {
 }
 
 export class UnexpectedError extends AppError {
-  public isRetriable = false;
+  public readonly isRetriable = false;
+  public readonly category = Category.UNKNOWN;
 
   constructor(
     public readonly entity: Entity,
@@ -133,21 +139,52 @@ export class UnexpectedError extends AppError {
     return msg;
   }
 
-  public toFeedback(): Feedback {
-    return {
-      UUID: this.entityId,
-      Entity: this.entity,
-      HasSuccess: false,
-      ErrorMessage: this.generateErrorMessage(),
-    };
+  public toFeedback(): string {
+    return this.generateErrorMessage();
   }
 
-  public log(): void {
+  public log(opts?: object): void {
     if (this.hasBeenLogged) return;
     log.error('An unexpected error occurred', {
       error: this.generateErrorMessage(),
       entity: this.entity,
       retriable: this.isRetriable,
+      catergory: this.category,
+      ...opts,
+    });
+    this.hasBeenLogged = true;
+  }
+}
+
+export class WrappedError extends AppError {
+  public readonly category = Category.UNKNOWN;
+  public readonly error: string | unknown;
+  public readonly isRetriable = false;
+
+  constructor(
+    error: unknown,
+    public readonly msg: string,
+    public readonly entity: Entity,
+    public readonly entityId: string
+  ) {
+    super(entity, entityId);
+    error instanceof Error
+      ? (this.error = `${error.name}: ${error.message}`)
+      : (this.error = error);
+  }
+
+  public toFeedback(): string {
+    return 'An unexpected error occurred';
+  }
+
+  public log(opts?: object): void {
+    if (this.hasBeenLogged) return;
+    log.error(this.msg, {
+      error: this.error,
+      entity: this.entity,
+      retriable: this.isRetriable,
+      catergory: this.category,
+      ...opts,
     });
     this.hasBeenLogged = true;
   }
@@ -157,35 +194,48 @@ export class UnexpectedError extends AppError {
  * A helper function to log the error appropriately before
  * re-throwing it
  *
- * @param {any} error - The error that was thrown
+ * @param {unknown} error - The error that was thrown
  * @param {Entity} entity - The entity that was being processed while this failed
- * @throws This function will always throw an error
+ * @param {string} entityID - The ID of the entity that was being processed while this failed
+ * @param {Category} category - The category of the error
+ * @param {object} addt - Additional Properties for the log
+ * @param {string} addt.msg - A custom error message
+ * @param {object} addt.props - Additional key-value pairs to inject into the
+ * log message
  */
 export function logError(
   error: unknown,
-  entity?: Entity,
-  msg?: string,
-  props?: object
-): void {
+  entity: Entity,
+  entityId: ClientUuid,
+  category: Category = Category.APP,
+  addt?: {
+    msg?: string;
+    props?: object;
+  }
+): AppError | AppError[] {
   if (Array.isArray(error)) {
+    let errs: AppError[] = [];
     for (const e of error) {
-      logError(e, entity, msg, props);
+      const errors = logError(e, entity, entityId, category, addt);
+      if (Array.isArray(errors)) {
+        errs = errs.concat(errors);
+      } else {
+        errs.push(errors);
+      }
     }
+    return errs;
   }
 
+  const { props } = addt || {};
+
   if (error instanceof AppError) {
-    error.log();
-  } else if (error instanceof Error) {
-    log.error(msg || `Unknown error occurred for entity: ${entity}`, {
-      error: error.message,
-      entity,
-      ...props,
-    });
-  } else {
-    log.error(msg || `Unknown error occurred for entity: ${entity}`, {
-      error,
-      entity,
-      ...props,
-    });
+    error.log(props);
+    return error;
   }
+  const msg =
+    addt?.msg ||
+    `Unknown error occurred for entity: ${entity}, id: ${entityId}`;
+  const e = new WrappedError(error, msg, entity, entityId);
+  e.log(props);
+  return e;
 }

@@ -2,7 +2,7 @@ import { validate, ClientUuid, Uuid } from '../../utils';
 import { Prisma } from '@prisma/client';
 import { Entity } from '..';
 import { AdminService } from '../../api/adminService';
-import { ValidationError } from '../../utils/errors';
+import { Category, logError, ValidationError } from '../../utils/errors';
 import { IOrganization, Organization } from '.';
 
 export class ValidatedOrganization {
@@ -58,18 +58,17 @@ export class ValidatedOrganization {
       );
       return new ValidatedOrganization(data, klUuid, klShortCode);
     } catch (error) {
-      const e = new ValidationError(
-        Entity.ORGANIZATION,
-        v.data.OrganizationUUID,
-        [
+      throw logError(
+        new ValidationError(Entity.ORGANIZATION, v.data.OrganizationUUID, [
           {
             path: `${v.data.OrganizationUUID}`,
             details: `Unable to find Organization: ${v.data.OrganizationName} in the system`,
           },
-        ]
+        ]),
+        Entity.ORGANIZATION,
+        v.getEntityId(),
+        Category.C1_API
       );
-      e.log();
-      throw e;
     }
   }
 

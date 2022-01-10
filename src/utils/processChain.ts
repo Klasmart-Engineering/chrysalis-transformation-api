@@ -1,5 +1,5 @@
 import { ObjectSchema } from 'joi';
-import { Context, log } from '.';
+import { Category, Context, log } from '.';
 import { Entity } from '../entities';
 import { logError, ValidationError } from './errors';
 
@@ -60,23 +60,33 @@ export async function validate<U, T extends ProcessChain<U, V>, V>(
     let classId = undefined;
     if (v.getClassName) {
       if (!schoolId)
-        throw new ValidationError(v.entity, v.getEntityId(), [
-          {
-            path: `${orgId}.ERROR`,
-            details: `Attempted to validate the class for entity ${v.entity} however no valid schoolId was found`,
-          },
-        ]);
+        throw logError(
+          new ValidationError(v.entity, v.getEntityId(), [
+            {
+              path: `${orgId}.ERROR`,
+              details: `Attempted to validate the class for entity ${v.entity} however no valid schoolId was found`,
+            },
+          ]),
+          v.entity,
+          v.getEntityId(),
+          Category.C1_API
+        );
       classId = await ctx.getClassClientId(v.getClassName(), orgId, schoolId);
     }
 
     if (v.getClasses) {
       if (!schoolId)
-        throw new ValidationError(v.entity, v.getEntityId(), [
-          {
-            path: `${orgId}.ERROR`,
-            details: `Attempted to validate classes of entity ${v.entity} the  however no valid schoolId was found`,
-          },
-        ]);
+        throw logError(
+          new ValidationError(v.entity, v.getEntityId(), [
+            {
+              path: `${orgId}.ERROR`,
+              details: `Attempted to validate classes of entity ${v.entity} the  however no valid schoolId was found`,
+            },
+          ]),
+          v.entity,
+          v.getEntityId(),
+          Category.C1_API
+        );
       await ctx.classesAreValid(v.getClasses(), orgId, schoolId);
     }
 
@@ -91,7 +101,7 @@ export async function validate<U, T extends ProcessChain<U, V>, V>(
     log.debug(`Validation for ${v.entity}: ${v.getEntityId()} successful`);
     return data;
   } catch (error) {
-    logError(error, v.entity);
+    logError(error, v.entity, v.getEntityId(), Category.C1_API);
     throw error;
   }
 }

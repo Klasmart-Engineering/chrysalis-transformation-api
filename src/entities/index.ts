@@ -5,6 +5,7 @@ export enum Entity {
   USER = 'User',
   ROLE = 'Role',
   PROGRAM = 'Program',
+  UNKNOWN = 'Unknown',
 }
 
 export * from './class';

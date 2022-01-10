@@ -2,7 +2,8 @@ import R from 'ioredis';
 import { log, Uuid } from '.';
 import { Message } from './message';
 import { v4 as uuidv4 } from 'uuid';
-import { logError } from './errors';
+import { Category, logError } from './errors';
+import { Entity } from '../entities';
 
 // 3 minutes
 const STALE_MESSAGE = 60 * 1000 * 3;
@@ -39,10 +40,13 @@ export class Redis {
     } catch (e) {
       if (e instanceof Error && e.message === 'ERR no such key') {
         await client.xgroup('CREATE', stream, consumerGroup, 0, 'MKSTREAM');
+
+        log.info('Succesfully initialized Redis stream');
+        this._instance = new Redis(client, stream, consumerGroup);
+        return this._instance;
       }
-      log.error('Error occured while attempting to initialize stream', {
-        error: e,
-        technology: Redis.TECHNOLOGY,
+      throw logError(e, Entity.UNKNOWN, 'UNKNOWN', Category.REDIS, {
+        msg: 'Error occurred while attempting to initialize stream',
       });
     }
     log.info('Succesfully initialized Redis stream');
@@ -88,14 +92,13 @@ export class Redis {
       const payload = m.toJson();
       await this.redis.xadd(this.stream, '*', 'JSON', payload);
     } catch (error) {
-      log.error('Failed to publish message from redis', {
-        error,
-        requestTrace: m.requestTrace,
-        entity: m.entity,
-        entityId: m.entityId,
-        technology: Redis.TECHNOLOGY,
+      throw logError(error, m.entity, m.entityId, Category.REDIS, {
+        msg: 'Failed to bpulish message to redis',
+        props: {
+          requestTrace: m.requestTrace,
+          redisMessageId: m.redisMessageId,
+        },
       });
-      throw error;
     }
   }
 
@@ -137,7 +140,9 @@ export class Redis {
     } catch (error) {
       if (error instanceof Error && error.message.startsWith('No messages'))
         throw error;
-      logError(error, undefined, 'Failed to read message from redis');
+      logError(error, Entity.UNKNOWN, 'UNKNOWN', Category.REDIS, {
+        msg: 'Failed to read message from redis',
+      });
       throw error;
     }
   }
@@ -150,15 +155,13 @@ export class Redis {
         msg.redisMessageId!
       );
     } catch (error) {
-      log.error('Failed to acknowledge message as read from redis', {
-        error,
-        entity: msg.entity,
-        entityId: msg.entityId,
-        requestTrace: msg.requestTrace,
-        redisMessageId: msg.redisMessageId,
-        technology: Redis.TECHNOLOGY,
+      throw logError(error, msg.entity, msg.entityId, Category.REDIS, {
+        msg: 'Failed to acknowledge message as read from redis',
+        props: {
+          requestTrace: msg.requestTrace,
+          redisMessageId: msg.redisMessageId,
+        },
       });
-      throw error;
     }
   }
 

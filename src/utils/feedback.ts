@@ -6,7 +6,7 @@ export type Feedback = {
 };
 
 export interface ToFeedback {
-  toFeedback(): Feedback;
+  toFeedback(e?: unknown): Feedback;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

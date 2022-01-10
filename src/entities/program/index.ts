@@ -1,15 +1,8 @@
-import { ClientUuid, Uuid } from '../../utils';
+import { ClientUuid, Uuid, ProgramName } from '../../utils';
 
 export { Programs } from './programs';
 export { RawProgram } from './rawProgram';
 export { ProgramRepo } from './repo';
-
-export type ProgramName = string;
-
-// All of these are CLIENT UUIDs
-export type OrganizationId = ClientUuid;
-export type SchoolId = ClientUuid;
-export type ClassId = ClientUuid;
 
 export class Program {
   private readonly classes: Set<ClientUuid>;

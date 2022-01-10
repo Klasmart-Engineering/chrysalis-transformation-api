@@ -8,7 +8,7 @@ import {
   Entity,
 } from '../entities';
 import { InvalidEntityNameError } from './errors';
-import { ClientUuid, Uuid, log } from '.';
+import { ClientUuid, Uuid, logError, Category } from '.';
 
 export class Context {
   private static _instance: Context;
@@ -38,10 +38,9 @@ export class Context {
       this._instance = new Context(roles, programs);
       return this._instance;
     } catch (error) {
-      log.error('Failed to initialize app context', {
-        error,
+      throw logError(error, Entity.UNKNOWN, 'UNKNOWN', Category.APP, {
+        msg: 'Failed to initialize App Context',
       });
-      throw error;
     }
   }
 

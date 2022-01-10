@@ -1,3 +1,4 @@
+import { Entity } from '../entities';
 import { sleep } from '../utils';
 import { logError } from '../utils/errors';
 import { Redis } from '../utils/redis';
@@ -15,7 +16,7 @@ export async function processStream(): Promise<void> {
     try {
       await msg.process();
     } catch (error) {
-      logError(error);
+      logError(error, msg.entity, msg.entityId);
       didFail = true;
     }
     // Regardless of whether it succeeds or fails we acknowledge the message
@@ -28,6 +29,6 @@ export async function processStream(): Promise<void> {
       await sleep(1000);
       return;
     }
-    logError(error);
+    logError(error, Entity.UNKNOWN, 'UNKNOWN');
   }
 }

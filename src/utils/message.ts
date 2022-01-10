@@ -2,8 +2,8 @@ import { Uuid, log, ClientUuid } from '.';
 import { Api } from '../api/c1Api';
 import { MESSAGE_PROCESSING_ATTEMPTS } from '../consumer';
 import { Class, Entity, Organization, School, User } from '../entities';
-import { logError, UnexpectedError } from './errors';
-import { instanceOfToFeedback } from './feedback';
+import { AppError, logError } from './errors';
+import { Feedback, ToFeedback } from './feedback';
 import { Redis } from './redis';
 
 type Json = string;
@@ -25,7 +25,7 @@ export interface IMessage {
   fullMigration?: boolean;
 }
 
-export class Message {
+export class Message implements ToFeedback {
   constructor(
     public readonly entity: Entity,
     public readonly entityId: Uuid,
@@ -73,6 +73,18 @@ export class Message {
 
   get processingAttempts(): number {
     return this.attempts;
+  }
+
+  public toFeedback(e?: unknown): Feedback {
+    const hasSucceeded = e === undefined;
+    const msg =
+      e instanceof AppError ? e.toFeedback() : 'An unexpected error occurred';
+    return {
+      Entity: this.entity,
+      UUID: this.entityId,
+      HasSuccess: hasSucceeded,
+      ErrorMessage: hasSucceeded ? undefined : msg,
+    };
   }
 
   public async process(): Promise<void> {
@@ -194,8 +206,7 @@ export class Message {
           return;
       }
     } catch (e) {
-      logError(e);
-      throw e;
+      throw logError(e, this.entity, this.entityId);
     }
   }
 
@@ -232,13 +243,10 @@ export class Message {
         await s.process();
         successfulSchools.push(s.getEntityId());
       } catch (e) {
-        const err = instanceOfToFeedback(e)
-          ? e
-          : new UnexpectedError(s.entity, s.data.SchoolName, s.getEntityId());
-        logError(err);
+        const error = logError(e, Entity.SCHOOL, s.getEntityId());
         try {
           if (this.processingAttempts === MESSAGE_PROCESSING_ATTEMPTS) {
-            await api.postFeedback(err.toFeedback());
+            await api.postFeedback(this.toFeedback(error));
           }
         } catch (_) {
           /*logged in method call*/
@@ -256,13 +264,10 @@ export class Message {
         await c.process();
       } catch (e) {
         didError = true;
-        const err = instanceOfToFeedback(e)
-          ? e
-          : new UnexpectedError(c.entity, c.data.ClassName, c.getEntityId());
-        logError(err);
+        const error = logError(e, Entity.CLASS, c.getEntityId());
         try {
           if (this.processingAttempts === MESSAGE_PROCESSING_ATTEMPTS) {
-            await api.postFeedback(err.toFeedback());
+            await api.postFeedback(this.toFeedback(error));
           }
         } catch (_) {
           /*logged in method call*/
@@ -278,13 +283,10 @@ export class Message {
       try {
         await u.process();
       } catch (e) {
-        const err = instanceOfToFeedback(e)
-          ? e
-          : new UnexpectedError(u.entity, '', u.getEntityId());
-        logError(err);
+        const error = logError(e, Entity.USER, u.getEntityId());
         try {
           if (this.processingAttempts === MESSAGE_PROCESSING_ATTEMPTS) {
-            await api.postFeedback(err.toFeedback());
+            await api.postFeedback(this.toFeedback(error));
           }
         } catch (_) {
           /*logged in method call*/
@@ -327,7 +329,7 @@ export class Message {
       }
     }
     if (errors.length > 0) throw errors;
-    log.info('Successfully set of full migration', {
+    log.info('Successfully triggered full migration', {
       trace: this.requestTrace,
     });
     return;

@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
-import { ClientUuid, Uuid } from '../../utils';
+import { Entity } from '..';
+import { Category, ClientUuid, logError, Uuid } from '../../utils';
 
 export { Roles } from './roles';
 export { RoleRepo } from './repo';
@@ -14,8 +15,12 @@ export class Role {
     public readonly organisationClientId?: ClientUuid
   ) {
     if (!isKidsLoopRole && !organisationClientId)
-      throw new Error(
-        'Invalid Data. If the role is not a default KidsLoop role, a client Organization ID must be provided'
+      throw logError(
+        new Error(
+          'Invalid Data. If the role is not a default KidsLoop role, a client Organization ID must be provided'
+        ),
+        Entity.ROLE,
+        Category.APP
       );
   }
 

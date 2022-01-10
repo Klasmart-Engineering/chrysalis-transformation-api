@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { Entity } from '..';
-import { log, ClientUuid, Uuid } from '../../utils';
+import { ClientUuid, Uuid, logError, Category } from '../../utils';
 import { ValidatedClass } from '../class';
 
 export const prisma = new PrismaClient();
@@ -12,12 +12,20 @@ export class ClassRepo {
         data: await classDetails.mapToDatabaseInput(),
       });
     } catch (error) {
-      log.error('Failed to insert class into database', {
+      throw logError(
         error,
-        id: classDetails.clientUuid,
-        name: classDetails.name,
-        entity: Entity.CLASS,
-      });
+        Entity.CLASS,
+        classDetails.clientUuid,
+        Category.POSTGRES,
+        {
+          msg: 'Failed create class in datatabase',
+          props: {
+            name: classDetails.name,
+            orgName: classDetails.organizationName,
+            schoolName: classDetails.schoolName,
+          },
+        }
+      );
     }
   }
 
@@ -42,12 +50,14 @@ export class ClassRepo {
       if (!id) throw new Error(`Class ${className} was not found`);
       return id.clientUuid;
     } catch (error) {
-      log.error('Failed to find class id in database', {
-        error,
-        name: className,
-        entity: Entity.CLASS,
+      throw logError(error, Entity.CLASS, 'UNKNOWN', Category.POSTGRES, {
+        msg: 'Failed find class ID in database',
+        props: {
+          name: className,
+          orgId,
+          schoolId,
+        },
       });
-      throw error;
     }
   }
 
@@ -69,13 +79,13 @@ export class ClassRepo {
       });
       return classes.map((c) => c.clientUuid);
     } catch (error) {
-      log.error('Failed to find classes with the given program id', {
-        error,
-        organizationId: clientOrgUuid,
-        entity: Entity.CLASS,
-        programId,
+      throw logError(error, Entity.CLASS, 'UNKNOWN', Category.POSTGRES, {
+        msg: 'Failed find class IDs with the given program ID',
+        props: {
+          programId,
+          orgId: clientOrgUuid,
+        },
       });
-      throw error;
     }
   }
 }

@@ -1,4 +1,4 @@
-import { log, ClientUuid, Uuid } from '../../utils';
+import { ClientUuid, Uuid, logError, Category } from '../../utils';
 import { Entity } from '..';
 import { ValidatedSchool } from './validated';
 import { PrismaClient } from '@prisma/client';
@@ -12,12 +12,16 @@ export class SchoolRepo {
         data: await school.mapToDatabaseInput(),
       });
     } catch (error) {
-      log.error('Failed to insert school into database', {
+      throw logError(
         error,
-        id: school.clientUuid,
-        name: school.name,
-        entity: Entity.SCHOOL,
-      });
+        Entity.SCHOOL,
+        school.clientUuid,
+        Category.POSTGRES,
+        {
+          msg: 'Failed to insert school into database',
+          props: { name: school.name },
+        }
+      );
     }
   }
 
@@ -37,13 +41,10 @@ export class SchoolRepo {
       if (!id) throw new Error(`School ${schoolName} was not found`);
       return id.clientUuid;
     } catch (error) {
-      log.error('Failed to find school id in database', {
-        error,
-        name: schoolName,
-        organizationId: orgId,
-        entity: Entity.SCHOOL,
+      throw logError(error, Entity.SCHOOL, 'UNKNOWN', Category.POSTGRES, {
+        msg: 'Failed to find school id in database',
+        props: { name: schoolName },
       });
-      throw error;
     }
   }
 
@@ -77,13 +78,10 @@ export class SchoolRepo {
       });
       return schools.map((s) => s.clientUuid);
     } catch (error) {
-      log.error('Failed to find schools with the given program id', {
-        error,
-        organizationId: clientOrgUuid,
-        entity: Entity.SCHOOL,
-        programId,
+      throw logError(error, Entity.SCHOOL, 'UNKNOWN', Category.POSTGRES, {
+        msg: 'Failed to find schools with the given program ID',
+        props: { programId: programId },
       });
-      throw error;
     }
   }
 }

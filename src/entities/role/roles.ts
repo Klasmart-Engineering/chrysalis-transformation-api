@@ -1,7 +1,7 @@
 import { Entity } from '..';
 import { AdminService } from '../../api/adminService';
 import { ClientUuid, Uuid, log } from '../../utils';
-import { ValidationError } from '../../utils/errors';
+import { Category, logError, ValidationError } from '../../utils/errors';
 import { RoleName, RoleRepo } from '.';
 import { RoleHashMap } from './hashMap';
 
@@ -35,11 +35,9 @@ export class Roles {
       this._instance = new Roles(system, new RoleHashMap());
       return this._instance;
     } catch (error) {
-      log.error('Failed to initialize roles', {
-        error,
-        entity: Entity.ROLE,
+      throw logError(error, Entity.ROLE, 'NOT VALID', Category.ADMIN_SERVICE, {
+        msg: 'Failed to initialize roles',
       });
-      throw new Error('Failed to initialize roles');
     }
   }
 
@@ -98,13 +96,7 @@ export class Roles {
     }
     const id = this.systemRoles.get(name);
     if (id) return id;
-    log.error(`Invalid role name: ${name}`, {
-      error: 'Invalid role name',
-      name,
-      orgId,
-      entity: Entity.ROLE,
-    });
-    throw new ValidationError(Entity.ROLE, name, [
+    const error = new ValidationError(Entity.ROLE, name, [
       {
         path: orgId,
         details: `No valid entry was found for role name: ${name} for organization ID ${orgId}.
@@ -112,6 +104,12 @@ export class Roles {
           In-order for a role to be valid for a user, it MUST exist in their parent organization`,
       },
     ]);
+    throw logError(error, Entity.ROLE, 'UNKNOWN', Category.APP, {
+      props: {
+        programName: name,
+        orgId,
+      },
+    });
   }
 
   /**
