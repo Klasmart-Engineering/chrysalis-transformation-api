@@ -16,7 +16,6 @@ import { MappedClass, MappedSchool } from "./mapResKeys";
 export const isSchoolValid = (school: MappedSchool) => {
   try {
     const { error, value } = schoolSchema.validate(school);
-
     error && logger.error({
       school: value,
       error: SCHOOL_VALIDATION_FAILED,

@@ -2,6 +2,18 @@ import Joi from 'joi';
 import { validationRules } from '../config/validationRules';
 
 export const schoolSchema = Joi.object({
+  id: Joi.number(),
+
+  klUuid: Joi.string().allow(null).guid(),
+
+  status: Joi.string().allow(null),
+
+  createdAt: Joi.date(),
+
+  updatedAt: Joi.date(),
+
+  deletedAt: Joi.date().allow(null),
+
   name: Joi.string()
     .min(validationRules.SCHOOL_NAME_MIN_LENGTH)
     .max(validationRules.SCHOOL_NAME_MAX_LENGTH)
@@ -9,7 +21,7 @@ export const schoolSchema = Joi.object({
 
   clientUuid: Joi.string().guid().required(),
 
-  klOrgUuid: Joi.string().guid(),
+  klOrgUuid: Joi.string().allow(null).guid(),
 
   programNames: Joi.array()
     .items(
@@ -19,7 +31,7 @@ export const schoolSchema = Joi.object({
     )
     .required(),
 
-  clientOrgUuid: Joi.string().guid(),
+  clientOrgUuid: Joi.string().allow(null).guid(),
 
   organizationName: Joi.string()
     .min(validationRules.ORGANIZATION_NAME_MIN_LENGTH)
@@ -27,4 +39,5 @@ export const schoolSchema = Joi.object({
     .required(),
 
   shortCode: Joi.string(),
+
 });

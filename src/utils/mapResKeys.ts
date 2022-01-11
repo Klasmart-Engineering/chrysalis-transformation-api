@@ -3,17 +3,17 @@ import { SchoolQuerySchema, ClassQuerySchema } from '../services/c1Schemas';
 export class MappedSchool {
   name: string;
   clientUuid: string;
-  klOrgUuid: string;
-  programName: string[];
+  klOrgUuid: string | null;
+  programNames: string[];
   organizationName: string;
-  shortCode: string;
+  shortCode: string | null;
 
   constructor(orgUuid: string, school: SchoolQuerySchema) {
-    this.klOrgUuid = orgUuid;
+    this.klOrgUuid = null;
     this.name = school.SchoolName;
     this.shortCode = school.SchoolShortCode;
     this.clientUuid = school.SchoolUUID;
-    this.programName = school.ProgramName;
+    this.programNames = school.ProgramName;
     this.organizationName = school.OrganizationName;
   }
 }

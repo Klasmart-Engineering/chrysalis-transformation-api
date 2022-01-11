@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 const createSchools = async (schools: Prisma.SchoolCreateInput[]) => {
   return await prisma.school.createMany({
     data: schools,
+    skipDuplicates: true
   });
 };
 
@@ -17,7 +18,7 @@ const createClasses = async (classes: Prisma.ClassCreateInput[]) => {
 
 const storeSchools = async (schools: Prisma.SchoolCreateInput[]) => {
   try {
-    await createSchools(schools);
+    return await createSchools(schools);
   } catch (error) {
     await handleError(
       {

@@ -6,7 +6,7 @@ import { RetryQueue } from '../../utils';
 import { AdminService } from '../../services/adminService';
 import { C1Service } from '../../services/c1Service';
 import { MappedClass, MappedSchool } from '../../utils/mapResKeys';
-import { validateClasses, validateSchool } from '../../utils/validations';
+import { validateClasses, validateSchools } from '../../utils/validations';
 import { ClassQuerySchema, SchoolQuerySchema } from '../../services/c1Schemas';
 
 const router = express.Router();
@@ -24,27 +24,41 @@ router.get('/', async (req: Request, res: Response) => {
   });
 });
 
+
+
+
+async function getSchools(pathSegments: string[]) {
+  return (await service.getSchools(
+    pathSegments
+  )) as SchoolQuerySchema[]
+}
+
+
 //this function should be de deleted in the future
+const retrySchoolsQueue = new RetryQueue('schools');
+retrySchoolsQueue.createWorker(getSchools);
 router.get(
   '/schools/:OrganizationUUID',
   async (req: Request, res: Response) => {
     try {
       const { OrganizationUUID } = req.params;
       const pathSegments = [OrganizationUUID, 'Schools'];
-      const schools = (await service.getSchools(
-        pathSegments
-      )) as SchoolQuerySchema[];
+      const job = (await retrySchoolsQueue.createJob(pathSegments));
+      job.on('succeeded', async (schools) => {
+        const mappedSchools = schools.map((s: SchoolQuerySchema) => new MappedSchool(OrganizationUUID, s));
+        await Database.storeSchools(mappedSchools);
+        await validateSchools();
+        res.json(schools);
+      });
+      job.on('failed', (error) => {
+        logger.error({
+          entity: 'school',
+          pathSegments: pathSegments,
+          message: 'Failed to get school form API',
+          error: error,
+        })
+      });
 
-      if (Array.isArray(schools)) {
-        schools.forEach((school) => {
-          const mappedSchool = new MappedSchool(OrganizationUUID, school);
-
-          if (validateSchool(mappedSchool)) {
-            //insert into db
-          }
-        });
-      }
-      res.json(schools);
     } catch (e) {
       e instanceof HttpError
         ? res.status(e.status).json(e)

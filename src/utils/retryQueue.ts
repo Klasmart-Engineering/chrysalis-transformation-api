@@ -21,11 +21,13 @@ export class RetryQueue {
 
   createWorker(task: CallableFunction) {
     this.queue.process((job) => {
+      //console.log(job);
       return task(job.data);
     });
   }
 
-  createJob<T>(data?: Data<T>) {
+  createJob(data?: string[]) {
+    //console.log(data);
     return this.queue
       .createJob(data)
       .retries(this.NUMBER_OF_RETRIES)
