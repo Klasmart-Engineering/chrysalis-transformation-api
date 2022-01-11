@@ -42,22 +42,26 @@ export class C1Service extends BaseRestfulService {
   }
 
   getSchools(pathSegments: string[]) {
-    const client = this.createClient(C1Endpoints.schoolApiEndpoint, pathSegments);
+    const client = this.createClient(
+      C1Endpoints.schoolApiEndpoint,
+      pathSegments
+    );
     return this.getData(client);
   }
 
   getClasses(pathSegments: string[]) {
-    const client = this.createClient(C1Endpoints.classApiEndpoint, pathSegments);
+    const client = this.createClient(
+      C1Endpoints.classApiEndpoint,
+      pathSegments
+    );
     return this.getData(client);
   }
 
-  getClass(pathSegments: string[]) {
-    const client = this.createClient(C1Endpoints.classApiEndpoint, pathSegments)
-    return this.getData(client)
-  }
-
-  getUsers() {
-    const client = this.createClient(C1Endpoints.userApiEndpoint);
+  getUsers(pathSegments: string[]) {
+    const client = this.createClient(
+      C1Endpoints.userApiEndpoint,
+      pathSegments
+    );
     return this.getData(client);
   }
 }

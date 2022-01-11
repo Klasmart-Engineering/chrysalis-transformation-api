@@ -84,6 +84,34 @@ router.get(
   }
 );
 
+//get users by class
+//this function should be de deleted in the future
+router.get('/class-users/:ClassUUID', async (req: Request, res: Response) => {
+  try {
+    const pathSegments = [req.params.ClassUUID]
+    const users = await service.getUsers(pathSegments);
+    res.json(users);
+  } catch (e) {
+    e instanceof HttpError
+      ? res.status(e.status).json(e)
+      : res.status(500).json(e);
+  }
+});
+
+//get users by school
+//this function should be de deleted in the future
+router.get('/school-users/:SchoolUUID', async (req: Request, res: Response) => {
+  try {
+    const pathSegments = [req.params.SchoolUUID, 'School']
+    const users = await service.getUsers(pathSegments);
+    res.json(users);
+  } catch (e) {
+    e instanceof HttpError
+      ? res.status(e.status).json(e)
+      : res.status(500).json(e);
+  }
+});
+
 // (testing purpose, will delete later) get programs from Admin User service
 router.get('/programs', async (req: Request, res: Response) => {
   try {

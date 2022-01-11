@@ -5,16 +5,15 @@ import jsonSchema from 'chai-json-schema';
 import logger from '../../src/utils/logging';
 import { C1Service } from '../../src/services/c1Service';
 import { C1Endpoints } from '../../src/config/c1Endpoints';
-import { schoolSchema, classSchema } from '../utils/schemas/c1';
+import { schoolSchema, classSchema, userSchema } from '../utils/schemas/c1';
 import { createFakeClient } from '../utils/createFakeClient';
-import { getSchools, getClasses } from '../utils/responses/c1';
+import { getSchools, getClasses, getUsers } from '../utils/responses/c1';
 
 chai.use(spies);
 chai.use(jsonSchema);
 
 let service: C1Service;
 const hostname = 'testapi.ezmis.in';
-const schoolPath = '/KL/SchoolsForKL';
 const pathSegments = ['test'];
 
 const headers = {
@@ -26,12 +25,12 @@ describe('C1 Service', () => {
   describe('#getSchools', () => {
     beforeEach(() => {
       nock('https://' + hostname, { reqheaders: headers })
-        .get(schoolPath)
+        .get(C1Endpoints.schoolApiEndpoint)
         .reply(200, getSchools);
       chai.spy.on(logger, 'error', () => true);
       service = new C1Service();
       chai.spy.on(service, 'createClient', () =>
-        createFakeClient(hostname, schoolPath)
+        createFakeClient(hostname, C1Endpoints.schoolApiEndpoint)
       );
     });
 
@@ -77,6 +76,37 @@ describe('C1 Service', () => {
         if (Array.isArray(res)) {
           res.forEach((product) =>
             expect(product).to.be.jsonSchema(classSchema)
+          );
+        }
+      });
+    });
+  });
+
+  describe('#getUsers', () => {
+    beforeEach(() => {
+      nock('https://' + hostname, { reqheaders: headers })
+        .get(C1Endpoints.userApiEndpoint)
+        .reply(200, getUsers);
+      service = new C1Service();
+      chai.spy.on(logger, 'error', () => true);
+      chai.spy.on(service, 'createClient', () =>
+        createFakeClient(hostname, C1Endpoints.userApiEndpoint)
+      );
+    });
+
+    afterEach(() => {
+      chai.spy.restore(logger, 'error');
+      chai.spy.restore(service, 'createClient');
+    });
+
+    it('should return users list', function () {
+      return service.getUsers(pathSegments).then((res) => {
+        expect(service.createClient).to.have.been.called.once;
+        expect(res).to.be.an('array');
+        expect(res).to.have.length(3);
+        if (Array.isArray(res)) {
+          res.forEach((user) =>
+            expect(user).to.be.jsonSchema(userSchema)
           );
         }
       });
