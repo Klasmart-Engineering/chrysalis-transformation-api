@@ -1,18 +1,19 @@
 import express, { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import logger from '../../utils/logging';
+import Database from '../../utils/database';
 import { HttpError } from '../../utils';
 import { RetryQueue } from '../../utils';
 import { AdminService } from '../../services/adminService';
 import { C1Service } from '../../services/c1Service';
-import { validateSchool } from '../../utils/validations';
+import { MappedClass, MappedSchool } from '../../utils/mapResKeys';
+import { validateClasses, validateSchool } from '../../utils/validations';
+import { ClassQuerySchema, SchoolQuerySchema } from '../../services/c1Schemas';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 const service = new C1Service();
 
 const retryQueue = new RetryQueue('test');
-retryQueue.createWorker(getSchools);
+retryQueue.createWorker(Database.getAllSchools);
 
 router.get('/', async (req: Request, res: Response) => {
   const job = await retryQueue.createJob();
@@ -23,48 +24,65 @@ router.get('/', async (req: Request, res: Response) => {
   });
 });
 
-//example worker function, this should be deleted in the future
-function getSchools() {
-  return new Promise((resolve, reject) => {
-    prisma.school
-      .findMany()
-      .then((value) => {
-        resolve(value);
-      })
-      .catch((error) => {
-        reject(error);
-      });
-  });
-}
-
 //this function should be de deleted in the future
-router.get('/schools/:OrganizationUUID', async (req: Request, res: Response) => {
-  try {
-    const pathSegments = [req.params.OrganizationUUID, 'Schools']
-    const schools = await service.getSchools(pathSegments);
-    if (Array.isArray(schools)) {
-      schools.forEach(school => {
-        const mappedSchool = {
-          name: school.SchoolName,
-          clientUuid: school.SchoolUUID,
-          programNames: school.ProgramName,
-          organizationName: school.OrganizationName,
-          clientOrgUuid: req.params.OrganizationUUID,
-          shortCode: school.SchoolShortCode,
-          klOrgUuid: req.params.OrganizationUUID
-        };
-        if (validateSchool(mappedSchool)) {
-          //insert into db
-        }
-      })
+router.get(
+  '/schools/:OrganizationUUID',
+  async (req: Request, res: Response) => {
+    try {
+      const { OrganizationUUID } = req.params;
+      const pathSegments = [OrganizationUUID, 'Schools'];
+      const schools = (await service.getSchools(
+        pathSegments
+      )) as SchoolQuerySchema[];
+
+      if (Array.isArray(schools)) {
+        schools.forEach((school) => {
+          const mappedSchool = new MappedSchool(OrganizationUUID, school);
+
+          if (validateSchool(mappedSchool)) {
+            //insert into db
+          }
+        });
+      }
+      res.json(schools);
+    } catch (e) {
+      e instanceof HttpError
+        ? res.status(e.status).json(e)
+        : res.status(500).json(e);
     }
-    res.json(schools);
-  } catch (e) {
-    e instanceof HttpError
-      ? res.status(e.status).json(e)
-      : res.status(500).json(e);
   }
-});
+);
+
+// this function should be de deleted in the future
+router.get(
+  '/school/:SchoolUUID/classes',
+  async (req: Request, res: Response) => {
+    try {
+      const { SchoolUUID } = req.params;
+      const classes = (await service.getClasses([
+        SchoolUUID,
+      ])) as ClassQuerySchema[];
+
+      if (!classes) {
+        throw new HttpError(404, { message: 'Classes not found.' });
+      }
+
+      const mappedClasses = classes.map((c) => new MappedClass(c));
+      const classesValid = await validateClasses(mappedClasses);
+
+      if (classesValid) {
+        logger.info('classes are valid');
+        // insert into db
+      }
+
+      res.json(classes);
+    } catch (e) {
+      e instanceof HttpError
+        ? res.status(e.status).json(e)
+        : res.status(500).json(e);
+    }
+  }
+);
 
 // (testing purpose, will delete later) get programs from Admin User service
 router.get('/programs', async (req: Request, res: Response) => {
@@ -75,10 +93,7 @@ router.get('/programs', async (req: Request, res: Response) => {
     res.json(programs);
 
     if (programs) {
-      await prisma.program.createMany({
-        data: programs,
-        skipDuplicates: true,
-      });
+      await Database.createPrograms(programs);
     }
   } catch (e) {
     e instanceof HttpError
@@ -96,10 +111,7 @@ router.get('/roles', async (req: Request, res: Response) => {
     res.json(roles);
 
     if (roles) {
-      await prisma.role.createMany({
-        data: roles,
-        skipDuplicates: true,
-      });
+      await Database.createRoles(roles);
     }
   } catch (e) {
     e instanceof HttpError

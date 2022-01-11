@@ -30,7 +30,7 @@ export const classSchema = Joi.object({
 
   client: Joi.string().max(validationRules.CLIENT_MAX_LENGTH),
 
-  errors: Joi.array().items(Joi.string()).required(),
+  errors: Joi.array().items(Joi.string()),
 
   status: Joi.string().max(validationRules.STATUS_MAX_LENGTH),
 

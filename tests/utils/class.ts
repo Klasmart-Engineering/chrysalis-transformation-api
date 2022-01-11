@@ -1,35 +1,41 @@
-import { schoolSchema } from '../../src/validatorsSchemes';
+import { classSchema } from '../../src/validatorsSchemes';
 
-export const validSchool = {
-  name: 'name',
+export const validClass = {
+  name: 'Grade 3 A',
   clientUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
   klOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  programNames: ['program name', 'program name2'],
+  shortCode: 'SHCODE',
+  schoolName: 'Example School',
+  programNames: ['Program Grade 3'],
   clientOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  organizationName: 'organization name',
+  organizationName: 'Org Classic',
 };
 
-export const invalidSchool = {
+export const invalidClass = {
   name: '',
   clientUuid: 'cdc9a77f-ac83-',
   klOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  programNames: ['program name', 'program name2'],
+  shortCode: 'SMTH',
+  schoolName: '2134',
+  programNames: [],
   clientOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  organizationName: 'organization name',
+  organizationName: 'Org named X',
 };
 
-interface School {
+interface Class {
   name: string;
   clientUuid: string;
   klOrgUuid: string;
+  shortCode: string;
+  schoolName: string;
   programNames: string[];
   clientOrgUuid: string;
   organizationName: string;
 }
 
-export const isSchoolValid = (school: School) => {
+export const isClassValid = (classData: Class) => {
   try {
-    const { error } = schoolSchema.validate(school);
+    const { error } = classSchema.validate(classData);
     return !error;
   } catch (error) {
     return false;

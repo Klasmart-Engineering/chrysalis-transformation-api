@@ -25,35 +25,35 @@ export class C1Service extends BaseRestfulService {
       .getAccessToken(C1AuthEndpoints.login)
       .then((res) => {
         this.jwtToken = res;
-        setInterval(() =>
-          authServer.doRefreshToken(C1AuthEndpoints.refresh)
-          .then(response => {
-            this.jwtToken = response;
-          })
-          .catch(() => {
-            throw new Error('error to refresh token');
-          }
-        ), REFRESH_TOKEN_INTERVAL);
+        setInterval(() => {
+          authServer
+            .doRefreshToken(C1AuthEndpoints.refresh)
+            .then(response => {
+              this.jwtToken = response;
+            })
+            .catch(() => {
+              throw new Error('Failed to refresh token');
+            })
+        }, REFRESH_TOKEN_INTERVAL);
       })
       .catch(() => {
-        throw new Error('error to get access token');
+        throw new Error('Failed to get access token');
       });
   }
 
   getSchools(pathSegments: string[]) {
-    const client = this.createClient(
-      C1Endpoints.schoolApiEndpoint,
-      pathSegments
-    );
+    const client = this.createClient(C1Endpoints.schoolApiEndpoint, pathSegments);
     return this.getData(client);
   }
 
   getClasses(pathSegments: string[]) {
-    const client = this.createClient(
-      C1Endpoints.classApiEndpoint,
-      pathSegments
-    );
+    const client = this.createClient(C1Endpoints.classApiEndpoint, pathSegments);
     return this.getData(client);
+  }
+
+  getClass(pathSegments: string[]) {
+    const client = this.createClient(C1Endpoints.classApiEndpoint, pathSegments)
+    return this.getData(client)
   }
 
   getUsers() {

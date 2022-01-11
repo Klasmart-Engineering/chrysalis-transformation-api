@@ -28,7 +28,7 @@ export class AuthServer {
       if (response.RefreshToken) this.refreshToken = response.RefreshToken;
     } catch (error) {
       logger.error(JSON.stringify(error));
-      throw new Error('Error to login');
+      throw new Error('Failed to login');
     }
   }
 
