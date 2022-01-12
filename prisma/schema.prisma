@@ -80,3 +80,18 @@ model Class {
 
   @@map("classes")
 }
+
+model User {
+  id          String    @id @default(uuid())
+  klUuid      String?   @unique @db.Uuid  @map("kl_uuid")
+  clientUuid  String    @db.Uuid          @map("client_uuid")
+  errors      String[]
+  status      String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now())   @map("created_at")
+  updatedAt   DateTime  @updatedAt        @map("updated_at")
+  deletedAt   DateTime?                   @map("deleted_at")
+
+  @@index(clientUuid)
+
+  @@map("users")
+}
