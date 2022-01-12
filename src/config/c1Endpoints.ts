@@ -2,6 +2,7 @@ export enum C1Endpoints {
   schoolApiEndpoint = `/KL/Organizations`,
   classesApiEndpoint = `/KL/Classes`,
   classApiEndpoint = `/KL/Class`,
+  organizationApiEndpoint = `/KL/Organizations`,
   userApiEndpoint = `/KL/Users`,
 }
 

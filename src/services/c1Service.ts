@@ -64,4 +64,9 @@ export class C1Service extends BaseRestfulService {
     );
     return this.getData(client);
   }
+
+  getOrganizations() {
+    const client = this.createClient(C1Endpoints.organizationApiEndpoint);
+    return this.getData(client);
+  }
 }

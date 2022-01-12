@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, School, Program } from '@prisma/client';
+import { Prisma, PrismaClient, School, Program, Organization } from '@prisma/client';
 import { handleError } from './errorHandler';
 
 const prisma = new PrismaClient();
@@ -64,6 +64,21 @@ const getProgramByName = async (programName: string): Promise<Program | null> =>
   return program;
 };
 
+const getOrganizationByName = async (organizationName: string): Promise<Organization | null> => {
+  const query = { where: { name: organizationName } };
+  const organization = await prisma.organization.findFirst(query);
+
+  return organization;
+};
+
+const createOrganization = async (organization: Prisma.OrganizationCreateInput) => {
+  const payload = await prisma.organization.create({
+    data: organization,
+  });
+
+  return payload;
+};
+
 const createPrograms = async (programs: Prisma.ProgramCreateInput[]) => {
   const payload = await prisma.program.createMany({
     data: programs,
@@ -88,9 +103,11 @@ export default {
   getAllSchools,
   getSchoolByName,
   getProgramByName,
+  getOrganizationByName,
 
   createPrograms,
   createRoles,
+  createOrganization,
   storeSchools,
   storeClasses,
 };

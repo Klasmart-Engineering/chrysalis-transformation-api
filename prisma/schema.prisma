@@ -95,3 +95,12 @@ model User {
 
   @@map("users")
 }
+
+model Organization {
+  id         String   @id @default(uuid())
+  name       String   @db.VarChar(255)
+  klUuid     String   @unique @db.Uuid  @map("kl_uuid")
+  clientUuid String   @db.Uuid          @map("client_uuid")
+
+  @@map("organizations")
+}

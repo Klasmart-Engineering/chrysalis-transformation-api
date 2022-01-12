@@ -37,4 +37,15 @@ describe('Admin Service', () => {
       expect(roles).to.have.length(2);
     });
   });
+
+  describe('#getOrganizations', () => {
+    it('returns all organizations when has pagination', async () => {
+      const adminService = await AdminService.getInstance();
+      const organizations = await adminService.getOrganizations('Chrysalis BLP Classic');
+
+      expect(typeof organizations).to.equal('object');
+      expect(Array.isArray(organizations)).to.equal(true);
+      expect(organizations).to.have.length(1);
+    });
+  });
 });

@@ -12,6 +12,7 @@ import fetch from 'cross-fetch';
 import logger from '../utils/logging';
 import { getPrograms } from '../api/adminService/programs';
 import { getRoles } from '../api/adminService/roles';
+import { getOrganizations } from '../api/adminService/organizations';
 
 export class AdminService {
   public static async getInstance() {
@@ -160,6 +161,48 @@ export class AdminService {
       }
 
       return roles;
+    } catch (e) {
+      // Will not log error here because already did in `errorLink` while init `ApolloClient`
+      // console.log(JSON.stringify(e, null, 2));
+      return [];
+    }
+  }
+
+  // While loop to get all organizations from Admin User service
+  async getOrganizations(
+    name: string
+  ): Promise<Prisma.OrganizationCreateInput[]> {
+    try {
+      let hasNextPage = true;
+      let cursor = '';
+      const organizations: Prisma.OrganizationCreateInput[] = [];
+      while (hasNextPage) {
+        /**
+         * Don't need to handle errors here because:
+         *
+         * - 4xx/5xx were handel in `errorLink` while init `ApolloClient`
+         * - 2xx errors won't exist in this case
+         */
+        const { data } = await getOrganizations(
+          process.env.ADMIN_SERVICE_JWT || '',
+          name,
+          cursor
+        );
+
+        const responseData = data.organizationsConnection;
+        hasNextPage = responseData.pageInfo.hasNextPage;
+        cursor = responseData.pageInfo.endCursor;
+
+        for (const organizationNode of responseData.edges) {
+          organizations.push({
+            name: organizationNode.node.name,
+            klUuid: organizationNode.node.id,
+            clientUuid: '', // will update later
+          });
+        }
+      }
+
+      return organizations;
     } catch (e) {
       // Will not log error here because already did in `errorLink` while init `ApolloClient`
       // console.log(JSON.stringify(e, null, 2));
