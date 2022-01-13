@@ -1,6 +1,8 @@
 import { gql } from '@apollo/client/core';
 import { AdminService } from '../../services/adminService';
 
+const { ADMIN_SERVICE_JWT = '' } = process.env;
+
 export const GET_ROLES = gql`
   query getRoles($count: PageSize, $cursor: String) {
     rolesConnection(
@@ -28,7 +30,6 @@ export const GET_ROLES = gql`
 `;
 
 export async function getRoles(
-  authorization: string,
   cursor?: string,
   count?: number
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,7 +44,7 @@ export async function getRoles(
     },
     context: {
       headers: {
-        authorization,
+        authorization: ADMIN_SERVICE_JWT,
       },
     },
   });

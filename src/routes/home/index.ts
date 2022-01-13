@@ -9,6 +9,7 @@ import { MappedClass, MappedSchool } from '../../utils/mapResKeys';
 import { validateClasses, validateSchool } from '../../utils/validations';
 import { ClassQuerySchema, SchoolQuerySchema } from '../../services/c1Schemas';
 import { onboardingSchema } from '../../validatorsSchemes/requests/onboarding';
+import { Prisma } from '@prisma/client';
 
 const router = express.Router();
 const service = new C1Service();
@@ -230,6 +231,37 @@ router.get('/roles', async (req: Request, res: Response) => {
     if (roles) {
       await Database.createRoles(roles);
     }
+  } catch (e) {
+    e instanceof HttpError
+      ? res.status(e.status).json(e)
+      : res.status(500).json(e);
+  }
+});
+
+// (testing purpose, will delete later) get classes from Admin User service
+router.get('/organizations/:OrganizationUUID/classes', async (req: Request, res: Response) => {
+  try {
+    const { OrganizationUUID } = req.params;
+    // While loop to get all classes from Admin User service
+    const adminService = await AdminService.getInstance();
+    const classes = await adminService.getClasses(OrganizationUUID);
+    return res.json(classes);
+  } catch (e) {
+    e instanceof HttpError
+      ? res.status(e.status).json(e)
+      : res.status(500).json(e);
+  }
+});
+
+// (testing purpose, will delete later) create classes in Admin User service
+router.post('/organizations/:OrganizationUUID/schools/:SchoolUUID/classes', async (req: Request, res: Response) => {
+  try {
+    const { OrganizationUUID, SchoolUUID } = req.params;
+    const classes: Prisma.ClassCreateInput[] = req.body;
+    const adminService = await AdminService.getInstance();
+    const classesCreated = await adminService.createClasses(OrganizationUUID, SchoolUUID, classes);
+
+    return res.json(classesCreated);
   } catch (e) {
     e instanceof HttpError
       ? res.status(e.status).json(e)

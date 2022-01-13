@@ -1,6 +1,8 @@
 import { gql } from '@apollo/client/core';
 import { AdminService } from '../../services/adminService';
 
+const { ADMIN_SERVICE_JWT = '' } = process.env;
+
 export const GET_PROGRAMS = gql`
   query getPrograms($count: PageSize, $cursor: String) {
     programsConnection(
@@ -27,7 +29,6 @@ export const GET_PROGRAMS = gql`
 `;
 
 export async function getPrograms(
-  authorization: string,
   cursor?: string,
   count?: number
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,7 +43,7 @@ export async function getPrograms(
     },
     context: {
       headers: {
-        authorization,
+        authorization: ADMIN_SERVICE_JWT,
       },
     },
   });

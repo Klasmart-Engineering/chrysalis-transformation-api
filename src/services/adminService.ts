@@ -5,7 +5,7 @@ import {
   NormalizedCacheObject,
   from,
 } from '@apollo/client/core';
-import { onError } from '@apollo/client/link/error';
+import { ErrorResponse, onError } from '@apollo/client/link/error';
 import { RetryLink } from '@apollo/client/link/retry';
 import { Prisma } from '@prisma/client';
 import fetch from 'cross-fetch';
@@ -13,6 +13,7 @@ import logger from '../utils/logging';
 import { getPrograms } from '../api/adminService/programs';
 import { getRoles } from '../api/adminService/roles';
 import { getOrganizations } from '../api/adminService/organizations';
+import { getClasses, createClasses, addClassesToSchool } from '../api/adminService/classes';
 
 export class AdminService {
   public static async getInstance() {
@@ -36,7 +37,8 @@ export class AdminService {
         retryIf: (error, _operation) => !!error,
       },
     });
-    const errorLink = onError(({ graphQLErrors, networkError }) => {
+    const errorLink = onError((error: ErrorResponse) => {
+      const { graphQLErrors, networkError } = error;
       /**
        * GraphQL errors, will not retry
        *
@@ -100,10 +102,7 @@ export class AdminService {
          * - 4xx/5xx were handel in `errorLink` while init `ApolloClient`
          * - 2xx errors won't exist in this case
          */
-        const { data } = await getPrograms(
-          process.env.ADMIN_SERVICE_JWT || '',
-          cursor
-        );
+        const { data } = await getPrograms(cursor);
 
         const responseData = data.programsConnection;
         hasNextPage = responseData.pageInfo.hasNextPage;
@@ -140,10 +139,7 @@ export class AdminService {
          * - 4xx/5xx were handel in `errorLink` while init `ApolloClient`
          * - 2xx errors won't exist in this case
          */
-        const { data } = await getRoles(
-          process.env.ADMIN_SERVICE_JWT || '',
-          cursor
-        );
+        const { data } = await getRoles(cursor);
 
         const responseData = data.rolesConnection;
         hasNextPage = responseData.pageInfo.hasNextPage;
@@ -183,11 +179,7 @@ export class AdminService {
          * - 4xx/5xx were handel in `errorLink` while init `ApolloClient`
          * - 2xx errors won't exist in this case
          */
-        const { data } = await getOrganizations(
-          process.env.ADMIN_SERVICE_JWT || '',
-          name,
-          cursor
-        );
+        const { data } = await getOrganizations(name, cursor);
 
         const responseData = data.organizationsConnection;
         hasNextPage = responseData.pageInfo.hasNextPage;
@@ -207,6 +199,93 @@ export class AdminService {
       // Will not log error here because already did in `errorLink` while init `ApolloClient`
       // console.log(JSON.stringify(e, null, 2));
       return [];
+    }
+  }
+
+  // While loop to get all classes from Admin User service
+  async getClasses(organizationId: string): Promise<Prisma.ClassCreateInput[]> {
+    try {
+      let hasNextPage = true;
+      let cursor = '';
+      const classes: Prisma.ClassCreateInput[] = [];
+
+      while (hasNextPage) {
+        /**
+         * Don't need to handle errors here because:
+         *
+         * - 4xx/5xx were handel in `errorLink` while init `ApolloClient`
+         * - 2xx errors won't exist in this case
+         */
+        const { data } = await getClasses(organizationId, cursor);
+
+        const responseData = data.classesConnection;
+        hasNextPage = responseData.pageInfo.hasNextPage;
+        cursor = responseData.pageInfo.endCursor;
+
+        for (const classEdge of responseData.edges) {
+          const classNode = classEdge.node;
+          const schoolEdges = classNode.schoolsConnection && classNode.schoolsConnection.edges;
+          const currentClass = {
+            name: classNode.name,
+            client: 'MCB',
+            clientUuid: '',
+            organizationName: '',
+            schoolName: '',
+            shortCode: classNode.shortCode,
+            klUuid: classNode.id,
+            klOrgUuid: '',
+          };
+
+          if (schoolEdges && schoolEdges.length > 0) {
+            const schoolNode = schoolEdges[0].node;
+            currentClass.schoolName = schoolNode.name;
+            currentClass.klOrgUuid = schoolNode.organizationId;
+          }
+
+          classes.push(currentClass);
+        }
+      }
+
+      return classes;
+    } catch (e) {
+      // Will not log error here because already did in `errorLink` while init `ApolloClient`
+      // console.log(JSON.stringify(e, null, 2));
+      return [];
+    }
+  }
+
+  /**
+   * Create classes in user service.
+   * @param organizationId
+   * @param schoolId 
+   * @param classesInput 
+   */
+  async createClasses(
+    organizationId: string,
+    schoolId: string,
+    classesInput: Prisma.ClassCreateInput[],
+  ) {
+    try {
+      const classesMapped = classesInput.map(classInput => ({
+        name: classInput.name,
+        shortcode: classInput.shortCode || '',
+        organizationId: organizationId,
+      }));
+
+      const { data } = await createClasses(classesMapped);
+
+      if (data) {
+        const classes = data.createClasses.classes;
+        const classIds = classes.map(classResult => classResult.id);
+
+        await addClassesToSchool([{ schoolId, classIds }]);
+        return classIds;
+      }
+
+      return [];
+    } catch (err) {
+      logger.error(err);
+      throw new Error('Failed to insert classes in user service');
     }
   }
 }

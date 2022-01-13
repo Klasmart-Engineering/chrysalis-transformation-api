@@ -1,6 +1,8 @@
 import { gql } from '@apollo/client/core';
 import { AdminService } from '../../services/adminService';
 
+const { ADMIN_SERVICE_JWT = '' } = process.env;
+
 export const GET_ORGANIZATIONS = gql`
   query getOrganizations($name: String!, $count: PageSize, $cursor: String) {
     organizationsConnection(
@@ -30,7 +32,6 @@ export const GET_ORGANIZATIONS = gql`
 `;
 
 export async function getOrganizations(
-  authorization: string,
   name: string,
   cursor?: string,
   count?: number
@@ -47,7 +48,7 @@ export async function getOrganizations(
     },
     context: {
       headers: {
-        authorization,
+        authorization: ADMIN_SERVICE_JWT,
       },
     },
   });

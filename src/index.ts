@@ -2,9 +2,9 @@ import app from './app';
 import logger from './utils/logging';
 import './utils/dotenv';
 
-const PORT = process.env.PORT || 4200;
+const { PORT = 4200, API_SECRET } = process.env;
 
-if (!process.env.API_SECRET) {
+if (!API_SECRET) {
   logger.error(`The API_SECRET environment variable was not set`);
   throw Error(`The API_SECRET environment variable was not set`);
 }
