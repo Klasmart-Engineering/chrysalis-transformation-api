@@ -1,4 +1,10 @@
-import { Prisma, PrismaClient, School, Program, Organization } from '@prisma/client';
+import {
+  Prisma,
+  PrismaClient,
+  School,
+  Program,
+  Organization,
+} from '@prisma/client';
 import { handleError } from './errorHandler';
 
 const prisma = new PrismaClient();
@@ -12,6 +18,13 @@ const createSchools = async (schools: Prisma.SchoolCreateInput[]) => {
 const createClasses = async (classes: Prisma.ClassCreateInput[]) => {
   return await prisma.class.createMany({
     data: classes,
+  });
+};
+
+const createUsers = async (users: Prisma.UserCreateInput[]) => {
+  return await prisma.user.createMany({
+    data: users,
+    skipDuplicates: true,
   });
 };
 
@@ -41,6 +54,21 @@ const storeClasses = async (classes: Prisma.ClassCreateInput[]) => {
         message: JSON.stringify(error),
       },
       createClasses.bind(classes)
+    );
+  }
+};
+
+const storeUsers = async (users: Prisma.UserCreateInput[]) => {
+  try {
+    await createUsers(users);
+  } catch (error) {
+    await handleError(
+      {
+        type: 'dbError',
+        entity: 'user',
+        message: JSON.stringify(error),
+      },
+      createUsers.bind(users)
     );
   }
 };
@@ -110,4 +138,5 @@ export default {
   createOrganization,
   storeSchools,
   storeClasses,
+  storeUsers,
 };
