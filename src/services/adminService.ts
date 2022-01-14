@@ -248,8 +248,6 @@ export class AdminService {
 
       return classes;
     } catch (e) {
-      // Will not log error here because already did in `errorLink` while init `ApolloClient`
-      // console.log(JSON.stringify(e, null, 2));
       return [];
     }
   }

@@ -77,7 +77,7 @@ const ADD_CLASSES_TO_SCHOOL_MUTATION = gql`
 export async function getClasses(
 	organizationId: string,
 	cursor?: string,
-	count?: number
+	count = 50
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
 	const adminService = await AdminService.getInstance();
@@ -85,9 +85,9 @@ export async function getClasses(
 		.query({
 			query: GET_CLASSES_QUERY,
 			variables: {
-				count: count || 50,
-				cursor: cursor,
-				organizationId: organizationId,
+				count,
+				cursor,
+				organizationId,
 			},
 			context: {
 				headers: {
