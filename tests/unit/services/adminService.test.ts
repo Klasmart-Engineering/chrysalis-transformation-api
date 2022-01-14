@@ -2,6 +2,7 @@ import chai, { expect } from 'chai';
 import spies from 'chai-spies';
 import { AdminService } from '../../../src/services/adminService';
 import { adminServiceServer } from '../../mocks/adminServiceServer';
+import { schoolForUs } from '../../utils/school';
 
 chai.use(spies);
 
@@ -35,6 +36,16 @@ describe('Admin Service', () => {
       expect(typeof roles).to.equal('object');
       expect(Array.isArray(roles)).to.equal(true);
       expect(roles).to.have.length(2);
+    });
+  });
+
+  describe('#addSchools', () => {
+    it('should not throw an error', async () => {
+      const adminService = await AdminService.getInstance();
+      const graphQlRes = await adminService.addSchools(
+       [schoolForUs]
+      )
+      expect(graphQlRes).to.be.not.throw;
     });
   });
 

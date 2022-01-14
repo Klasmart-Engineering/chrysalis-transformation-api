@@ -12,7 +12,9 @@ import fetch from 'cross-fetch';
 import logger from '../utils/logging';
 import { getPrograms } from '../api/adminService/programs';
 import { getRoles } from '../api/adminService/roles';
+import { addSchool } from '../api/adminService/schools';
 import { getOrganizations } from '../api/adminService/organizations';
+import { CreateSchoolInput } from '../utils/types';
 
 export class AdminService {
   public static async getInstance() {
@@ -168,6 +170,23 @@ export class AdminService {
     }
   }
 
+  /**
+   * Adds schools to user service.
+   * @param schools
+   * @param klOrgUuid 
+   */
+  async addSchools(schools: CreateSchoolInput[]) {
+    try {
+      await addSchool(
+        process.env.ADMIN_SERVICE_JWT || '',
+        schools
+      );
+    } catch (err) {
+      logger.error(err);
+      throw new Error('Error adding school in school service');
+    }
+  }
+  
   // While loop to get all organizations from Admin User service
   async getOrganizations(
     name: string

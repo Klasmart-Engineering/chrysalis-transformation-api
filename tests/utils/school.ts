@@ -9,6 +9,12 @@ export const validSchool = {
   organizationName: 'organization name',
 };
 
+export const schoolForUs = {
+  name: 'school1',
+  shortCode: 'shortCode',
+  organizationId: 'b3e9119f-18ac-437e-b460-6d54d99e8ee1'
+}
+
 export const invalidSchool = {
   name: '',
   clientUuid: 'cdc9a77f-ac83-',

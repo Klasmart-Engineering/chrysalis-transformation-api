@@ -1,4 +1,5 @@
 import { graphql } from 'msw';
+import { schoolForUs } from '../utils/school';
 
 export const adminServiceHandlers = [
   // Handles a "programsConnection" query
@@ -182,5 +183,33 @@ export const adminServiceHandlers = [
         },
       })
     );
+  }),
+
+  graphql.mutation('createSchools', (req, res, ctx) => {
+    if (!req.headers.get('Authorization')) {
+      return res(
+        ctx.errors([
+          {
+            message: 'Not authenticated',
+            errorType: 'AuthenticationError',
+          },
+        ])
+      );
+    }
+ 
+    if (!req.body) {
+      return res(
+        ctx.errors([
+          {
+            message: 'No Schools',
+            errorType: 'InvalidDataError',
+          },
+        ])
+      );
+    }
+
+    return res(
+      ctx.data(schoolForUs)
+    )
   }),
 ];
