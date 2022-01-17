@@ -15,7 +15,7 @@ export const invalidClass = {
   name: '',
   clientUuid: 'cdc9a77f-ac83-',
   klOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  shortCode: 'SMTH',
+  shortCode: 'SHORTCODE17LENGTH',
   schoolName: '2134',
   programNames: [],
   clientOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
@@ -35,7 +35,7 @@ interface Class {
 
 export const isClassValid = (classData: Class) => {
   try {
-    const { error } = classSchema.validate(classData);
+    const { error } = classSchema.validate(classData, { abortEarly: false });
     return !error;
   } catch (error) {
     return false;

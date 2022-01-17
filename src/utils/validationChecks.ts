@@ -3,7 +3,7 @@ import {
   SCHOOL_VALIDATION_FAILED,
   INVALID_PROGRAM,
   PROGRAM_NOT_EXIST,
-  SCHOOL_NOT_EXIST
+  SCHOOL_NOT_EXIST,
 } from '../config/errorMessages';
 import { schoolSchema } from '../validatorsSchemes';
 import { classSchema } from '../validatorsSchemes';
@@ -11,42 +11,46 @@ import logger from './logging';
 import Database from './database';
 import { ValidationErrorItem } from 'joi';
 import { arraysMatch } from './arraysMatch';
-import { MappedClass, MappedSchool } from "./mapResKeys";
+import { MappedClass, MappedSchool } from './mapResKeys';
 
 export const isSchoolValid = (school: MappedSchool) => {
   try {
-    const { error, value } = schoolSchema.validate(school);
-
-    error && logger.error({
-      school: value,
-      error: SCHOOL_VALIDATION_FAILED,
-      validation: error.details.map((detail: ValidationErrorItem) => {
-        return { [detail.path.join()]: detail.message }
-      }),
+    const { error, value } = schoolSchema.validate(school, {
+      abortEarly: false,
     });
+
+    error &&
+      logger.error({
+        school: value,
+        error: SCHOOL_VALIDATION_FAILED,
+        validation: error.details.map((detail: ValidationErrorItem) => {
+          return { [detail.path.join()]: detail.message };
+        }),
+      });
 
     return !error;
   } catch (error) {
     logger.error(error);
     return false;
   }
-}
+};
 
 export const isSchoolProgramValid = async (programName: string) => {
   try {
-    const program = await Database.getProgramByName(programName)
+    const program = await Database.getProgramByName(programName);
 
-    !program && logger.error({
-      programName: programName,
-      error: PROGRAM_NOT_EXIST
-    });
+    !program &&
+      logger.error({
+        programName: programName,
+        error: PROGRAM_NOT_EXIST,
+      });
 
     return !!program;
   } catch (error) {
     logger.error(error);
     return false;
   }
-}
+};
 
 export const schoolExist = async (schoolName: string) => {
   try {
@@ -63,11 +67,11 @@ export const schoolExist = async (schoolName: string) => {
     logger.error(error);
     return false;
   }
-}
+};
 
 export const isClassProgramsValid = async (
   schoolName: string,
-  classPrograms: Array<string>,
+  classPrograms: Array<string>
 ) => {
   try {
     const school = await Database.getSchoolByName(schoolName);
@@ -94,26 +98,29 @@ export const isClassProgramsValid = async (
     logger.error(error);
     return false;
   }
-}
+};
 
 export const isClassValid = (schoolClass: MappedClass) => {
   try {
-    const { error, value } = classSchema.validate(schoolClass)
-
-    error && logger.error({
-      class: value,
-      error: CLASS_VALIDATION_FAILED,
-      validation: error.details.map((detail: ValidationErrorItem) => {
-        return { [detail.path.join()]: detail.message }
-      }),
+    const { error, value } = classSchema.validate(schoolClass, {
+      abortEarly: false,
     });
 
-    return !error
+    error &&
+      logger.error({
+        class: value,
+        error: CLASS_VALIDATION_FAILED,
+        validation: error.details.map((detail: ValidationErrorItem) => {
+          return { [detail.path.join()]: detail.message };
+        }),
+      });
+
+    return !error;
   } catch (error) {
-    logger.error(error)
-    return false
+    logger.error(error);
+    return false;
   }
-}
+};
 
 export const checkClassesValid = async (classes: MappedClass[]) => {
   try {
@@ -136,7 +143,7 @@ export const checkClassesValid = async (classes: MappedClass[]) => {
 
     for (const cl of classes) {
       cl.clientUuid = school.clientUuid;
-      const { error, value } = classSchema.validate(cl);
+      const { error, value } = classSchema.validate(cl, { abortEarly: false });
 
       if (error) {
         const errorDetails = error.details.map(

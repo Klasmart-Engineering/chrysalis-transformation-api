@@ -35,7 +35,7 @@ interface School {
 
 export const isSchoolValid = (school: School) => {
   try {
-    const { error } = schoolSchema.validate(school);
+    const { error } = schoolSchema.validate(school, { abortEarly: false });
     return !error;
   } catch (error) {
     return false;
