@@ -1,13 +1,411 @@
 openapi: 3.0.0
 info:
   version: '1.0.0'
-  title: 'KidsLoop Client Onboarding'
+  title: 'KidsLoop - C1 Transformation API'
   description: |
-    This API is a very light-weight and is used to queue up IDs of various entities
-    that are to be onboarded onto the KidsLoop platform.
-
+    This API is very light-weight and is used to validate and pass validated data to our generic backend for onboarding.
+    
 servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/endava51/C1-Transformation-API/1.0.0
   - url: 'http://localhost:4200'
     description: 'Local development server'
-paths:
 
+paths:
+  /onboard/organizations:
+    post:
+      summary: 'Attempts to onboard all organizations fetched from C1'
+      operationId: organization
+      tags:
+        - Organizations
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestOrganization'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+
+  /onboard/schools:
+    post:
+      summary: 'Attempts to onboard all schools for a given organization id'
+      operationId: school
+      tags:
+        - Schools
+      parameters:
+        - in: query
+          name: organizationId
+          schema:
+            type: string
+          required: true
+          description: 'The organization id required to onboard all the schools.'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestSchool'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+
+  /onboard/classes:
+    post:
+      summary: 'Attempts to onboard all classes for a given school id'
+      operationId: class
+      tags:
+        - Classes
+      parameters:
+        - in: query
+          name: schoolId
+          schema:
+            type: string
+          required: true
+          description: 'The school id required to onboard all the classes.'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestClass'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+
+  /onboard/users:
+    post:
+      summary: 'Attempts to onboard all users for a given school id'
+      operationId: user
+      tags:
+        - Users
+      parameters:
+        - in: query
+          name: schoolId
+          schema:
+            type: string
+          required: true
+          description: 'The school id required to onboard all the users.'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+  
+  /link/users-to-organization:
+    post:
+      summary: 'Attempts to link all users to an organization'
+      operationId: linkUsersToOrganization
+      tags:
+        - Link entities
+      requestBody:
+        description: A list of user ids with its role ids to link to an organization
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkUsersToOrganization'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestLinkUsersToOrganization'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+         
+  /link/entities:
+    post:
+      summary: 'Attempts to link schools, classes, programs or roles to their equivalent entity'
+      operationId: linkEntities
+      tags:
+        - Link entities
+      requestBody:
+        description: A list of entities for which to apply the links
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkEntities'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestLinkEntities'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+
+components:
+  responses:
+    SuccessResponse:
+      description: 'The response when onbording of the "entity" succeeded'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+            
+    BadRequestOrganization:
+      description: 'Bad Request. Validation issues with organization schema.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrors'
+          example:
+            errors:
+              - msg: '"OrganizationUUID" must be an UUID v4'
+                value: "cdc9a77f-ac83-"
+                param: externalUuid
+                entity: organization
+              - msg: '"OrganizationName" is not allowed to be empty'
+                value: ""
+                param: name
+                entity: organization
+    BadRequestSchool:
+      description: 'Bad Request. Validation issues with school schema.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrors'
+          example:
+            errors:
+              - msg: '"SchoolUUID" must be an UUID v4'
+                value: "cdc9a77f-ac83-"
+                param: externalUuid
+                entity: school
+              - msg: '"SchoolName" is not allowed to be empty'
+                value: ""
+                param: name
+                entity: school
+    BadRequestClass:
+      description: 'Bad Request. Validation issues with class schema.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrors'
+          example:
+            errors:
+              - msg: '"ClassUUID" must be an UUID v4'
+                value: "cdc9a77f-ac83-"
+                param: externalUuid
+                entity: class
+              - msg: '"ClassName" is not allowed to be empty'
+                value: ""
+                param: name
+                entity: class
+    BadRequestUser:
+      description: 'Bad Request. Validation issues with user schema.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrors'
+          example:
+            errors:
+              - msg: '"UserUUID" must be an UUID v4'
+                value: "cdc9a77f-ac83-"
+                param: externalUuid
+                entity: user
+              - msg: '"UserGivenName" is not allowed to be empty'
+                value: ""
+                param: userGivenName
+                entity: user
+              - msg: '"UserFamilyName" is not allowed to be empty'
+                value: ""
+                param: userFamilyName
+                entity: user
+              - msg: '"Gender" is not allowed to be empty'
+                value: ""
+                param: gender
+                entity: user
+    BadRequestLinkUsersToOrganization:
+      description: 'Bad Request. Validation issues with linking entities.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrors'
+          example:
+            errors:
+              - msg: 'User does not exit for "userId"'
+                value: "9f2c90e5-a21f-4622-979a-c3b37afe2186"
+                param: userId
+                entity: linkUsersToOrganization
+              - msg: 'Role does not exist for "roleId"'
+                value: "dbd83f2e-ec21-403e-9412-ad7aded32876"
+                param: roleId
+                entity: linkUsersToOrganization
+    BadRequestLinkEntities:
+      description: 'Bad Request. Validation issues with linking entities.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrors'
+          example:
+            errors:
+              - msg: 'Target entity does not exit for "organizationId"'
+                value: "0d8aa4ae-e17c-42b1-87dc-be582003a0ba"
+                param: targetData.organizationId
+                entity: linkEntities
+              - msg: 'Source entity does not exit for "entityId"'
+                value: "9f2c90e5-a21f-4622-979a-c3b37afe2186"
+                param: sourceData[1].userId
+                entity: linkEntities
+              - msg: 'Source entity does not exist for "roleId"'
+                value: "dbd83f2e-ec21-403e-9412-ad7aded32876"
+                param: sourceData[1].roleId
+                entity: linkEntities
+                
+    Unauthorized:
+      description: 'Unauthorized request.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 401
+            message: Unauthorized
+    UnexpectedError:
+      description: 'Internal server error.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 500
+            message: Internal Server Error
+
+  schemas:
+    LinkUsersToOrganization:
+      type: object
+      required:
+        - organizationId
+        - data
+      properties:
+        organizationId:
+          type: string
+        data:
+          type: object
+          required:
+            - userId
+            - roleId
+          properties:
+            userId:
+              type: string
+            roleId:
+              type: string
+      example:
+        targetData: {
+          organizationId: 0d8aa4ae-e17c-42b1-87dc-be582003a0ba
+        }
+        sourceData: [
+          { 
+            userId: "9f2c90e5-a21f-4622-979a-c3b37afe2186", 
+            roleId: "dbd83f2e-ec21-403e-9412-ad7aded32876"
+          },
+          { 
+            userId: "974e6768-cfd8-41d9-a334-0df5c5933b23", 
+            roleId: "dbd83f2e-ec21-403e-9412-ad7aded32876"
+          }
+        ]
+    LinkEntities:
+      allOf: 
+        - type: object
+          required:
+            - action
+          properties:
+            action:
+              type: string
+              enum: [usersToOrganization, classesToSchool, programsToSchool] # and so on
+          example:
+            action: usersToOrganization
+        - $ref: '#/components/schemas/LinkUsersToOrganization'
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+      example:
+        code: 404
+        message: Not Found
+    ValidationErrors:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      example:
+        errors:
+          - msg: '"ClassUUID" must be an UUID v4'
+            value: "cdc9a77f-ac83-"
+            param: clientUuid
+            entity: class
+          - msg: '"ClassName" is not allowed to be empty'
+            value: ""
+            param: name
+            entity: class
+    ValidationError:
+      type: object
+      required:
+        - msg
+        - value # joi's context.value
+        - param # joi's context.key
+        - entity # organization, school, class etc.
+      properties:
+        msg:
+          type: string
+        value:
+          type: string
+        param:
+          type: string
+        entity:
+          type: string
+          
+    Response:
+      type: object
+      required:
+        - success
+        - retriable
+        - failed
+      properties:
+        success:
+          type: array
+          items:
+            type: string
+        retriable:
+          type: array
+          items:
+            type: string
+        failed:
+          type: array
+          items:
+            type: string
+      example:
+        success: ["bab46d28-97c2-4d45-88b9-ba031a1a3ab9", "7271c173-7c09-4ffd-a6d6-7317c96ef6f7","81923c32-5fe2-4e61-8ab2-2318af71fbee"]
+        retriable: ["e89d49ae-151c-44f1-bc80-04efadbe7dc5"]
+        failed: ["1c74ac49-46a4-438c-bb96-b66586949227", "808f372e-7e19-49ad-ae94-04b94b14fbf9"]
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+
+security:
+  - ApiKeyAuth: []
