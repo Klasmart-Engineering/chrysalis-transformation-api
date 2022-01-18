@@ -3,6 +3,10 @@ import express, { Request, Response, NextFunction } from 'express';
 import createError, { HttpError } from 'http-errors';
 import indexRouter from './routes';
 import './utils/dotenv';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+
+const swaggerDocs = YAML.load('./api-docs.yaml');
 
 const app = express();
 
@@ -10,6 +14,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use('/', indexRouter);
+app.use('/documentation', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // catch 404 and forward to error handler
 app.use((req: Request, res: Response, next: NextFunction) => {

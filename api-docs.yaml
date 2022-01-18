@@ -1,0 +1,13 @@
+openapi: 3.0.0
+info:
+  version: '1.0.0'
+  title: 'KidsLoop Client Onboarding'
+  description: |
+    This API is a very light-weight and is used to queue up IDs of various entities
+    that are to be onboarded onto the KidsLoop platform.
+
+servers:
+  - url: 'http://localhost:4200'
+    description: 'Local development server'
+paths:
+
