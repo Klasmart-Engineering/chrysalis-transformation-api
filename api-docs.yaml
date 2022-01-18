@@ -6,9 +6,6 @@ info:
     This API is very light-weight and is used to validate and pass validated data to our generic backend for onboarding.
     
 servers:
-  # Added by API Auto Mocking Plugin
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/endava51/C1-Transformation-API/1.0.0
   - url: 'http://localhost:4200'
     description: 'Local development server'
 
