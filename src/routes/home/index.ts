@@ -9,6 +9,8 @@ import { MappedClass, MappedSchool } from '../../utils/mapResKeys';
 import { validateClasses, validateSchool } from '../../utils/validations';
 import { ClassQuerySchema, SchoolQuerySchema } from '../../services/c1Schemas';
 import { onboardingSchema } from '../../validatorsSchemes/requests/onboarding';
+import { shorten } from '../../utils/string';
+import { validationRules } from '../../config/validationRules';
 
 const router = express.Router();
 const service = new C1Service();
@@ -193,6 +195,21 @@ router.get('/school-users/:SchoolUUID', async (req: Request, res: Response) => {
   try {
     const pathSegments = [req.params.SchoolUUID, 'School'];
     const users = await service.getUsers(pathSegments);
+
+    if (Array.isArray(users)) {
+      users.forEach((user, index, result) => {
+        user['UserGivenName'] = shorten(
+          user['UserGivenName'],
+          validationRules.USER_GIVEN_NAME_MAX_LENGTH
+        );
+        user['UserFamilyName'] = shorten(
+          user['UserFamilyName'],
+          validationRules.USER_FAMILY_NAME_MAX_LENGTH
+        );
+        result[index] = user;
+      });
+    }
+
     res.json(users);
   } catch (e) {
     e instanceof HttpError

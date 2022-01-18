@@ -59,3 +59,21 @@ export function stringInject(str: string, data: any) {
     throw new Error('Failed to inject string');
   }
 }
+
+export function shorten(str: string, length: number) {
+  length = length | 0; // number -> int
+
+  const truncatedStr = str.substring(0, length);
+  if (
+    str.length <= length ||
+    str.charAt(length) == ' ' ||
+    truncatedStr.lastIndexOf(' ') < 0
+  ) {
+    return truncatedStr;
+  }
+
+  return truncatedStr.substring(
+    0,
+    Math.min(truncatedStr.length, truncatedStr.lastIndexOf(' '))
+  );
+}

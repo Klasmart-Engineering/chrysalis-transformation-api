@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { stringInject } from '../../../src/utils/string';
+import { stringInject, shorten } from '../../../src/utils/string';
 
 describe('stringInject', () => {
   context('replace brackets with array items', () => {
@@ -108,5 +108,42 @@ describe('stringInject', () => {
       );
       expect(str).to.equal('My username is {platform} on {username}');
     });
+  });
+});
+
+describe('shorten', () => {
+  it('should return string if its length is less than `length`', () => {
+    const str = 'this';
+    const truncatedStr = shorten(str, 7);
+
+    expect(truncatedStr).to.equal('this');
+  });
+
+  it('should return string if its length is equal to `length`', () => {
+    const str = 'this is';
+    const truncatedStr = shorten(str, 7);
+
+    expect(truncatedStr).to.equal('this is');
+  });
+
+  it('should shorten string without cutting words', () => {
+    const str = 'this is a long string I need to truncate';
+    const truncatedStr = shorten(str, 7);
+
+    expect(truncatedStr).to.equal('this is');
+  });
+
+  it('should shorten string without cutting words when length is a float', () => {
+    const str = 'this is a long string I need to truncate';
+    const truncatedStr = shorten(str, 6.7);
+
+    expect(truncatedStr).to.equal('this');
+  });
+
+  it('should not shorten string with cutting words when string has only one word', () => {
+    const str = 'thisisalong string I need to truncate';
+    const truncatedStr = shorten(str, 6.7);
+
+    expect(truncatedStr).to.equal('thisis');
   });
 });

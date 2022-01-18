@@ -14,4 +14,7 @@ export const validationRules = {
 
   CLIENT_MAX_LENGTH: 255,
   STATUS_MAX_LENGTH: 255,
+
+  USER_GIVEN_NAME_MAX_LENGTH: 35,
+  USER_FAMILY_NAME_MAX_LENGTH: 35,
 };
