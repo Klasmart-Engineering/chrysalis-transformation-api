@@ -1,6 +1,6 @@
 import { HttpOptions } from '../interfaces/httpOptions';
 import https from 'https';
-import { HttpError } from './httpError';
+import { HttpError } from './httpResponses';
 import logger from './logging';
 
 type TokenResponse = {

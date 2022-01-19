@@ -1,8 +1,7 @@
 import express from 'express';
-import HomeRouter from './home';
 
 const router = express.Router();
 
-router.use('/', HomeRouter);
+router.use('/', (req, res) => res.json({ message: "ok" }));
 
 export default router;

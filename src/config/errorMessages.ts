@@ -3,3 +3,4 @@ export const SCHOOL_NOT_EXIST = 'School does not exist';
 export const CLASS_VALIDATION_FAILED = 'Class validation failed';
 export const INVALID_PROGRAM = 'Invalid program';
 export const SCHOOL_VALIDATION_FAILED = 'School failed data validation';
+export const ORGANIZATION_VALIDATION_FAILED = 'Organization failed data validation';

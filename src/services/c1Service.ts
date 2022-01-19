@@ -1,6 +1,7 @@
 import { BaseRestfulService } from './baseRestfulService';
 import { C1AuthEndpoints, C1Endpoints } from '../config/c1Endpoints';
 import { AuthServer } from '../utils/authServer';
+import { OrganizationQuerySchema } from '../interfaces/clientSchemas';
 
 const loginData = JSON.stringify({
   Username: String(process.env.C1_API_USERNAME),
@@ -31,12 +32,12 @@ export class C1Service extends BaseRestfulService {
             .then(response => {
               this.jwtToken = response;
             })
-            .catch(() => {
+            .catch((e) => {
               throw new Error('Failed to refresh token');
             })
         }, REFRESH_TOKEN_INTERVAL);
       })
-      .catch(() => {
+      .catch((e) => {
         throw new Error('Failed to get access token');
       });
   }
@@ -65,8 +66,10 @@ export class C1Service extends BaseRestfulService {
     return this.getData(client);
   }
 
-  getOrganizations() {
+  async getOrganizations(): Promise<Array<OrganizationQuerySchema>> {
     const client = this.createClient(C1Endpoints.organizationApiEndpoint);
-    return this.getData(client);
+    const organizations = await this.getData(client) as Array<OrganizationQuerySchema>;
+
+    return organizations;
   }
 }

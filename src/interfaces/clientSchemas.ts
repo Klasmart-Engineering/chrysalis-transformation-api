@@ -1,3 +1,8 @@
+export interface OrganizationQuerySchema {
+  OrganizationName: string;
+  OrganizationUUID: string;
+}
+
 export interface SchoolQuerySchema {
   SchoolUUID: string;
   SchoolName: string;
