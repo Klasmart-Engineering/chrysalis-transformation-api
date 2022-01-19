@@ -30,7 +30,8 @@ const messages = {
   'string.uri': '"{0}" must be a valid uri',
   'string.uriCustomScheme': '"{0}" must be a valid uri with a scheme matching the {{#scheme}} pattern',
   'string.uriRelativeOnly': '"{0}" must be a valid relative uri',
-  'string.uppercase': '"{0}" must only contain uppercase characters'
+  'string.uppercase': '"{0}" must only contain uppercase characters',
+  'string.regex': 'The "{0}" format is wrong',
 }
 
 export default messages;
