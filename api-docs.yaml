@@ -16,9 +16,17 @@ paths:
       operationId: organization
       tags:
         - Organizations
+      requestBody:
+        description: Optional list of organization names.
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkUsersToOrganization'
+            example: { organizationNames: ['Organization 1', 'Organization 2'] }
       responses:
         '200':
-          $ref: '#/components/responses/SuccessResponse'
+          $ref: '#/components/responses/SuccessResponseOrganization'
         '400':
           $ref: '#/components/responses/BadRequestOrganization'
         '401':
@@ -26,22 +34,30 @@ paths:
         '500':
           $ref: '#/components/responses/UnexpectedError'
 
-  /onboard/schools:
+  /onboard/organizations/:organizationId/schools:
     post:
-      summary: 'Attempts to onboard all schools for a given organization id'
+      summary: 'Attempts to onboard all schools for a given organization uuid or partialy onboard schools for the schoolIds found in the body of the request'
       operationId: school
       tags:
         - Schools
-      parameters:
-        - in: query
-          name: organizationId
-          schema:
-            type: string
-          required: true
-          description: 'The organization id required to onboard all the schools.'
+      requestBody:
+        description: Optional list of school ids to partialy onboard schools.
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkUsersToOrganization'
+            example:
+              {
+                schoolIds:
+                  [
+                    'c8a34249-0ed9-42c7-80f1-324b33dc8a68',
+                    '7fe716b9-74f5-47b3-ba57-7e31170a6226',
+                  ],
+              }
       responses:
         '200':
-          $ref: '#/components/responses/SuccessResponse'
+          $ref: '#/components/responses/SuccessResponseSchool'
         '400':
           $ref: '#/components/responses/BadRequestSchool'
         '401':
@@ -49,22 +65,31 @@ paths:
         '500':
           $ref: '#/components/responses/UnexpectedError'
 
-  /onboard/classes:
+  /onboard/schools/:schoolId/classes:
     post:
-      summary: 'Attempts to onboard all classes for a given school id'
+      summary: 'Attempts to onboard all classes for a given school uuid or partialy onboard classes for the classIds found in the body of the request'
       operationId: class
       tags:
         - Classes
-      parameters:
-        - in: query
-          name: schoolId
-          schema:
-            type: string
-          required: true
-          description: 'The school id required to onboard all the classes.'
+      requestBody:
+        description: Optional list of class ids to partialy onboard classes.
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkUsersToOrganization'
+            example:
+              {
+                classIds:
+                  [
+                    'c8a34249-0ed9-42c7-80f1-324b33dc8a68',
+                    '7fe716b9-74f5-47b3-ba57-7e31170a6226',
+                  ],
+              }
+
       responses:
         '200':
-          $ref: '#/components/responses/SuccessResponse'
+          $ref: '#/components/responses/SuccessResponseClass'
         '400':
           $ref: '#/components/responses/BadRequestClass'
         '401':
@@ -72,19 +97,27 @@ paths:
         '500':
           $ref: '#/components/responses/UnexpectedError'
 
-  /onboard/users:
+  /onboard/schools/:schoolId/users:
     post:
-      summary: 'Attempts to onboard all users for a given school id'
+      summary: 'Attempts to onboard all users for a given school uuid or partialy onboard users for the userIds found in the body of the request'
       operationId: user
       tags:
         - Users
-      parameters:
-        - in: query
-          name: schoolId
-          schema:
-            type: string
-          required: true
-          description: 'The school id required to onboard all the users.'
+      requestBody:
+        description: Optional list of user ids to partialy onboard users.
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkUsersToOrganization'
+            example:
+              {
+                userIds:
+                  [
+                    'c8a34249-0ed9-42c7-80f1-324b33dc8a68',
+                    '7fe716b9-74f5-47b3-ba57-7e31170a6226',
+                  ],
+              }
       responses:
         '200':
           $ref: '#/components/responses/SuccessResponse'
@@ -149,6 +182,95 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Response'
+    SuccessResponseOrganization:
+      description: 'OK'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          example:
+            retriable:
+              - msg: 'Failed to establish a connection with the client API.'
+                type: 'client_error'
+                endpoint: '/onboard/organizations'
+                params:
+                  { organizationNames: ['Organization 1', 'Organization 2'] }
+              - msg: 'Could not find organization with name "Organization 1".'
+                type: 'not_found_error'
+                endpoint: '/onboard/organizations'
+                params:
+                  { organizationNames: ['Organization 1', 'Organization 2'] }
+            failed:
+              - msg: '"OrganizationUUID" must be an UUID v4'
+                value: 'cdc9a77f-ac83-'
+                param: externalUuid
+                entity: organization
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
+              - msg: '"OrganizationName" is not allowed to be empty'
+                value: ''
+                param: name
+                entity: organization
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
+    SuccessResponseSchool:
+      description: 'OK'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          example:
+            retriable:
+              - msg: 'Could not find schools with uuids: ["c8a34249-0ed9-42c7-80f1-324b33dc8a68","7fe716b9-74f5-47b3-ba57-7e31170a6226"].'
+                type: 'not_found_error'
+                endpoint: '/onboard/organizations/db43cdef-104c-4a5a-b48b-036554c3aa06/schools'
+                params:
+                  {
+                    schoolIds:
+                      [
+                        'c8a34249-0ed9-42c7-80f1-324b33dc8a68',
+                        '7fe716b9-74f5-47b3-ba57-7e31170a6226',
+                      ],
+                  }
+            failed:
+              - msg: '"SchoolUUID" must be an UUID v4'
+                value: 'cdc9a77f-ac83-'
+                param: externalUuid
+                entity: school
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
+              - msg: '"SchoolName" is not allowed to be empty'
+                value: ''
+                param: name
+                entity: school
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
+    SuccessResponseClass:
+      description: 'OK'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          example:
+            retriable:
+              - msg: 'Could not find classes with uuids: ["c8a34249-0ed9-42c7-80f1-324b33dc8a68","7fe716b9-74f5-47b3-ba57-7e31170a6226"].'
+                type: 'not_found_error'
+                endpoint: '/onboard/schools/72cc16c5-2c0b-493f-b544-04a5d2d48ecf/classes'
+                params:
+                  {
+                    classIds:
+                      [
+                        'c8a34249-0ed9-42c7-80f1-324b33dc8a68',
+                        '7fe716b9-74f5-47b3-ba57-7e31170a6226',
+                      ],
+                  }
+            failed:
+              - msg: '"ClassUUID" must be an UUID v4'
+                value: 'cdc9a77f-ac83-'
+                param: externalUuid
+                entity: class
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
+              - msg: '"ClassName" is not allowed to be empty'
+                value: ''
+                param: name
+                entity: class
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
 
     BadRequestOrganization:
       description: 'Bad Request. Validation issues with organization schema.'
@@ -162,10 +284,12 @@ components:
                 value: 'cdc9a77f-ac83-'
                 param: externalUuid
                 entity: organization
+                uuid: 'db43cdef-104c-4a5a-b48b-036554c3aa06'
               - msg: '"OrganizationName" is not allowed to be empty'
                 value: ''
                 param: name
                 entity: organization
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
     BadRequestSchool:
       description: 'Bad Request. Validation issues with school schema.'
       content:
@@ -178,10 +302,12 @@ components:
                 value: 'cdc9a77f-ac83-'
                 param: externalUuid
                 entity: school
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
               - msg: '"SchoolName" is not allowed to be empty'
                 value: ''
                 param: name
                 entity: school
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
     BadRequestClass:
       description: 'Bad Request. Validation issues with class schema.'
       content:
@@ -194,10 +320,12 @@ components:
                 value: 'cdc9a77f-ac83-'
                 param: externalUuid
                 entity: class
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
               - msg: '"ClassName" is not allowed to be empty'
                 value: ''
                 param: name
                 entity: class
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
     BadRequestUser:
       description: 'Bad Request. Validation issues with user schema.'
       content:
@@ -210,18 +338,22 @@ components:
                 value: 'cdc9a77f-ac83-'
                 param: externalUuid
                 entity: user
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
               - msg: '"UserGivenName" is not allowed to be empty'
                 value: ''
                 param: userGivenName
                 entity: user
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
               - msg: '"UserFamilyName" is not allowed to be empty'
                 value: ''
                 param: userFamilyName
                 entity: user
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
               - msg: '"Gender" is not allowed to be empty'
                 value: ''
                 param: gender
                 entity: user
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
     BadRequestLinkUsersToOrganization:
       description: 'Bad Request. Validation issues with linking entities.'
       content:
@@ -234,10 +366,12 @@ components:
                 value: '9f2c90e5-a21f-4622-979a-c3b37afe2186'
                 param: userId
                 entity: linkUsersToOrganization
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
               - msg: 'Role does not exist for "roleId"'
                 value: 'dbd83f2e-ec21-403e-9412-ad7aded32876'
                 param: roleId
                 entity: linkUsersToOrganization
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
     BadRequestLinkEntities:
       description: 'Bad Request. Validation issues with linking entities.'
       content:
@@ -250,14 +384,17 @@ components:
                 value: '0d8aa4ae-e17c-42b1-87dc-be582003a0ba'
                 param: targetData.organizationId
                 entity: linkEntities
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
               - msg: 'Source entity does not exit for "entityId"'
                 value: '9f2c90e5-a21f-4622-979a-c3b37afe2186'
                 param: sourceData[1].userId
                 entity: linkEntities
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
               - msg: 'Source entity does not exist for "roleId"'
                 value: 'dbd83f2e-ec21-403e-9412-ad7aded32876'
                 param: sourceData[1].roleId
                 entity: linkEntities
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
 
     Unauthorized:
       description: 'Unauthorized request.'
@@ -351,16 +488,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationError'
-      example:
-        errors:
-          - msg: '"ClassUUID" must be an UUID v4'
-            value: 'cdc9a77f-ac83-'
-            param: clientUuid
-            entity: class
-          - msg: '"ClassName" is not allowed to be empty'
-            value: ''
-            param: name
-            entity: class
     ValidationError:
       type: object
       required:
@@ -368,6 +495,7 @@ components:
         - value # joi's context.value
         - param # joi's context.key
         - entity # organization, school, class etc.
+        - uuid # external uuid of the entity
       properties:
         msg:
           type: string
@@ -377,39 +505,45 @@ components:
           type: string
         entity:
           type: string
+        uuid:
+          type: string
+
+    RetriableErrors:
+      type: array
+      items:
+        $ref: '#/components/schemas/RetriableError'
+    RetriableError:
+      type: object
+      required:
+        - msg
+        - type # error type: client_error, redis_error, backend_error etc.
+        - endpoint # organization, school, class etc.
+        - params # external uuid of the entity
+      properties:
+        msg:
+          type: string
+        type:
+          type: string
+          enum: [client_error, redis_error, backend_error]
+        endpoint:
+          type: string
+        params:
+          type: object
 
     Response:
       type: object
       required:
-        - success
         - retriable
         - failed
       properties:
-        success:
-          type: array
-          items:
-            type: string
         retriable:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/RetriableErrors'
         failed:
           type: array
           items:
-            type: string
-      example:
-        success:
-          [
-            'bab46d28-97c2-4d45-88b9-ba031a1a3ab9',
-            '7271c173-7c09-4ffd-a6d6-7317c96ef6f7',
-            '81923c32-5fe2-4e61-8ab2-2318af71fbee',
-          ]
-        retriable: ['e89d49ae-151c-44f1-bc80-04efadbe7dc5']
-        failed:
-          [
-            '1c74ac49-46a4-438c-bb96-b66586949227',
-            '808f372e-7e19-49ad-ae94-04b94b14fbf9',
-          ]
+            $ref: '#/components/schemas/ValidationError'
 
   securitySchemes:
     ApiKeyAuth:
