@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import messages from './messages';
 import { validationRules } from '../config/validationRules';
-import { stringInject } from '../../src/utils/string';
+import { stringInject } from "../utils/string";
 
 export const organizationSchema = Joi.object({
   OrganizationUUID: Joi.string()

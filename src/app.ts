@@ -1,11 +1,11 @@
 import 'newrelic';
 import express, { Request, Response, NextFunction } from 'express';
+import './utils/dotenv';
 import createError from 'http-errors';
-import { checkAPIToken } from './middlewares/checkApiToken';
+import { checkAPIToken } from './middlewares/checkAPIToken';
 import OnboardRouter from './routes/onboardRouter';
 import LinkRouter from './routes/linkRouter';
 import { HttpError } from './utils';
-import './utils/dotenv';
 
 const app = express();
 
