@@ -1,0 +1,175 @@
+syntax = "proto3";
+package cil_onboarding.api;
+
+message Organization {
+  string external_uuid = 1;
+  string name = 2;
+}
+
+message School {
+  string external_uuid = 1;
+  string external_organization_uuid = 2;
+  string name = 3;
+  string short_code = 5;
+}
+
+message Class {
+  string external_uuid = 1;
+  string external_organization_uuid = 2;
+  string name = 3;
+  string external_school_uuid = 4;
+}
+
+message User {
+  string external_uuid = 1;
+  string external_organization_uuid = 2;
+  string email = 3;
+  string phone = 4;
+  string username = 5;
+  string given_name = 6;
+  string family_name = 7;
+  Gender gender = 8;
+  string date_of_birth = 9;
+  string short_code = 10;
+  repeated string role_names = 11;
+}
+
+enum Gender {
+  MALE = 0;
+  FEMALE = 1;
+}
+
+enum Entity {
+  ORGANIZATION = 0;
+  SCHOOL = 1;
+  CLASS = 2;
+  USER = 3;
+  ROLE = 4;
+  PROGRAM = 5;
+}
+
+enum Action {
+  CREATE = 0;
+}
+
+message AddUsersToClass {
+  string external_class_uuid = 1;
+  repeated string external_teacher_uuid = 2;
+  repeated string external_student_uuid = 3;
+}
+
+message AddUserToSchool {
+  repeated string external_user_uuids = 1;
+  string external_school_uuid = 2;
+}
+
+message AddProgramsToSchool {
+  string external_organization_uuid = 1;
+  string external_school_uuid = 2;
+  repeated string program_names = 3;
+}
+
+message AddProgramsToClass {
+  string external_organization_uuid = 1;
+  string external_class_uuid = 2;
+  repeated string program_names = 3;
+}
+
+message AddClassesToSchool {
+  string external_school_uuid = 1;
+  repeated string external_class_uuids = 2;
+}
+
+message AddOrganizationRolesToUser {
+  string external_organization_uuid = 1;
+  string external_user_uuid = 2;
+  repeated string role_names = 3;
+}
+
+message AddUsersToOrganizations {
+  string external_organization_uuid = 1;
+  repeated string role_names = 2;
+  repeated string external_user_uuids = 3;
+}
+
+message Link {
+  oneof link {
+    AddUsersToOrganizations add_users_to_organizations = 1;
+    AddOrganizationRolesToUser add_organization_roles_to_user = 2;
+    AddUserToSchool add_user_to_school = 3;
+    AddUsersToClass add_users_to_class = 4;
+    AddProgramsToSchool add_programs_to_school = 5;
+    AddProgramsToClass add_programs_to_class = 6;
+    AddClassesToSchool add_classes_to_school = 7;
+  }
+}
+
+message OnboardingRequest {
+  string request_id = 1;
+  Action action = 2;
+  oneof payload {
+    Link link_entities = 16;
+    Organization organization = 17;
+    School school = 18;
+    Class class = 19;
+    User user = 20;
+  }
+}
+
+message BatchOnboarding {
+  repeated OnboardingRequest requests = 1;
+}
+
+message Responses {
+  repeated Response responses = 1;
+}
+
+message Response {
+  string request_id = 1;
+  Entity entity = 2;
+  string entity_id = 3;
+  bool success = 4;
+  Error errors = 5;
+}
+
+message Error {
+  oneof error_type {
+    ValidationError validation = 1;
+    InvalidRequestError request = 2;
+    InternalServerError internal_server = 3;
+    EntityAlreadyExistsError entity_exists = 4;
+    EntityDoesNotExistError entity_does_not_exist = 5;
+  }
+}
+
+message ValidationError {
+  repeated PathBasedError errors = 1;
+  repeated string additional_details = 2;
+}
+
+message InternalServerError {
+  repeated string details = 1;
+}
+
+message EntityAlreadyExistsError {
+  repeated string details = 1;
+}
+
+message EntityDoesNotExistError {
+  repeated string details = 1;
+}
+
+message InvalidRequestError {
+  repeated PathBasedError errors = 1;
+  repeated string additional_details = 2;
+}
+
+message PathBasedError {
+  string path = 1;
+  repeated string details = 2;
+}
+
+service Onboarding {
+  rpc Onboard(BatchOnboarding) returns (Responses) {};
+  rpc OnboardStream(stream BatchOnboarding) returns (stream Response) {};
+}

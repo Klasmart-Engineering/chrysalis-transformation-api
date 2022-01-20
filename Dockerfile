@@ -5,6 +5,7 @@ COPY package.json tsconfig.json ./
 COPY src ./src
 COPY types ./types
 COPY prisma ./prisma
+COPY protos ./protos
 COPY newrelic.js .
 
 RUN npm install
