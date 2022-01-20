@@ -26,7 +26,9 @@ paths:
             example: { organizationNames: ['Organization 1', 'Organization 2'] }
       responses:
         '200':
-          $ref: '#/components/responses/SuccessResponseOrganization'
+          $ref: '#/components/responses/PartialSuccessResponseOrganization'
+        '204':
+          $ref: '#/components/responses/NoContentResponse'
         '400':
           $ref: '#/components/responses/BadRequestOrganization'
         '401':
@@ -34,7 +36,7 @@ paths:
         '500':
           $ref: '#/components/responses/UnexpectedError'
 
-  /onboard/organizations/:organizationId/schools:
+  /onboard/schools/:organizationId:
     post:
       summary: 'Attempts to onboard all schools for a given organization uuid or partialy onboard schools for the schoolIds found in the body of the request'
       operationId: school
@@ -57,7 +59,9 @@ paths:
               }
       responses:
         '200':
-          $ref: '#/components/responses/SuccessResponseSchool'
+          $ref: '#/components/responses/PartialSuccessResponseSchool'
+        '204':
+          $ref: '#/components/responses/NoContentResponse'
         '400':
           $ref: '#/components/responses/BadRequestSchool'
         '401':
@@ -65,7 +69,7 @@ paths:
         '500':
           $ref: '#/components/responses/UnexpectedError'
 
-  /onboard/schools/:schoolId/classes:
+  /onboard/classes/:schoolId:
     post:
       summary: 'Attempts to onboard all classes for a given school uuid or partialy onboard classes for the classIds found in the body of the request'
       operationId: class
@@ -89,7 +93,9 @@ paths:
 
       responses:
         '200':
-          $ref: '#/components/responses/SuccessResponseClass'
+          $ref: '#/components/responses/PartialSuccessResponseClass'
+        '204':
+          $ref: '#/components/responses/NoContentResponse'
         '400':
           $ref: '#/components/responses/BadRequestClass'
         '401':
@@ -97,15 +103,51 @@ paths:
         '500':
           $ref: '#/components/responses/UnexpectedError'
 
-  /onboard/schools/:schoolId/users:
+  /onboard/users/schools/:schoolId:
     post:
-      summary: 'Attempts to onboard all users for a given school uuid or partialy onboard users for the userIds found in the body of the request'
-      operationId: user
+      summary: 'Attempts to onboard all users for a given school uuid.'
+      operationId: usersToSchools
+      tags:
+        - Users
+      responses:
+        '200':
+          $ref: '#/components/responses/PartialSuccessResponseUser'
+        '204':
+          $ref: '#/components/responses/NoContentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+
+  /onboard/users/classes/:classId:
+    post:
+      summary: 'Attempts to onboard all users for a given class uuid.'
+      operationId: usersToClasses
+      tags:
+        - Users
+      responses:
+        '200':
+          $ref: '#/components/responses/PartialSuccessResponseUser'
+        '204':
+          $ref: '#/components/responses/NoContentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+
+  /onboard/users:
+    post:
+      summary: 'Attempts to onboard users for the userIds found in the body of the request.'
+      operationId: users
       tags:
         - Users
       requestBody:
-        description: Optional list of user ids to partialy onboard users.
-        required: false
+        description: Required list of user ids to partialy onboard users.
+        required: true
         content:
           application/json:
             schema:
@@ -120,7 +162,9 @@ paths:
               }
       responses:
         '200':
-          $ref: '#/components/responses/SuccessResponse'
+          $ref: '#/components/responses/PartialSuccessResponseUser'
+        '204':
+          $ref: '#/components/responses/NoContentResponse'
         '400':
           $ref: '#/components/responses/BadRequestUser'
         '401':
@@ -177,12 +221,15 @@ paths:
 components:
   responses:
     SuccessResponse:
-      description: 'The response when onbording of the "entity" succeeded'
+      description: 'The response when onbording of the "entity" partialy succeeded'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Response'
-    SuccessResponseOrganization:
+    NoContentResponse:
+      description: No content. (the response when all 'entities' were onboarded successfully)
+
+    PartialSuccessResponseOrganization:
       description: 'OK'
       content:
         application/json:
@@ -211,7 +258,7 @@ components:
                 param: name
                 entity: organization
                 uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
-    SuccessResponseSchool:
+    PartialSuccessResponseSchool:
       description: 'OK'
       content:
         application/json:
@@ -241,7 +288,7 @@ components:
                 param: name
                 entity: school
                 uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
-    SuccessResponseClass:
+    PartialSuccessResponseClass:
       description: 'OK'
       content:
         application/json:
@@ -270,6 +317,46 @@ components:
                 value: ''
                 param: name
                 entity: class
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
+    PartialSuccessResponseUser:
+      description: 'OK'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          example:
+            retriable:
+              - msg: 'Could not find users with uuids: ["c8a34249-0ed9-42c7-80f1-324b33dc8a68","7fe716b9-74f5-47b3-ba57-7e31170a6226"].'
+                type: 'not_found_error'
+                endpoint: '/onboard/users/schools/72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
+                params:
+                  {
+                    userIds:
+                      [
+                        'c8a34249-0ed9-42c7-80f1-324b33dc8a68',
+                        '7fe716b9-74f5-47b3-ba57-7e31170a6226',
+                      ],
+                  }
+            failed:
+              - msg: '"UserUUID" must be an UUID v4'
+                value: 'cdc9a77f-ac83-'
+                param: externalUuid
+                entity: user
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
+              - msg: '"UserGivenName" is not allowed to be empty'
+                value: ''
+                param: userGivenName
+                entity: user
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
+              - msg: '"UserFamilyName" is not allowed to be empty'
+                value: ''
+                param: userFamilyName
+                entity: user
+                uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
+              - msg: '"Gender" is not allowed to be empty'
+                value: ''
+                param: gender
+                entity: user
                 uuid: '72cc16c5-2c0b-493f-b544-04a5d2d48ecf'
 
     BadRequestOrganization:
