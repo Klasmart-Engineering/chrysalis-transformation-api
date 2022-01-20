@@ -9,8 +9,18 @@ import logger from './logging';
 import { ValidationErrorItem } from 'joi';
 import { FailedResponseType } from './types';
 
-export type ValidationResponseType = {
-  validData?: (OrganizationQuerySchema | SchoolQuerySchema | ClassQuerySchema)[],
+export type ValidationOrganizationType = {
+  validData?: OrganizationQuerySchema[],
+  errors?: FailedResponseType[]
+}
+
+export type ValidationSchoolType = {
+  validData?: SchoolQuerySchema[],
+  errors?: FailedResponseType[]
+}
+
+export type ValidationClassType = {
+  validData?: ClassQuerySchema[],
   errors?: FailedResponseType[]
 }
 
@@ -58,8 +68,8 @@ export const isClassValid = (schoolClass: ClassQuerySchema) => {
   }
 };
 
-export function validateOrganizations(organizations: OrganizationQuerySchema[]): ValidationResponseType {
-  const response: ValidationResponseType = {};
+export function validateOrganizations(organizations: OrganizationQuerySchema[]): ValidationOrganizationType {
+  const response: ValidationOrganizationType = {};
 
   for (const org of organizations) {
     const { error, value } = organizationSchema.validate(org, { abortEarly: false });
@@ -102,8 +112,8 @@ export function validateOrganizations(organizations: OrganizationQuerySchema[]):
   return response;
 }
 
-export function validateSchools(schools: SchoolQuerySchema[]): ValidationResponseType {
-  const response: ValidationResponseType = {};
+export function validateSchools(schools: SchoolQuerySchema[]): ValidationSchoolType {
+  const response: ValidationSchoolType = {};
 
   for (const school of schools) {
     const { error, value } = schoolSchema.validate(school, { abortEarly: false });
@@ -123,8 +133,8 @@ export function validateSchools(schools: SchoolQuerySchema[]): ValidationRespons
   return response;
 }
 
-export function validateClasses(classes: ClassQuerySchema[]): ValidationResponseType {
-  const response: ValidationResponseType = {};
+export function validateClasses(classes: ClassQuerySchema[]): ValidationClassType {
+  const response: ValidationClassType = {};
 
   for (const cl of classes) {
     const { error, value } = classSchema.validate(cl, { abortEarly: false });
