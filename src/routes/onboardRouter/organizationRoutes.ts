@@ -1,17 +1,14 @@
 import express, { Request, Response } from 'express';
-// import grpc from "@grpc/grpc-js";
-// import protoLoader from "@grpc/proto-loader";
 import { SuccessResponse } from '../../utils';
 import { C1Service } from '../../services/c1Service';
+import { BackendService } from '../../services/backendService';
 import { OrganizationQuerySchema } from '../../interfaces/clientSchemas';
 import { Cache } from '../../utils/cache';
-import { Organization } from '../../protos';
-// import PROTO_PATH from '../../../protos/api.proto';
-import logger from '../../utils/logging';
 
 const router = express.Router();
 const service = new C1Service();
 const cache = Cache.getInstance();
+const backendService = BackendService.getInstance();
 
 router.post('/', async (req: Request, res: Response) => {
 	const { organizationNames = [] }: { organizationNames: string[] } = req.body;
@@ -33,36 +30,8 @@ router.post('/', async (req: Request, res: Response) => {
 		organizations = organizations.filter(org => organizationNames.includes(org.OrganizationName));
 	}
 
-	// map organizations to protobuf schema
-	const protoOrganizations = organizations.map(org => {
-		const protoOrg = new Organization();
-
-		protoOrg
-			.setName(org.OrganizationName)
-			.setExternalUuid(org.OrganizationUUID);
-
-		return protoOrg.toString();
-	});
-
-	logger.info(protoOrganizations);
-	
-
 	// call generic backend
-	// const options = {
-	// 	keepCase: true,
-	// 	longs: String,
-	// 	enums: String,
-	// 	defaults: true,
-	// 	oneofs: true,
-	// };
-
-	// const packageDefinition = protoLoader.loadSync(PROTO_PATH, options);
-	// const ApiService = grpc.loadPackageDefinition(packageDefinition).Onboarding;
-
-	// const client = new ApiService(
-	// 	"localhost:3200",
-	// 	grpc.credentials.createInsecure()
-	// );
+	await backendService.onboardOrganizations(organizations)
 
 	// check in response for validation errors
 
