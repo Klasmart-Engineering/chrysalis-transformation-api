@@ -1,7 +1,7 @@
 import { BaseRestfulService } from './baseRestfulService';
 import { C1AuthEndpoints, C1Endpoints } from '../config/c1Endpoints';
 import { AuthServer } from '../utils/authServer';
-import { OrganizationQuerySchema } from '../interfaces/clientSchemas';
+import { OrganizationQuerySchema, SchoolQuerySchema } from '../interfaces/clientSchemas';
 
 const loginData = JSON.stringify({
   Username: String(process.env.C1_API_USERNAME),
@@ -42,12 +42,12 @@ export class C1Service extends BaseRestfulService {
       });
   }
 
-  getSchools(pathSegments: string[]) {
+  async getSchools(pathSegments: string[]): Promise<Array<SchoolQuerySchema>> {
     const client = this.createClient(
-      C1Endpoints.schoolApiEndpoint,
+      C1Endpoints.organizationApiEndpoint,
       pathSegments
     );
-    return this.getData(client);
+    return await this.getData(client) as Array<SchoolQuerySchema>;
   }
 
   getClasses(pathSegments: string[]) {

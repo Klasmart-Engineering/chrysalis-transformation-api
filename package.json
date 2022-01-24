@@ -32,7 +32,7 @@
   "homepage": "https://bitbucket.org/calmisland/mcb-integration-layer#readme",
   "dependencies": {
     "@apollo/client": "3.5.6",
-    "@grpc/grpc-js": "1.5.3",
+    "@grpc/grpc-js": "1.2.2",
     "@newrelic/winston-enricher": "2.1.0",
     "@prisma/client": "3.5.0",
     "bee-queue": "1.4.0",

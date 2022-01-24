@@ -1,4 +1,9 @@
 import LRU from "lru-cache";
+import { C1Service } from '../services/c1Service';
+import { OrganizationQuerySchema } from '../interfaces/clientSchemas';
+
+const service = new C1Service();
+
 export class Cache {
   private static _instance: Cache;
 
@@ -36,12 +41,18 @@ export class Cache {
     return this._instance;
   }
 
-  public getOrganizationId(
+  public async getOrganizationId(
     name: string
-  ): string | null {
+  ): Promise<string> {
     const value = this.organizations.get(name);
     if (value) return value;
-    return null;
+    const organizations = await service.getOrganizations();
+    let uuid = '';
+    organizations.forEach((org: OrganizationQuerySchema) => {
+      this.addOrganizationId(org.OrganizationName, org.OrganizationUUID)
+      if (name === org.OrganizationName) uuid = org.OrganizationUUID;
+    });
+    return uuid;
   }
 
   public addOrganizationId(
@@ -61,14 +72,14 @@ export class Cache {
   //   // - ADD VALUE INTO CACHE
   //   // - RETURN VALUE
   // }
-  //
-  // public addSchoolId(
-  //   name: string,
-  //   id: string
-  // ): void {
-  //   this.schools.set(name, id);
-  // }
-  //
+
+  public addSchoolId(
+    name: string,
+    id: string
+  ): void {
+    this.schools.set(name, id);
+  }
+
   // public async getClassId(
   //   name: string
   // ): Promise<string> {
