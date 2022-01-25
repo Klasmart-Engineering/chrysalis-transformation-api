@@ -10,11 +10,12 @@ const service = new C1Service();
 const cache = Cache.getInstance();
 const backendService = BackendService.getInstance();
 
-router.post('/:organizationId', async (req: Request, res: Response) => {
+router.post('/:organizationUUID', async (req: Request, res: Response) => {
+  const { organizationUUID } = req.params;
   const { schoolIds = [] }: { schoolIds: string[] } = req.body;
 
   const response = new SuccessResponse();
-  let schools: Array<SchoolQuerySchema> = await service.getSchools([req.params.organizationId, 'Schools']);
+  let schools: Array<SchoolQuerySchema> = await service.getSchools([organizationUUID, 'Schools']);
 
   if (!schools || schools.length === 0) {
     return res.json(response);
@@ -31,7 +32,7 @@ router.post('/:organizationId', async (req: Request, res: Response) => {
   }
 
   // call generic backend
-  await backendService.onboardSchools(schools);
+  await backendService.onboardSchools(organizationUUID, schools);
 
   // check in response for validation errors
 

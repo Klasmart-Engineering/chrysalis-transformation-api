@@ -5,10 +5,8 @@ import { Responses, School } from 'cil-lib/dist/main/lib/protos';
 import { OrganizationQuerySchema, SchoolQuerySchema } from '../interfaces/clientSchemas';
 import logger from '../utils/logging';
 import { ServiceError } from '@grpc/grpc-js';
-import { Cache } from '../utils/cache';
 
 const { BatchOnboarding, OnboardingRequest, Organization } = proto;
-const cache = Cache.getInstance();
 
 export class BackendService {
 	private _client: proto.OnboardingClient;
@@ -68,14 +66,13 @@ export class BackendService {
 		});
 	};
 
-	async onboardSchools(schools: SchoolQuerySchema[] = []) {
+	async onboardSchools(organizationUuid: string, schools: SchoolQuerySchema[] = []) {
 		return new Promise((resolve, reject) => {
 			const request = new BatchOnboarding();
 
 			schools.forEach(async school => {
 				const onboardSchoolRequest = new OnboardingRequest()
 				const schoolProto = new School()
-				const organizationUuid = await cache.getOrganizationId(school.OrganizationName)
 				schoolProto.setExternalUuid(school.SchoolUUID)
 					.setName(school.SchoolName)
 					.setShortCode(school.SchoolShortCode)
