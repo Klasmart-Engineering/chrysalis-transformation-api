@@ -28,12 +28,12 @@ export class C1Service extends BaseRestfulService {
         setInterval(() => {
           authServer
             .doRefreshToken(C1AuthEndpoints.refresh)
-            .then(response => {
+            .then((response) => {
               this.jwtToken = response;
             })
             .catch(() => {
               throw new Error('Failed to refresh token');
-            })
+            });
         }, REFRESH_TOKEN_INTERVAL);
       })
       .catch(() => {
@@ -43,7 +43,7 @@ export class C1Service extends BaseRestfulService {
 
   getSchools(pathSegments: string[]) {
     const client = this.createClient(
-      C1Endpoints.schoolApiEndpoint,
+      C1Endpoints.schoolsApiEndpoint,
       pathSegments
     );
     return this.getData(client);
@@ -67,6 +67,14 @@ export class C1Service extends BaseRestfulService {
 
   getOrganizations() {
     const client = this.createClient(C1Endpoints.organizationApiEndpoint);
+    return this.getData(client);
+  }
+
+  getSchool(pathSegments: string[]) {
+    const client = this.createClient(
+      C1Endpoints.schoolApiEndpoint,
+      pathSegments
+    );
     return this.getData(client);
   }
 }

@@ -16,3 +16,19 @@ export const getSchools = [
     Source: 'Chrysalis',
   },
 ];
+
+export const getSchool = {
+  OrganizationName: 'Chrysalis BLP Premium',
+  SchoolUUID: 'F9DAB07B-17BE-4881-A80A-AD6549E75B47',
+  SchoolName: 'Chrysalis School',
+  SchoolShortCode: 'ZIZZZZJMWD',
+  ProgramName: [
+    'BLP Grade 1',
+    'BLP Grade 2',
+    'BLP Grade 3',
+    'BLP Grade 4',
+    'BLP PP1',
+    'BLP PP2',
+  ],
+  Source: 'Chrysalis',
+};

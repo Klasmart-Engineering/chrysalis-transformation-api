@@ -293,18 +293,24 @@ router.post(
       });
     }
 
+    // Check whether school exists or not
+    const school = (await service.getSchool([schoolId])) as SchoolQuerySchema;
+    if (!school) {
+      return res.status(404).json({ errors: 'School not found.' });
+    }
+
     // Fetch classes from C1
     let classes: ClassQuerySchema[] = [];
     try {
       classes = (await service.getClasses([schoolId])) as ClassQuerySchema[];
 
       if (!classes) {
-        throw new HttpError(404, { message: 'Classes not found.' });
+        return res.status(404).json({ message: 'Classes not found.' });
       }
     } catch (err) {
       // TODO: retry here
       logger.error(err);
-      throw new HttpError(500, { message: 'Cannot fetch classes from C1.' });
+      return res.status(500).json({ message: 'Cannot fetch classes from C1.' });
     }
 
     let onboardClasses: ClassQuerySchema[] = [];
@@ -328,7 +334,7 @@ router.post(
 
     // TODO: Transform classes to proto objects and send to generic API
 
-    res.json(onboardClasses);
+    res.status(204).json();
   }
 );
 
