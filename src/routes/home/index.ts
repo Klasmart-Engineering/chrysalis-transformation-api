@@ -7,12 +7,18 @@ import { AdminService } from '../../services/adminService';
 import { C1Service } from '../../services/c1Service';
 import { MappedClass, MappedSchool } from '../../utils/mapResKeys';
 import { validateClasses, validateSchool } from '../../utils/validations';
-import { ClassQuerySchema, SchoolQuerySchema } from '../../services/c1Schemas';
+import {
+  ClassQuerySchema,
+  SchoolQuerySchema,
+} from '../../interfaces/c1Schemas';
 import { onboardingSchema } from '../../validatorsSchemes/requests/onboarding';
+import { onboardClassesSchema } from '../../validatorsSchemes/requests/onboardClasses';
 import { shorten } from '../../utils/string';
 import { validationRules } from '../../config/validationRules';
+import { Cache } from '../../utils/cache';
 
 const router = express.Router();
+const cache = Cache.getInstance();
 const service = new C1Service();
 
 const retryQueue = new RetryQueue('test');
@@ -253,5 +259,77 @@ router.get('/roles', async (req: Request, res: Response) => {
       : res.status(500).json(e);
   }
 });
+
+router.post(
+  '/onboard/classes/:schoolId',
+  async (req: Request, res: Response) => {
+    // Authorize & validate request body
+    const apiSecret = req.get('X_API_SECRET');
+    if (apiSecret != process.env.API_SECRET) {
+      return res.status(401).json({ message: 'Unauthorized.' });
+    }
+
+    const { schoolId } = req.params;
+    const { classIds } = req.body;
+
+    const { error } = onboardClassesSchema.validate(
+      {
+        schoolId,
+        classIds,
+      },
+      {
+        abortEarly: false,
+      }
+    );
+
+    if (error) {
+      return res.status(400).json({
+        errors: error.details.map((detail) => ({
+          msg: detail.message,
+          value: detail.context?.value,
+          param: detail.context?.label,
+          entity: 'class',
+        })),
+      });
+    }
+
+    // Fetch classes from C1
+    let classes: ClassQuerySchema[] = [];
+    try {
+      classes = (await service.getClasses([schoolId])) as ClassQuerySchema[];
+
+      if (!classes) {
+        throw new HttpError(404, { message: 'Classes not found.' });
+      }
+    } catch (err) {
+      // TODO: retry here
+      logger.error(err);
+      throw new HttpError(500, { message: 'Cannot fetch classes from C1.' });
+    }
+
+    let onboardClasses: ClassQuerySchema[] = [];
+    if (classIds) {
+      classes.map((c) => {
+        if (classIds.includes(c.ClassUUID)) {
+          onboardClasses.push(c);
+        }
+      });
+      if (onboardClasses.length <= 0) {
+        throw new HttpError(404, { message: 'Classes not found.' });
+      }
+    } else {
+      onboardClasses = [...classes];
+    }
+
+    // Add classes to LRU cache
+    onboardClasses.forEach((c: ClassQuerySchema) => {
+      cache.addClassId(c.ClassName, c.ClassUUID);
+    });
+
+    // TODO: Transform classes to proto objects and send to generic API
+
+    res.json(onboardClasses);
+  }
+);
 
 export default router;
