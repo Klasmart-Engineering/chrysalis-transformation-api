@@ -1,11 +1,14 @@
 
-import * as grpc from "@grpc/grpc-js";
-import { proto } from 'cil-lib'
+import { v4 as uuidv4 } from 'uuid'
+import { grpc, proto } from 'cil-lib'
+import { InterceptorOptions, NextCall } from '@grpc/grpc-js/build/src/client-interceptors'
+import { InterceptingListener } from '@grpc/grpc-js/build/src/call-stream'
+import { Metadata } from '@grpc/grpc-js/build/src/metadata'
 import { Responses } from "cil-lib/dist/main/lib/protos";
 import { OrganizationQuerySchema } from "../interfaces/clientSchemas";
 import logger from '../utils/logging';
 
-const { BatchOnboarding, OnboardingRequest, Organization } = proto;
+const { Action, BatchOnboarding, OnboardingRequest, Organization } = proto;
 
 export class BackendService {
 	private _client: proto.OnboardingClient;
@@ -24,10 +27,19 @@ export class BackendService {
 			if (this._instance) {
 				return this._instance;
 			} else {
-				// const channel = new InsecureChannelCredentialsImpl(grpc.CallCredentials.createEmpty())
-				// const channel = grpc.credentials.createInsecure()
-				const channel: grpc.ChannelCredentials = grpc.ChannelCredentials.createSsl() as grpc.ChannelCredentials
-				const client = new proto.OnboardingClient('127.0.0.1:3200', channel)
+				const channel: grpc.ChannelCredentials = grpc.ChannelCredentials.createInsecure() as grpc.ChannelCredentials
+				const interceptor = (options: InterceptorOptions, nextCall: NextCall) => {
+					const requester = {
+						start(metadata: Metadata, listener: Partial<InterceptingListener>, next: CallableFunction) {
+							metadata.add('x-api-key', String(process.env.BACKEND_API_SECRET))
+							next(metadata, listener)
+						}
+					}
+
+					return new grpc.InterceptingCall(nextCall(options), requester);
+				}
+
+				const client = new proto.OnboardingClient(String(process.env.BACKEND_API_URL), channel, { interceptors: [interceptor] })
 				this._instance = new BackendService(client);
 				logger.info('Connected to Generic backend');
 				return this._instance;
@@ -50,6 +62,9 @@ export class BackendService {
 					.setExternalUuid(org.OrganizationUUID)
 
 				onboardOrgRequest.setOrganization(organization)
+					.setRequestId(uuidv4())
+					.setAction(Action.CREATE)
+
 				request.addRequests(onboardOrgRequest)
 			})
 
