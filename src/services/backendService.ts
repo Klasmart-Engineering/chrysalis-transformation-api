@@ -1,19 +1,15 @@
 
-import * as grpc from "@grpc/grpc-js";
-import { proto } from 'cil-lib/src'
-import { Responses, School } from 'cil-lib/dist/main/lib/protos';
 import { OrganizationQuerySchema, SchoolQuerySchema } from '../interfaces/clientSchemas';
 import { v4 as uuidv4 } from 'uuid'
 import { grpc, proto } from 'cil-lib'
 import { InterceptorOptions, NextCall } from '@grpc/grpc-js/build/src/client-interceptors'
 import { InterceptingListener } from '@grpc/grpc-js/build/src/call-stream'
 import { Metadata } from '@grpc/grpc-js/build/src/metadata'
-import { Responses } from "cil-lib/dist/main/lib/protos";
-import { OrganizationQuerySchema } from "../interfaces/clientSchemas";
 import logger from '../utils/logging';
+import { Responses } from 'cil-lib/dist/main/lib/protos';
 import { ServiceError } from '@grpc/grpc-js';
 
-const { Action, BatchOnboarding, OnboardingRequest, Organization } = proto;
+const { Action, BatchOnboarding, OnboardingRequest, Organization, School } = proto;
 
 export class BackendService {
 	private _client: proto.OnboardingClient;
@@ -97,7 +93,9 @@ export class BackendService {
 					.setShortCode(school.SchoolShortCode)
 					.setExternalOrganizationUuid(organizationUuid);
 
-				onboardSchoolRequest.setSchool(schoolProto);
+				onboardSchoolRequest.setSchool(schoolProto)
+					.setRequestId(uuidv4())
+					.setAction(Action.CREATE);
 				request.addRequests(onboardSchoolRequest);
 			})
 
