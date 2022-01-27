@@ -31,11 +31,11 @@ router.post('/', async (req: Request, res: Response) => {
 	}
 
 	// call generic backend
-	await backendService.onboardOrganizations(organizations)
+	const result = await backendService.onboardOrganizations(organizations)
 
 	// check in response for validation errors
 
-	return response;
+	return res.json({ organizations, result });
 });
 
 export default router;
