@@ -1,6 +1,6 @@
-import { userSchema } from '../../src/validatorsSchemes';
+import { userSchema } from '../../src/validations/c1';
 
-export const validUser =  {
+export const validUser = {
   userUuid: '1AF7592D-E9D4-4E1E-9C39-2F0E48854439',
   klUuid: '1AF7592D-E9D4-4E1E-9C39-2F0E48854439',
   userGivenName: 'Molika',
@@ -9,17 +9,13 @@ export const validUser =  {
   phone: '+919540253063',
   dateOfBirth: null,
   gender: 'Female',
-  klRoleName: [
-    'Chrysalis Student'
-  ],
+  klRoleName: ['Chrysalis Student'],
   schoolName: 'Bharti Model School',
-  className: [
-    'III A NEW0007561'
-  ],
+  className: ['III A NEW0007561'],
   username: 'abcdefgh',
 };
 
-export const invalidUser =  {
+export const invalidUser = {
   userUuid: '1AF7592D-E9D4-',
   klUuid: '1AF7592D-E9D4-4E1E-9C39-2F0E48854439',
   userGivenName: '',
@@ -28,28 +24,24 @@ export const invalidUser =  {
   phone: '+919540253063',
   dateOfBirth: null,
   gender: 'Female',
-  klRoleName: [
-    'Chrysalis Student'
-  ],
+  klRoleName: ['Chrysalis Student'],
   schoolName: 'Bharti Model School',
-  className: [
-    'III A NEW0007561'
-  ],
+  className: ['III A NEW0007561'],
   username: 'abcdefgh',
 };
 
 interface User {
   userUuid: string;
-  klUuid: string,
-  userGivenName: string,
-  userFamilyName: string,
-  email: string | null,
-  phone: string | null,
-  dateOfBirth: string | null,
-  gender: string,
-  klRoleName: string[],
-  schoolName: string,
-  className: string[],
+  klUuid: string;
+  userGivenName: string;
+  userFamilyName: string;
+  email: string | null;
+  phone: string | null;
+  dateOfBirth: string | null;
+  gender: string;
+  klRoleName: string[];
+  schoolName: string;
+  className: string[];
 }
 
 export const isUserValid = (userData: User) => {

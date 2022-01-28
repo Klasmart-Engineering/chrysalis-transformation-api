@@ -1,7 +1,7 @@
 import Joi from 'joi';
-import messages from './messages';
-import { validationRules } from '../config/validationRules';
-import { stringInject } from '../../src/utils/string';
+import messages from '../messages';
+import { validationRules } from '../../config/validationRules';
+import { stringInject } from '../../utils/string';
 
 export const schoolSchema = Joi.object({
   name: Joi.string()

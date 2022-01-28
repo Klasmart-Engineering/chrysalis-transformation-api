@@ -1,8 +1,8 @@
 import { expect } from 'chai';
-import messages from '../../../src/validatorsSchemes/messages';
+import messages from '../../../src/validations/messages';
 import { stringInject } from '../../../src/utils/string';
 import { invalidUser, isUserValid, validUser } from '../../utils/user';
-import { userSchema } from '../../../src/validatorsSchemes';
+import { userSchema } from '../../../src/validations/c1';
 
 describe('user validation', function () {
   it('should return true', function () {
@@ -28,8 +28,6 @@ describe('user validation', function () {
     expect(errorDetails).to.include(
       stringInject(messages['string.guid'], ['UserUUID'])
     );
-    expect(errorDetails).to.include(
-      'The "Email" format is wrong'
-    );
+    expect(errorDetails).to.include('The "Email" format is wrong');
   });
 });

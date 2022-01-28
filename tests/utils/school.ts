@@ -1,4 +1,4 @@
-import { schoolSchema } from '../../src/validatorsSchemes';
+import { schoolSchema } from '../../src/validations/c1';
 
 export const validSchool = {
   name: 'name',
@@ -12,8 +12,8 @@ export const validSchool = {
 export const schoolForUs = {
   name: 'school1',
   shortCode: 'shortCode',
-  organizationId: 'b3e9119f-18ac-437e-b460-6d54d99e8ee1'
-}
+  organizationId: 'b3e9119f-18ac-437e-b460-6d54d99e8ee1',
+};
 
 export const invalidSchool = {
   name: '',

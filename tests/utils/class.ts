@@ -1,36 +1,36 @@
-import { classSchema } from '../../src/validatorsSchemes';
+import { classSchema } from '../../src/validations/c1';
 
 export const validClass = {
-  name: 'Grade 3 A',
-  clientUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  klOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  shortCode: 'SHCODE',
-  schoolName: 'Example School',
-  programNames: ['Program Grade 3'],
-  clientOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  organizationName: 'Org Classic',
+  ClassUUID: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
+  ClassName: 'Grade 3 A',
+  ClassShortCode: 'SHCODE',
+  OrganizationName: 'Org Classic',
+  // OrganizationUUID: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
+  SchoolName: 'Example School',
+  // SchoolUUID: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
+  ProgramName: ['Program Grade 3'],
 };
 
 export const invalidClass = {
-  name: '',
-  clientUuid: 'cdc9a77f-ac83-',
-  klOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  shortCode: 'SHORTCODE17LENGTH',
-  schoolName: '2134',
-  programNames: [],
-  clientOrgUuid: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
-  organizationName: 'Org named X',
+  ClassUUID: 'cdc9a77f-ac83-',
+  ClassName: '',
+  ClassShortCode: 'SHORTCODE17LENGTH',
+  OrganizationName: 'Org named X',
+  // OrganizationUUID: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
+  SchoolName: '2134',
+  // SchoolUUID: 'cdc9a77f-ac83-45d1-a99b-c0cc27d6e1f3',
+  ProgramName: [],
 };
 
 interface Class {
-  name: string;
-  clientUuid: string;
-  klOrgUuid: string;
-  shortCode: string;
-  schoolName: string;
-  programNames: string[];
-  clientOrgUuid: string;
-  organizationName: string;
+  ClassUUID: string;
+  ClassName: string;
+  ClassShortCode: string;
+  OrganizationName: string;
+  // OrganizationUUID: string;
+  SchoolName: string;
+  // SchoolUUID: string;
+  ProgramName: string[];
 }
 
 export const isClassValid = (classData: Class) => {

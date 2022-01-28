@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import { schoolSchema } from '../../../src/validatorsSchemes';
-import messages from '../../../src/validatorsSchemes/messages';
+import { schoolSchema } from '../../../src/validations/c1';
+import messages from '../../../src/validations/messages';
 import { stringInject } from '../../../src/utils/string';
 import { isSchoolValid } from '../../utils/school';
 import { validSchool, invalidSchool } from '../../utils/school';
