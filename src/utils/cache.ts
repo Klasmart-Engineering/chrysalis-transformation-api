@@ -7,7 +7,7 @@ export class Cache {
   private classes = new LRU<string, string>({
     max: MAX, // maximum size of the cache
     maxAge: MAX_AGE,
-    updateAgeOnGet: false,
+    updateAgeOnGet: true,
   });
 
   private constructor() {

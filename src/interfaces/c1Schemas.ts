@@ -12,6 +12,8 @@ export interface ClassQuerySchema {
   ClassName: string;
   ClassShortCode: string;
   OrganizationName: string;
+  OrganizationUUID: string;
   SchoolName: string;
+  SchoolUUID: string;
   ProgramName: string[];
 }

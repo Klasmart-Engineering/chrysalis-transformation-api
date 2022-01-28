@@ -5,14 +5,16 @@ import { HttpError } from '../../utils';
 import { RetryQueue } from '../../utils';
 import { AdminService } from '../../services/adminService';
 import { C1Service } from '../../services/c1Service';
+import { BackendService } from '../../services/backendService';
 import { MappedClass, MappedSchool } from '../../utils/mapResKeys';
 import { validateClasses, validateSchool } from '../../utils/validations';
 import {
   ClassQuerySchema,
   SchoolQuerySchema,
 } from '../../interfaces/c1Schemas';
-import { onboardingSchema } from '../../validatorsSchemes/requests/onboarding';
-import { onboardClassesSchema } from '../../validatorsSchemes/requests/onboardClasses';
+import { schoolSchema } from '../../validations/c1';
+import { onboardingSchema } from '../../validations/requests/onboarding';
+import { onboardClassesSchema } from '../../validations/requests/onboardClasses';
 import { shorten } from '../../utils/string';
 import { validationRules } from '../../config/validationRules';
 import { Cache } from '../../utils/cache';
@@ -20,6 +22,7 @@ import { Cache } from '../../utils/cache';
 const router = express.Router();
 const cache = Cache.getInstance();
 const service = new C1Service();
+const backendService = BackendService.getInstance();
 
 const retryQueue = new RetryQueue('test');
 retryQueue.createWorker(Database.getAllSchools);
@@ -327,12 +330,38 @@ router.post(
       onboardClasses = [...classes];
     }
 
-    // Add classes to LRU cache
-    onboardClasses.forEach((c: ClassQuerySchema) => {
-      cache.addClassId(c.ClassName, c.ClassUUID);
+    // Validate & add classes to LRU cache if class is valid
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const errors: Record<string, any>[] = [];
+    onboardClasses.forEach((c: ClassQuerySchema, index: number) => {
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      const { error } = schoolSchema.validate(c, { abortEarly: false });
+      if (error) {
+        const errorMessages = error.details.map(
+          (detail: { message: string }) => detail.message
+        );
+
+        errors.push({
+          UUID: c.ClassUUID,
+          Entity: 'class',
+          HasSuccess: false,
+          ErrorMessage: errorMessages,
+        });
+        onboardClasses.splice(index, 1); // remove from onboard classes
+      } else {
+        cache.addClassId(c.ClassName, c.ClassUUID);
+      }
     });
 
-    // TODO: Transform classes to proto objects and send to generic API
+    // TODO: Send errors feedback to client (C1)
+    // if (errors) {
+    //   await service.postFeedback(errors);
+    // }
+
+    // Transform classes to proto objects and send to generic API
+    if (onboardClasses) {
+      await backendService.onboardClasses(onboardClasses);
+    }
 
     res.status(204).json();
   }
