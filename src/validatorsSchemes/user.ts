@@ -1,37 +1,47 @@
 import Joi from 'joi';
 import { validationRules } from '../config/validationRules';
-import { stringInject } from "../utils/string";
+import { stringInject } from '../utils/string';
 import messages from './messages';
 
 export const userSchema = Joi.object({
-
-  userUuid: Joi.string().required().guid()
+  userUuid: Joi.string()
+    .required()
+    .guid()
     .messages({
       'string.base': stringInject(messages['string.base'], ['UserUUID']) || '',
-      'string.empty': stringInject(messages['string.empty'], ['UserUUID']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['UserUUID']) || '',
       'string.guid': stringInject(messages['string.guid'], ['UserUUID']) || '',
     }),
 
-  klUuid: Joi.string().guid().allow(null)
+  klUuid: Joi.string()
+    .guid()
+    .allow(null)
     .messages({
       'string.base': stringInject(messages['string.base'], ['KlUuid']) || '',
       'string.guid': stringInject(messages['string.guid'], ['KlUuid']) || '',
     }),
 
-  email: Joi.string().allow(null)
-    .regex(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
+  email: Joi.string()
+    .allow(null)
+    .regex(
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    )
     .max(validationRules.EMAIL_MAX_LENGTH)
     .messages({
       'string.base': stringInject(messages['string.base'], ['Email']) || '',
       'string.max': stringInject(messages['string.max'], ['Email']) || '',
-      'string.pattern.base': stringInject(messages['string.regex'], ['Email']) || '',
+      'string.pattern.base':
+        stringInject(messages['string.regex'], ['Email']) || '',
     }),
 
-  phone: Joi.string().allow(null)
+  phone: Joi.string()
+    .allow(null)
     .regex(/^\+[1-9]\d{1,14}$/)
     .messages({
       'string.base': stringInject(messages['string.base'], ['Phone']) || '',
-      'string.pattern.base': stringInject(messages['string.regex'], ['Phone']) || '',
+      'string.pattern.base':
+        stringInject(messages['string.regex'], ['Phone']) || '',
     }),
 
   username: Joi.string()
@@ -39,7 +49,8 @@ export const userSchema = Joi.object({
     .max(validationRules.USERNAME_MAX_LENGTH)
     .messages({
       'string.base': stringInject(messages['string.base'], ['Username']) || '',
-      'string.empty': stringInject(messages['string.empty'], ['Username']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['Username']) || '',
       'string.max': stringInject(messages['string.max'], ['Username']) || '',
     }),
 
@@ -47,25 +58,34 @@ export const userSchema = Joi.object({
     .required()
     .regex(/^[\p{L}\d .'&/,-]*$/u)
     .messages({
-      'string.base': stringInject(messages['string.base'], ['UserGivenName']) || '',
-      'string.empty': stringInject(messages['string.empty'], ['UserGivenName']) || '',
-      'string.pattern.base': stringInject(messages['string.regex'], ['UserGivenName']) || '',
+      'string.base':
+        stringInject(messages['string.base'], ['UserGivenName']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['UserGivenName']) || '',
+      'string.pattern.base':
+        stringInject(messages['string.regex'], ['UserGivenName']) || '',
     }),
 
   userFamilyName: Joi.string()
     .required()
     .regex(/^[\p{L}\d .'&/,-]*$/u)
     .messages({
-      'string.empty': stringInject(messages['string.empty'], ['UserFamilyName']) || '',
-      'string.base': stringInject(messages['string.base'], ['UserFamilyName']) || '',
-      'string.pattern.base': stringInject(messages['string.regex'], ['UserFamilyName']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['UserFamilyName']) || '',
+      'string.base':
+        stringInject(messages['string.base'], ['UserFamilyName']) || '',
+      'string.pattern.base':
+        stringInject(messages['string.regex'], ['UserFamilyName']) || '',
     }),
 
-  dateOfBirth: Joi.string().allow(null)
+  dateOfBirth: Joi.string()
+    .allow(null)
     .regex(/^(((0)[0-9])|((1)[0-2]))(-)\d{4}$/)
     .messages({
-      'string.base': stringInject(messages['string.base'], ['DateOfBirth']) || '',
-      'string.pattern.base': stringInject(messages['string.regex'], ['DateOfBirth']) || '',
+      'string.base':
+        stringInject(messages['string.base'], ['DateOfBirth']) || '',
+      'string.pattern.base':
+        stringInject(messages['string.regex'], ['DateOfBirth']) || '',
     }),
 
   gender: Joi.string()
@@ -76,7 +96,7 @@ export const userSchema = Joi.object({
       'string.base': stringInject(messages['string.base'], ['Gender']) || '',
       'string.empty': stringInject(messages['string.empty'], ['Gender']) || '',
       'string.min': stringInject(messages['string.min'], ['Gender']) || '',
-      'string.max': stringInject(messages['string.max'], ['Gender',]) || '',
+      'string.max': stringInject(messages['string.max'], ['Gender']) || '',
     }),
 
   klRoleName: Joi.array()
@@ -85,12 +105,15 @@ export const userSchema = Joi.object({
       Joi.string()
         .max(validationRules.ROLE_NAME_MAX_LENGTH)
         .messages({
-          'string.base': stringInject(messages['string.base'], ['KLRoleName']) || '',
-          'string.max': stringInject(messages['string.max'], ['KLRoleName']) || '',
-        }),
+          'string.base':
+            stringInject(messages['string.base'], ['KLRoleName']) || '',
+          'string.max':
+            stringInject(messages['string.max'], ['KLRoleName']) || '',
+        })
     )
     .messages({
-      'string.empty': stringInject(messages['string.empty'], ['KLRoleName']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['KLRoleName']) || '',
     }),
 
   schoolName: Joi.string()
@@ -98,8 +121,10 @@ export const userSchema = Joi.object({
     .min(validationRules.SCHOOL_NAME_MIN_LENGTH)
     .max(validationRules.SCHOOL_NAME_MAX_LENGTH)
     .messages({
-      'string.base': stringInject(messages['string.base'], ['SchoolName']) || '',
-      'string.empty': stringInject(messages['string.empty'], ['SchoolName']) || '',
+      'string.base':
+        stringInject(messages['string.base'], ['SchoolName']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['SchoolName']) || '',
       'string.min': stringInject(messages['string.min'], ['SchoolName']) || '',
       'string.max': stringInject(messages['string.max'], ['SchoolName']) || '',
     }),
@@ -110,13 +135,17 @@ export const userSchema = Joi.object({
         .min(validationRules.CLASS_NAME_MIN_LENGTH)
         .max(validationRules.CLASS_NAME_MAX_LENGTH)
         .messages({
-          'string.base': stringInject(messages['string.base'], ['ClassName']) || '',
-          'string.min': stringInject(messages['string.min'], ['ClassName']) || '',
-          'string.max': stringInject(messages['string.max'], ['ClassName']) || ''
-        }),
+          'string.base':
+            stringInject(messages['string.base'], ['ClassName']) || '',
+          'string.min':
+            stringInject(messages['string.min'], ['ClassName']) || '',
+          'string.max':
+            stringInject(messages['string.max'], ['ClassName']) || '',
+        })
     )
     .required()
     .messages({
-      'string.empty': stringInject(messages['string.empty'], ['ClassName']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['ClassName']) || '',
     }),
 });

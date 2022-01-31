@@ -23,7 +23,10 @@ export class AuthServer {
   private async login(path: string) {
     const client = this.createClient(path, this.postData);
     try {
-      const response = (await this.makeRequest(client, this.postData)) as TokenResponse;
+      const response = (await this.makeRequest(
+        client,
+        this.postData
+      )) as TokenResponse;
       if (response.JwtToken) this.jwtToken = response.JwtToken;
       if (response.RefreshToken) this.refreshToken = response.RefreshToken;
     } catch (error) {
@@ -40,7 +43,7 @@ export class AuthServer {
   private async tokenRefresh(path: string) {
     const client = this.createClient(path, '');
     try {
-      const response = await this.makeRequest(client, '') as TokenResponse;
+      const response = (await this.makeRequest(client, '')) as TokenResponse;
       if (response.JwtToken) this.jwtToken = response.JwtToken;
       if (response.RefreshToken) this.refreshToken = response.RefreshToken;
     } catch (error) {
@@ -62,7 +65,7 @@ export class AuthServer {
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': String(postData.length),
-        'Cookie': 'RefreshToken=' + this.refreshToken,
+        Cookie: 'RefreshToken=' + this.refreshToken,
       },
     };
   }
@@ -80,10 +83,12 @@ export class AuthServer {
           } catch (e) {
             resBody = stringBuffer;
           }
-          res.statusCode === 200 ? resolve(resBody) : reject(new HttpError(Number(res.statusCode), resBody));
+          res.statusCode === 200
+            ? resolve(resBody)
+            : reject(new HttpError(Number(res.statusCode), resBody));
         });
       });
-      req.on('error', error => {
+      req.on('error', (error) => {
         reject(new HttpError(500, error));
       });
       req.write(postData);

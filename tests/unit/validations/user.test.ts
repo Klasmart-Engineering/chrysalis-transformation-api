@@ -28,8 +28,6 @@ describe('user validation', function () {
     expect(errorDetails).to.include(
       stringInject(messages['string.guid'], ['UserUUID'])
     );
-    expect(errorDetails).to.include(
-      'The "Email" format is wrong'
-    );
+    expect(errorDetails).to.include('The "Email" format is wrong');
   });
 });

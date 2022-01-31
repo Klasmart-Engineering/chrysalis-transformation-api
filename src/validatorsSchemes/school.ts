@@ -9,8 +9,10 @@ export const schoolSchema = Joi.object({
     // .max(validationRules.SCHOOL_NAME_MAX_LENGTH)
     .required()
     .messages({
-      'string.base': stringInject(messages['string.base'], ['SchoolName']) || '',
-      'string.empty': stringInject(messages['string.empty'], ['SchoolName']) || '',
+      'string.base':
+        stringInject(messages['string.base'], ['SchoolName']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['SchoolName']) || '',
       'string.min': stringInject(messages['string.min'], ['SchoolName']) || '',
       'string.max': stringInject(messages['string.max'], ['SchoolName']) || '',
     }),
@@ -19,9 +21,12 @@ export const schoolSchema = Joi.object({
     .guid()
     .required()
     .messages({
-      'string.base': stringInject(messages['string.base'], ['SchoolUUID']) || '',
-      'string.empty': stringInject(messages['string.empty'], ['SchoolUUID']) || '',
-      'string.guid': stringInject(messages['string.guid'], ['SchoolUUID']) || '',
+      'string.base':
+        stringInject(messages['string.base'], ['SchoolUUID']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['SchoolUUID']) || '',
+      'string.guid':
+        stringInject(messages['string.guid'], ['SchoolUUID']) || '',
     }),
 
   klOrgUuid: Joi.string()
@@ -37,21 +42,27 @@ export const schoolSchema = Joi.object({
         .min(validationRules.PROGRAM_NAME_MIN_LENGTH)
         .max(validationRules.PROGRAM_NAME_MAX_LENGTH)
         .messages({
-          'string.base': stringInject(messages['string.base'], ['ProgramName']) || '',
-          'string.min': stringInject(messages['string.min'], ['ProgramName']) || '',
-          'string.max': stringInject(messages['string.max'], ['ProgramName']) || '',
+          'string.base':
+            stringInject(messages['string.base'], ['ProgramName']) || '',
+          'string.min':
+            stringInject(messages['string.min'], ['ProgramName']) || '',
+          'string.max':
+            stringInject(messages['string.max'], ['ProgramName']) || '',
         })
     )
     .required()
     .messages({
-      'string.empty': stringInject(messages['string.empty'], ['ProgramName']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['ProgramName']) || '',
     }),
 
   clientOrgUuid: Joi.string()
     .guid()
     .messages({
-      'string.base': stringInject(messages['string.base'], ['ClientOrgUUID']) || '',
-      'string.guid': stringInject(messages['string.guid'], ['ClientOrgUUID']) || '',
+      'string.base':
+        stringInject(messages['string.base'], ['ClientOrgUUID']) || '',
+      'string.guid':
+        stringInject(messages['string.guid'], ['ClientOrgUUID']) || '',
     }),
 
   organizationName: Joi.string()
@@ -59,16 +70,22 @@ export const schoolSchema = Joi.object({
     .max(validationRules.ORGANIZATION_NAME_MAX_LENGTH)
     .required()
     .messages({
-      'string.base': stringInject(messages['string.base'], ['OrganizationName']) || '',
-      'string.min': stringInject(messages['string.min'], ['OrganizationName']) || '',
-      'string.max': stringInject(messages['string.max'], ['OrganizationName']) || '',
-      'string.empty': stringInject(messages['string.empty'], ['OrganizationName']) || '',
+      'string.base':
+        stringInject(messages['string.base'], ['OrganizationName']) || '',
+      'string.min':
+        stringInject(messages['string.min'], ['OrganizationName']) || '',
+      'string.max':
+        stringInject(messages['string.max'], ['OrganizationName']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['OrganizationName']) || '',
     }),
 
   shortCode: Joi.string()
     .max(validationRules.SHORT_CODE_MAX_LENGTH)
     .messages({
-      'string.base': stringInject(messages['string.base'], ['SchoolShortCode']) || '',
-      'string.max': stringInject(messages['string.max'], ['SchoolShortCode']) || '',
+      'string.base':
+        stringInject(messages['string.base'], ['SchoolShortCode']) || '',
+      'string.max':
+        stringInject(messages['string.max'], ['SchoolShortCode']) || '',
     }),
 });

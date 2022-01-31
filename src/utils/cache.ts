@@ -55,14 +55,9 @@ export class Cache {
     return uuid;
   }
 
-  public addOrganizationId(
-    name: string,
-    id: string,
-  ): void {
+  public addOrganizationId(name: string, id: string): void {
     this.organizations.set(name, id);
   }
-
-
   // public async getSchoolId(
   //   name: string
   // ): Promise<string> {

@@ -8,16 +8,10 @@ export const getUsers = [
     Phone: '+919278221539',
     DateOfBirth: null,
     Gender: 'Female',
-    KLRoleName: [
-      'Chrysalis Student'
-    ],
+    KLRoleName: ['Chrysalis Student'],
     SchoolName: 'Test school',
-    ClassName: [
-      'III A NEW0007561'
-    ],
-    SchoolRoleName: [
-      'Chrysalis Student'
-    ],
+    ClassName: ['III A NEW0007561'],
+    SchoolRoleName: ['Chrysalis Student'],
   },
   {
     OrganizationName: 'Chrysalis BLP Classic',
@@ -28,16 +22,10 @@ export const getUsers = [
     Phone: '+919810664280',
     DateOfBirth: null,
     Gender: 'Female',
-    KLRoleName: [
-      'Chrysalis Student'
-    ],
+    KLRoleName: ['Chrysalis Student'],
     SchoolName: 'Test school',
-    ClassName: [
-      'III A NEW0007561'
-    ],
-    SchoolRoleName: [
-      'Chrysalis Student'
-    ],
+    ClassName: ['III A NEW0007561'],
+    SchoolRoleName: ['Chrysalis Student'],
   },
   {
     OrganizationName: 'Chrysalis BLP Classic',
@@ -48,15 +36,9 @@ export const getUsers = [
     Phone: '+919818897043',
     DateOfBirth: null,
     Gender: 'Male',
-    KLRoleName: [
-      'Chrysalis Student'
-    ],
+    KLRoleName: ['Chrysalis Student'],
     SchoolName: 'Test school',
-    ClassName: [
-      'III A NEW0007561'
-    ],
-    SchoolRoleName: [
-      'Chrysalis Student'
-    ],
+    ClassName: ['III A NEW0007561'],
+    SchoolRoleName: ['Chrysalis Student'],
   },
 ];

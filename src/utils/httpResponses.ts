@@ -1,4 +1,4 @@
-import { FailedResponseType, RetriableResponseType } from "./types";
+import { FailedResponseType, RetriableResponseType } from './types';
 
 export class HttpError {
   status: number;
@@ -14,7 +14,10 @@ export class SuccessResponse {
   retriable?: Array<RetriableResponseType>;
   failed?: Array<FailedResponseType>;
 
-  constructor(retriable?: Array<RetriableResponseType>, failed?: Array<FailedResponseType>) {
+  constructor(
+    retriable?: Array<RetriableResponseType>,
+    failed?: Array<FailedResponseType>
+  ) {
     this.retriable = retriable;
     this.failed = failed;
   }

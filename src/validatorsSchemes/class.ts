@@ -10,7 +10,8 @@ export const classSchema = Joi.object({
     .required()
     .messages({
       'string.base': stringInject(messages['string.base'], ['ClassName']) || '',
-      'string.empty': stringInject(messages['string.empty'], ['ClassName']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['ClassName']) || '',
       'string.min': stringInject(messages['string.min'], ['ClassName']) || '',
       'string.max': stringInject(messages['string.max'], ['ClassName']) || '',
     }),
@@ -20,7 +21,8 @@ export const classSchema = Joi.object({
     .required()
     .messages({
       'string.base': stringInject(messages['string.base'], ['ClassUUID']) || '',
-      'string.empty': stringInject(messages['string.empty'], ['ClassUUID']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['ClassUUID']) || '',
       'string.guid': stringInject(messages['string.guid'], ['ClassUUID']) || '',
     }),
 
@@ -35,8 +37,10 @@ export const classSchema = Joi.object({
   shortCode: Joi.string()
     .max(validationRules.SHORT_CODE_MAX_LENGTH)
     .messages({
-      'string.base': stringInject(messages['string.base'], ['ClassShortCode']) || '',
-      'string.max': stringInject(messages['string.max'], ['ClassShortCode']) || '',
+      'string.base':
+        stringInject(messages['string.base'], ['ClassShortCode']) || '',
+      'string.max':
+        stringInject(messages['string.max'], ['ClassShortCode']) || '',
     }),
 
   schoolName: Joi.string()
@@ -44,8 +48,10 @@ export const classSchema = Joi.object({
     // .max(validationRules.SCHOOL_NAME_MAX_LENGTH)
     .required()
     .messages({
-      'string.base': stringInject(messages['string.base'], ['SchoolName']) || '',
-      'string.empty': stringInject(messages['string.empty'], ['SchoolName']) || '',
+      'string.base':
+        stringInject(messages['string.base'], ['SchoolName']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['SchoolName']) || '',
       'string.min': stringInject(messages['string.min'], ['SchoolName']) || '',
       'string.max': stringInject(messages['string.max'], ['SchoolName']) || '',
     }),
@@ -54,8 +60,10 @@ export const classSchema = Joi.object({
     .guid()
     .required()
     .messages({
-      'string.base': stringInject(messages['string.base'], ['ClientOrgUUID']) || '',
-      'string.guid': stringInject(messages['string.guid'], ['ClientOrgUUID']) || '',
+      'string.base':
+        stringInject(messages['string.base'], ['ClientOrgUUID']) || '',
+      'string.guid':
+        stringInject(messages['string.guid'], ['ClientOrgUUID']) || '',
     }),
 
   programNames: Joi.array()
@@ -64,14 +72,18 @@ export const classSchema = Joi.object({
         .min(validationRules.PROGRAM_NAME_MIN_LENGTH)
         .max(validationRules.PROGRAM_NAME_MAX_LENGTH)
         .messages({
-          'string.base': stringInject(messages['string.base'], ['ProgramName']) || '',
-          'string.min': stringInject(messages['string.min'], ['ProgramName']) || '',
-          'string.max': stringInject(messages['string.max'], ['ProgramName']) || '',
+          'string.base':
+            stringInject(messages['string.base'], ['ProgramName']) || '',
+          'string.min':
+            stringInject(messages['string.min'], ['ProgramName']) || '',
+          'string.max':
+            stringInject(messages['string.max'], ['ProgramName']) || '',
         })
     )
     .required()
     .messages({
-      'string.empty': stringInject(messages['string.empty'], ['ProgramName']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['ProgramName']) || '',
     }),
 
   organizationName: Joi.string()
@@ -79,10 +91,14 @@ export const classSchema = Joi.object({
     .max(validationRules.ORGANIZATION_NAME_MAX_LENGTH)
     .required()
     .messages({
-      'string.base': stringInject(messages['string.base'], ['OrganizationName']) || '',
-      'string.empty': stringInject(messages['string.empty'], ['OrganizationName']) || '',
-      'string.min': stringInject(messages['string.min'], ['OrganizationName']) || '',
-      'string.max': stringInject(messages['string.max'], ['OrganizationName']) || '',
+      'string.base':
+        stringInject(messages['string.base'], ['OrganizationName']) || '',
+      'string.empty':
+        stringInject(messages['string.empty'], ['OrganizationName']) || '',
+      'string.min':
+        stringInject(messages['string.min'], ['OrganizationName']) || '',
+      'string.max':
+        stringInject(messages['string.max'], ['OrganizationName']) || '',
     }),
 
   client: Joi.string().max(validationRules.CLIENT_MAX_LENGTH),

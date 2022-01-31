@@ -84,9 +84,7 @@ describe('C1 Service', () => {
         expect(res).to.be.an('array');
         expect(res).to.have.length(2);
         if (Array.isArray(res)) {
-          res.forEach((c) =>
-            expect(c).to.be.jsonSchema(classSchema)
-          );
+          res.forEach((c) => expect(c).to.be.jsonSchema(classSchema));
         }
       });
     });
@@ -146,9 +144,7 @@ describe('C1 Service', () => {
         expect(res).to.be.an('array');
         expect(res).to.have.length(3);
         if (Array.isArray(res)) {
-          res.forEach((user) =>
-            expect(user).to.be.jsonSchema(userSchema)
-          );
+          res.forEach((user) => expect(user).to.be.jsonSchema(userSchema));
         }
       });
     });

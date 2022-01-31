@@ -29,12 +29,12 @@ export class C1Service extends BaseRestfulService {
         setInterval(() => {
           authServer
             .doRefreshToken(C1AuthEndpoints.refresh)
-            .then(response => {
+            .then((response) => {
               this.jwtToken = response;
             })
             .catch((e) => {
               throw new Error('Failed to refresh token');
-            })
+            });
         }, REFRESH_TOKEN_INTERVAL);
       })
       .catch((e) => {
@@ -58,9 +58,11 @@ export class C1Service extends BaseRestfulService {
     return this.getData(client);
   }
 
-  getUsers(pathSegments: string[]) {
+  getUsers(pathSegments: string[], usersApiEndpoint = false) {
     const client = this.createClient(
-      C1Endpoints.userApiEndpoint,
+      usersApiEndpoint
+        ? C1Endpoints.usersApiEndpoint
+        : C1Endpoints.userApiEndpoint,
       pathSegments
     );
     return this.getData(client);
@@ -68,7 +70,9 @@ export class C1Service extends BaseRestfulService {
 
   async getOrganizations(): Promise<Array<OrganizationQuerySchema>> {
     const client = this.createClient(C1Endpoints.organizationApiEndpoint);
-    const organizations = await this.getData(client) as Array<OrganizationQuerySchema>;
+    const organizations = (await this.getData(
+      client
+    )) as Array<OrganizationQuerySchema>;
 
     return organizations;
   }
