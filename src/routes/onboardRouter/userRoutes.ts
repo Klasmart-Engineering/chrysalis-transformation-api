@@ -25,9 +25,9 @@ router.post('/', async (req: Request, res: Response) => {
     const id: string = validIds[index];
 
     try {
-      const user: UserQuerySchema[] = (await service.getUsers([
+      const user: UserQuerySchema[] = (await service.getUser([
         id,
-      ])) as UserQuerySchema[];
+      ], {})) as UserQuerySchema[];
       users.push(user[0]);
     } catch (error) {
       logger.error(error);
@@ -52,7 +52,7 @@ router.post('/classes/:classId', async (req: Request, res: Response) => {
 
   const users: UserQuerySchema[] = (await service.getUsers(
     [classId],
-    true
+    {}
   )) as UserQuerySchema[];
 
   if (!users || users.length === 0)
@@ -73,7 +73,7 @@ router.post('/schools/:schoolId', async (req: Request, res: Response) => {
 
   const users: UserQuerySchema[] = (await service.getUsers(
     [schoolId, 'School'],
-    true
+    {}
   )) as UserQuerySchema[];
 
   if (!users || users.length === 0)

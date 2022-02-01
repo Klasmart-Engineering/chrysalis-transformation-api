@@ -9,11 +9,21 @@ import { Responses } from "cil-lib/dist/main/lib/protos";
 import logger from '../utils/logging';
 import { ServiceError } from '@grpc/grpc-js';
 
-const { Action, BatchOnboarding, OnboardingRequest, Organization, User, School } = proto;
+const { 
+  Action, 
+  BatchOnboarding, 
+  OnboardingRequest, 
+  Organization, 
+  User, 
+  School, 
+  Link, 
+  AddProgramsToSchool
+} = proto;
 
 export class BackendService {
 	private _client: proto.OnboardingClient;
 	private static _instance: BackendService;
+  private _request: proto.BatchOnboarding = new BatchOnboarding();
 
 	private constructor(client: proto.OnboardingClient) {
 		this._client = client;
@@ -53,7 +63,7 @@ export class BackendService {
 
 	async onboardOrganizations(organizations: OrganizationQuerySchema[] = []) {
 		return new Promise((resolve, reject) => {
-			const request = new BatchOnboarding();
+      const request: proto.BatchOnboarding = new BatchOnboarding();
 
 			organizations.forEach(org => {
 				const onboardOrgRequest = new OnboardingRequest()
@@ -150,5 +160,103 @@ export class BackendService {
         resolve(responses);
       });
     });
+  }
+
+  mapOrganizationsToProto(organizations: OrganizationQuerySchema[] = []) {
+    organizations.forEach(org => {
+      const onboardOrgRequest = new OnboardingRequest()
+      const organization = new Organization()
+
+      organization.setName(org.OrganizationName)
+        .setExternalUuid(org.OrganizationUUID)
+
+      onboardOrgRequest.setOrganization(organization)
+        .setRequestId(uuidv4())
+        .setAction(Action.CREATE)
+
+      this._request.addRequests(onboardOrgRequest);
+    })
+	};
+
+  mapSchoolsToProto(schools: SchoolQuerySchema[] = [], organizationUuid: string) {
+    if (!Array.isArray(schools)) return;
+    
+    schools.forEach(async school => {
+      const onboardSchoolRequest = new OnboardingRequest()
+      const schoolProto = new School()
+
+      schoolProto.setExternalUuid(school.SchoolUUID)
+        .setName(school.SchoolName)
+        .setShortCode(school.SchoolShortCode)
+        .setExternalOrganizationUuid(organizationUuid);
+
+      onboardSchoolRequest.setSchool(schoolProto)
+        .setRequestId(uuidv4())
+        .setAction(Action.CREATE);
+
+      this._request.addRequests(onboardSchoolRequest);
+      this.addProgramToSchool(organizationUuid, school.SchoolUUID, school.ProgramName);
+    })
+	};
+
+  mapUsersToProto(users: UserQuerySchema[] = [], organizationUuid: string) {
+    users.forEach((us) => {
+      const onboardUserRequest = new OnboardingRequest();
+      const user = new User();
+
+      user
+        .setExternalUuid(us.UserUUID)
+        .setExternalOrganizationUuid(organizationUuid)
+        .setEmail('ionut@test.com')
+        .setPhone(us.Phone)
+        .setUsername('username') // TODO check witch is the username
+        .setGivenName(us.UserGivenName)
+        .setFamilyName(us.UserFamilyName)
+        .setGender(us.Gender)
+        .setDateOfBirth(us.DateOfBirth)
+        .setShortCode('shortCode')
+        .setRoleIdentifiersList(us.KLRoleName);
+
+        onboardUserRequest.setUser(user)
+          .setRequestId(uuidv4())
+          .setAction(Action.CREATE);
+      
+      this._request.addRequests(onboardUserRequest);
+    });
+  }
+
+  private addProgramToSchool(
+    organizationUuid: string, 
+    schoolUuid: string,
+    programNames: string[]
+  ) {
+    const onboardRequest = new OnboardingRequest()
+    const linkPrograms = new Link();
+    const addProgramsToSchool = new AddProgramsToSchool();
+
+    addProgramsToSchool
+      .setExternalOrganizationUuid(organizationUuid)
+      .setExternalSchoolUuid(schoolUuid)
+      .setProgramNamesList(programNames);
+    
+    linkPrograms.setAddProgramsToSchool(addProgramsToSchool);
+    // TODO check if need to add reqId and action
+    onboardRequest.setLinkEntities(linkPrograms);
+
+    this._request.addRequests(onboardRequest)
+  }
+
+  async sendRequest() {
+    return new Promise((resolve, reject) => {
+      this._client.onboard(this._request, (err: ServiceError | null, responses: Responses) => {
+        if (err !== null) {
+          reject(err); return;
+        }
+  
+        logger.info(responses)
+  
+        resolve(responses);
+      });
+    })
   }
 }

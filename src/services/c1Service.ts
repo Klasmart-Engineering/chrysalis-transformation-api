@@ -1,7 +1,7 @@
 import { BaseRestfulService } from './baseRestfulService';
 import { C1AuthEndpoints, C1Endpoints } from '../config/c1Endpoints';
 import { AuthServer } from '../utils/authServer';
-import { OrganizationQuerySchema, SchoolQuerySchema } from '../interfaces/clientSchemas';
+import { ClassQuerySchema, OrganizationQuerySchema, SchoolQuerySchema, UserQuerySchema } from '../interfaces/clientSchemas';
 
 const loginData = JSON.stringify({
   Username: String(process.env.C1_API_USERNAME),
@@ -50,22 +50,55 @@ export class C1Service extends BaseRestfulService {
     return await this.getData(client) as Array<SchoolQuerySchema>;
   }
 
-  getClasses(pathSegments: string[]) {
+  async getClasses(pathSegments: string[]): Promise<Array<ClassQuerySchema>> {
     const client = this.createClient(
-      C1Endpoints.classApiEndpoint,
+      C1Endpoints.classesApiEndpoint,
       pathSegments
     );
-    return this.getData(client);
+    return await this.getData(client) as Array<ClassQuerySchema>;
   }
 
-  getUsers(pathSegments: string[], usersApiEndpoint = false) {
+  async getUsers(
+    pathSegments: string[], 
+    queryParams: Record<string, string>
+  ): Promise<Array<UserQuerySchema>> {
     const client = this.createClient(
-      usersApiEndpoint
-        ? C1Endpoints.usersApiEndpoint
-        : C1Endpoints.userApiEndpoint,
-      pathSegments
+      C1Endpoints.usersApiEndpoint,
+      pathSegments,
+      queryParams,
     );
-    return this.getData(client);
+    return await this.getData(client) as Array<UserQuerySchema>;
+  }
+
+  async getUser(
+    pathSegments: string[],
+    queryParams: Record<string, string>
+  ): Promise<Array<UserQuerySchema>> {
+    const client = this.createClient(
+      C1Endpoints.userApiEndpoint,
+      pathSegments,
+      queryParams,
+    );
+    return await this.getData(client) as Array<UserQuerySchema>;
+  }
+
+  async getAllSchoolUsers(schoolUuid: string): Promise<Array<UserQuerySchema>> {
+    const pageSize = process.env.PAGE_SIZE || 250;
+
+    let allUsers: UserQuerySchema[] = []; 
+    let start = 1;
+    let users: UserQuerySchema[] = [];
+
+    do {
+      users = await this.getUsers(['SchoolGUID'], {Skip: start.toString(), Take: pageSize.toString(), ID: schoolUuid})
+      allUsers = [
+        ...allUsers,
+        ...users,
+      ];
+      start += Number(pageSize);
+    } while (users.length);
+
+    return allUsers
   }
 
   async getOrganizations(): Promise<Array<OrganizationQuerySchema>> {

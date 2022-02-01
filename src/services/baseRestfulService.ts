@@ -51,7 +51,7 @@ export abstract class BaseRestfulService {
           } catch (e) {
             resBody = stringBuffer;
           }
-          res.statusCode === 200
+          (res.statusCode === 200 || res.statusCode === 204)
             ? resolve(resBody)
             : reject(new HttpError(Number(res.statusCode), resBody));
         });
