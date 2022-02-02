@@ -10,13 +10,14 @@ import { InterceptorOptions, NextCall } from '@grpc/grpc-js/build/src/client-int
 import { InterceptingListener } from '@grpc/grpc-js/build/src/call-stream'
 import { Metadata } from '@grpc/grpc-js/build/src/metadata'
 import logger from '../utils/logging';
+import { UsersToOrganizationSchema } from '../interfaces/backendSchemas';
 
-const { 
-  Action, 
-  BatchOnboarding, 
-  OnboardingRequest, 
-  Organization, 
-  User, 
+const {
+  Action,
+  BatchOnboarding,
+  OnboardingRequest,
+  Organization,
+  User,
   School,
   Class,
   Link,
@@ -25,63 +26,63 @@ const {
   AddProgramsToSchool,
   AddClassesToSchool,
   AddProgramsToClass,
-  //AddUsersToOrganization,
+  AddUsersToOrganization,
   //AddUsersToClass,
   AddUsersToSchool,
   //AddOrganizationRolesToUser
 } = proto;
 
 export class BackendService {
-	private _client: proto.OnboardingClient;
-	private static _instance: BackendService;
+  private _client: proto.OnboardingClient;
+  private static _instance: BackendService;
   private _request: proto.BatchOnboarding = new BatchOnboarding();
 
-	private constructor(client: proto.OnboardingClient) {
-		this._client = client;
-	}
+  private constructor(client: proto.OnboardingClient) {
+    this._client = client;
+  }
 
-	get client(): proto.OnboardingClient {
-		return this._client;
-	}
+  get client(): proto.OnboardingClient {
+    return this._client;
+  }
 
-	public static getInstance() {
-		try {
-			if (this._instance) {
-				return this._instance;
-			} else {
-				const channel: grpc.ChannelCredentials = grpc.ChannelCredentials.createInsecure() as grpc.ChannelCredentials
-				const interceptor = (options: InterceptorOptions, nextCall: NextCall) => {
-					const requester = {
-						start(metadata: Metadata, listener: Partial<InterceptingListener>, next: CallableFunction) {
-							metadata.add('x-api-key', String(process.env.BACKEND_API_SECRET))
-							next(metadata, listener)
-						}
-					}
+  public static getInstance() {
+    try {
+      if (this._instance) {
+        return this._instance;
+      } else {
+        const channel: grpc.ChannelCredentials = grpc.ChannelCredentials.createInsecure() as grpc.ChannelCredentials
+        const interceptor = (options: InterceptorOptions, nextCall: NextCall) => {
+          const requester = {
+            start(metadata: Metadata, listener: Partial<InterceptingListener>, next: CallableFunction) {
+              metadata.add('x-api-key', String(process.env.BACKEND_API_SECRET))
+              next(metadata, listener)
+            }
+          }
 
-					return new grpc.InterceptingCall(nextCall(options), requester);
-				}
+          return new grpc.InterceptingCall(nextCall(options), requester);
+        }
 
-				const client = new proto.OnboardingClient(String(process.env.BACKEND_API_URL), channel, { interceptors: [interceptor] })
-				this._instance = new BackendService(client);
-				logger.info('Connected to Generic backend');
-				return this._instance;
-			}
-		} catch (e) {
-			logger.error('❌ Failed to connect to Generic backend');
-			throw e;
-		}
-	}
+        const client = new proto.OnboardingClient(String(process.env.BACKEND_API_URL), channel, { interceptors: [interceptor] })
+        this._instance = new BackendService(client);
+        logger.info('Connected to Generic backend');
+        return this._instance;
+      }
+    } catch (e) {
+      logger.error('❌ Failed to connect to Generic backend');
+      throw e;
+    }
+  }
 
-	async onboardOrganizations(organizations: OrganizationQuerySchema[] = []) {
-		return new Promise((resolve, reject) => {
+  async onboardOrganizations(organizations: OrganizationQuerySchema[] = []) {
+    return new Promise((resolve, reject) => {
       const request: proto.BatchOnboarding = new BatchOnboarding();
 
-			organizations.forEach(org => {
-				const onboardOrgRequest = new OnboardingRequest()
-				const organization = new Organization()
+      organizations.forEach(org => {
+        const onboardOrgRequest = new OnboardingRequest()
+        const organization = new Organization()
 
-				organization.setName(org.OrganizationName)
-					.setExternalUuid(org.OrganizationUUID)
+        organization.setName(org.OrganizationName)
+          .setExternalUuid(org.OrganizationUUID)
 
         const requestMeta = new RequestMetadata();
         const requestId = uuidv4();
@@ -89,52 +90,52 @@ export class BackendService {
 
         onboardOrgRequest.setOrganization(organization)
           .setRequestId(requestMeta)
-					.setAction(Action.CREATE)
+          .setAction(Action.CREATE)
 
-				request.addRequests(onboardOrgRequest)
-			})
+        request.addRequests(onboardOrgRequest)
+      })
 
-			this._client.onboard(request, (err, response) => {
-				if (err !== null) {
-					reject(err); return;
-				}
-				logger.info(response)
-				resolve(response);
-			});
-		});
-	};
+      this._client.onboard(request, (err, response) => {
+        if (err !== null) {
+          reject(err); return;
+        }
+        logger.info(response)
+        resolve(response);
+      });
+    });
+  };
 
-	async onboardSchools(organizationUuid: string, schools: SchoolQuerySchema[] = []) {
-		return new Promise((resolve, reject) => {
-			const request = new BatchOnboarding();
+  async onboardSchools(organizationUuid: string, schools: SchoolQuerySchema[] = []) {
+    return new Promise((resolve, reject) => {
+      const request = new BatchOnboarding();
 
-			schools.forEach(async school => {
-				const onboardSchoolRequest = new OnboardingRequest()
-				const schoolProto = new School()
-				schoolProto.setExternalUuid(school.SchoolUUID)
-					.setName(school.SchoolName)
-					.setShortCode(school.SchoolShortCode)
-					.setExternalOrganizationUuid(organizationUuid);
+      schools.forEach(async school => {
+        const onboardSchoolRequest = new OnboardingRequest()
+        const schoolProto = new School()
+        schoolProto.setExternalUuid(school.SchoolUUID)
+          .setName(school.SchoolName)
+          .setShortCode(school.SchoolShortCode)
+          .setExternalOrganizationUuid(organizationUuid);
 
         const requestMeta = new RequestMetadata();
         const requestId = uuidv4();
         requestMeta.setId(requestId).setN('1');
 
-				onboardSchoolRequest.setSchool(schoolProto)
-					.setRequestId(requestMeta)
-					.setAction(Action.CREATE);
-				request.addRequests(onboardSchoolRequest);
-			})
+        onboardSchoolRequest.setSchool(schoolProto)
+          .setRequestId(requestMeta)
+          .setAction(Action.CREATE);
+        request.addRequests(onboardSchoolRequest);
+      })
 
-			this._client.onboard(request, (err, responses) => {
-				if (err !== null) {
-					reject(err); return;
-				}
-				logger.info(responses)
-				resolve(responses);
-			});
-		});
-	};
+      this._client.onboard(request, (err, responses) => {
+        if (err !== null) {
+          reject(err); return;
+        }
+        logger.info(responses)
+        resolve(responses);
+      });
+    });
+  };
 
   async onboardClasses(classes: ClassQuerySchema[] = []) {
     return new Promise((resolve, reject) => {
@@ -152,8 +153,8 @@ export class BackendService {
           .setName(c.ClassName)
           // .setShortCode(c.ClassShortCode)
           .setExternalUuid(c.ClassUUID)
-          //.setExternalOrganizationUuid(c.OrganizationUUID)
-          //.setExternalSchoolUuid(c.SchoolUUID);
+        //.setExternalOrganizationUuid(c.OrganizationUUID)
+        //.setExternalSchoolUuid(c.SchoolUUID);
 
         onboardClassRequest
           .setClass(clazz)
@@ -199,15 +200,15 @@ export class BackendService {
           .setShortCode(us.UserFamilyName) // TODO: check witch is the shortCode of the user
           .setRoleIdentifiersList(us.KLRoleName);
 
-          if (us.Gender === 'Male') {
-            user.setGender(Gender.MALE);
-          } else if (us.Gender === 'Female') {
-            user.setGender(Gender.FEMALE);
-          }
-          onboardUserRequest.setUser(user)
+        if (us.Gender === 'Male') {
+          user.setGender(Gender.MALE);
+        } else if (us.Gender === 'Female') {
+          user.setGender(Gender.FEMALE);
+        }
+        onboardUserRequest.setUser(user)
           .setRequestId(requestMeta)
           .setAction(Action.CREATE);
-          
+
         request.addRequests(onboardUserRequest);
       });
 
@@ -239,14 +240,14 @@ export class BackendService {
 
       this._request.addRequests(onboardOrgRequest);
     })
-	};
+  };
 
   mapSchoolsToProto(
     schools: SchoolQuerySchema[] = [],
     organizationUuid: string
   ) {
     if (!Array.isArray(schools)) return;
-    
+
     schools.forEach(async school => {
       const onboardSchoolRequest = new OnboardingRequest()
       const schoolProto = new School()
@@ -270,7 +271,7 @@ export class BackendService {
         requestId
       );
     })
-	};
+  };
 
   mapClassesToProto(
     classes: ClassQuerySchema[] = [],
@@ -329,35 +330,58 @@ export class BackendService {
         .setDateOfBirth(us.DateOfBirth)
         .setRoleIdentifiersList(us.KLRoleName);
 
-        if (us.Email) {
-          user.setEmail(us.Email)
-        }
-        if (us.Phone) {
-          user.setPhone(us.Phone)
-        }
-        if (us.Username) {
-          user.setUsername(us.Username)
-        }
-        if (us.DateOfBirth) {
-          user.setDateOfBirth(us.DateOfBirth)
-        }
-        if (us.Gender === 'Male') {
-          user.setGender(Gender.MALE);
-        } else if (us.Gender === 'Female') {
-          user.setGender(Gender.FEMALE);
-        }
-        onboardUserRequest.setUser(user)
-          .setRequestId(requestMeta)
-          .setAction(Action.CREATE);
-      
+      if (us.Email) {
+        user.setEmail(us.Email)
+      }
+      if (us.Phone) {
+        user.setPhone(us.Phone)
+      }
+      if (us.Username) {
+        user.setUsername(us.Username)
+      }
+      if (us.DateOfBirth) {
+        user.setDateOfBirth(us.DateOfBirth)
+      }
+      if (us.Gender === 'Male') {
+        user.setGender(Gender.MALE);
+      } else if (us.Gender === 'Female') {
+        user.setGender(Gender.FEMALE);
+      }
+      onboardUserRequest.setUser(user)
+        .setRequestId(requestMeta)
+        .setAction(Action.CREATE);
+
       this._request.addRequests(onboardUserRequest);
     });
 
     this.addUsersToSchool(schoolUuid, userIds);
   }
 
+  addUsersToOrganization(
+    usersToOrganization: UsersToOrganizationSchema[]
+  ) {
+    usersToOrganization.forEach(userToOrg => {
+      const requestUuid = uuidv4();
+      const onboardRequest = new OnboardingRequest();
+      const linkUsers = new Link();
+      const addUsersToOrganization = new AddUsersToOrganization();
+      const requestMeta = new RequestMetadata();
+
+      requestMeta.setId(requestUuid).setN('1');
+      addUsersToOrganization
+        .setRoleIdentifiersList(userToOrg.RoleIdentifiers)
+        .setExternalUserUuidsList(userToOrg.ExternalUserUUIDs)
+        .setExternalOrganizationUuid(userToOrg.ExternalOrganizationUUID);
+
+      linkUsers.setAddUsersToOrganization(addUsersToOrganization);
+      onboardRequest.setLinkEntities(linkUsers).setRequestId(requestMeta);
+
+      this._request.addRequests(onboardRequest);
+    });
+  }
+
   private addProgramsToSchool(
-    organizationUuid: string, 
+    organizationUuid: string,
     schoolUuid: string,
     programNames: string[],
     requestUuid: string
@@ -372,7 +396,7 @@ export class BackendService {
       .setExternalOrganizationUuid(organizationUuid)
       .setExternalSchoolUuid(schoolUuid)
       .setProgramNamesList(programNames);
-    
+
     linkPrograms.setAddProgramsToSchool(addProgramsToSchool);
     onboardRequest.setLinkEntities(linkPrograms).setRequestId(requestMeta);
 
