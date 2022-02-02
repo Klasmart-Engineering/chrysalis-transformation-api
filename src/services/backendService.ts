@@ -1,5 +1,9 @@
-
-import { OrganizationQuerySchema, UserQuerySchema,SchoolQuerySchema } from '../interfaces/clientSchemas';
+import {
+  OrganizationQuerySchema,
+  UserQuerySchema,
+  SchoolQuerySchema,
+  ClassQuerySchema
+} from '../interfaces/clientSchemas';
 import { v4 as uuidv4 } from 'uuid'
 import { grpc, proto } from 'cil-lib'
 import { InterceptorOptions, NextCall } from '@grpc/grpc-js/build/src/client-interceptors'
@@ -15,7 +19,8 @@ const {
   OnboardingRequest, 
   Organization, 
   User, 
-  School, 
+  School,
+  Class,
   Link, 
   AddProgramsToSchool
 } = proto;
@@ -120,6 +125,44 @@ export class BackendService {
 			});
 		});
 	};
+
+  async onboardClasses(classes: ClassQuerySchema[] = []) {
+    return new Promise((resolve, reject) => {
+      const request = new BatchOnboarding();
+
+      classes.forEach((c) => {
+        const onboardClassRequest = new OnboardingRequest();
+        const clazz = new Class();
+
+        clazz
+          .setName(c.ClassName)
+          // .setShortCode(c.ClassShortCode)
+          .setExternalUuid(c.ClassUUID)
+          //.setExternalOrganizationUuid(c.OrganizationUUID)
+          //.setExternalSchoolUuid(c.SchoolUUID);
+
+        onboardClassRequest
+          .setClass(clazz)
+          .setRequestId(uuidv4())
+          .setAction(Action.CREATE);
+        request.addRequests(onboardClassRequest);
+      });
+
+      this._client.onboard(
+        request,
+        (err: ServiceError | null, responses: Responses) => {
+          if (err != null) {
+            reject(err);
+            return;
+          }
+
+          logger.info(responses);
+
+          resolve(responses);
+        }
+      );
+    });
+  }
 
   async onboardUsers(users: UserQuerySchema[] = []) {
     return new Promise((resolve, reject) => {

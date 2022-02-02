@@ -17,6 +17,7 @@ import {
   getClasses,
   getUsers,
   getOrganizations,
+  getSchool,
 } from '../utils/responses/c1';
 
 chai.use(spies);
@@ -35,12 +36,12 @@ describe('C1 Service', () => {
   describe('#getSchools', () => {
     beforeEach(() => {
       nock('https://' + hostname, { reqheaders: headers })
-        .get(C1Endpoints.schoolApiEndpoint)
+        .get(C1Endpoints.schoolsApiEndpoint)
         .reply(200, getSchools);
       chai.spy.on(logger, 'error', () => true);
       service = new C1Service();
       chai.spy.on(service, 'createClient', () =>
-        createFakeClient(hostname, C1Endpoints.schoolApiEndpoint)
+        createFakeClient(hostname, C1Endpoints.schoolsApiEndpoint)
       );
     });
 
@@ -146,6 +147,32 @@ describe('C1 Service', () => {
         if (Array.isArray(res)) {
           res.forEach((user) => expect(user).to.be.jsonSchema(userSchema));
         }
+      });
+    });
+  });
+
+  describe('#getSchool', () => {
+    beforeEach(() => {
+      nock('https://' + hostname, { reqheaders: headers })
+        .get(C1Endpoints.schoolApiEndpoint)
+        .reply(200, getSchool);
+      service = new C1Service();
+      chai.spy.on(logger, 'error', () => true);
+      chai.spy.on(service, 'createClient', () =>
+        createFakeClient(hostname, C1Endpoints.schoolApiEndpoint)
+      );
+    });
+
+    afterEach(() => {
+      chai.spy.restore(logger, 'error');
+      chai.spy.restore(service, 'createClient');
+    });
+
+    it('should return school details', function () {
+      return service.getSchool(pathSegments).then((res) => {
+        expect(service.createClient).to.have.been.called.once;
+        expect(res).to.be.an('object');
+        expect(res).to.be.jsonSchema(schoolSchema);
       });
     });
   });

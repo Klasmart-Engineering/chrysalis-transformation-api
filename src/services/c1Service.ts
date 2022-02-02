@@ -44,7 +44,7 @@ export class C1Service extends BaseRestfulService {
 
   async getSchools(pathSegments: string[]): Promise<Array<SchoolQuerySchema>> {
     const client = this.createClient(
-      C1Endpoints.organizationApiEndpoint,
+      C1Endpoints.schoolsApiEndpoint,
       pathSegments
     );
     return await this.getData(client) as Array<SchoolQuerySchema>;
@@ -59,7 +59,7 @@ export class C1Service extends BaseRestfulService {
   }
 
   async getUsers(
-    pathSegments: string[], 
+    pathSegments: string[],
     queryParams: Record<string, string>
   ): Promise<Array<UserQuerySchema>> {
     const client = this.createClient(
@@ -85,7 +85,7 @@ export class C1Service extends BaseRestfulService {
   async getAllSchoolUsers(schoolUuid: string): Promise<Array<UserQuerySchema>> {
     const pageSize = process.env.PAGE_SIZE || 250;
 
-    let allUsers: UserQuerySchema[] = []; 
+    let allUsers: UserQuerySchema[] = [];
     let start = 1;
     let users: UserQuerySchema[] = [];
 
@@ -108,5 +108,13 @@ export class C1Service extends BaseRestfulService {
     )) as Array<OrganizationQuerySchema>;
 
     return organizations;
+  }
+
+  getSchool(pathSegments: string[]) {
+    const client = this.createClient(
+      C1Endpoints.schoolApiEndpoint,
+      pathSegments
+    );
+    return this.getData(client);
   }
 }

@@ -1,4 +1,4 @@
-import { schoolSchema } from '../../src/validatorsSchemes';
+import { schoolSchema } from '../../src/validations/c1';
 
 export const validSchool = {
   name: 'name',

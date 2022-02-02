@@ -1,4 +1,4 @@
-import { userSchema } from '../../src/validatorsSchemes';
+import { userSchema } from '../../src/validations/c1';
 
 export const validUser = {
   userUuid: '1AF7592D-E9D4-4E1E-9C39-2F0E48854439',
