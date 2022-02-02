@@ -1,7 +1,3 @@
-export enum Gender {
-  MALE,
-  FEMALE,
-}
 export interface OrganizationQuerySchema {
   OrganizationName: string;
   OrganizationUUID: string;
@@ -33,9 +29,10 @@ export interface UserQuerySchema {
   Email: string;
   Phone: string;
   DateOfBirth: string;
-  Gender: Gender;
+  Gender: string;
   KLRoleName: string[];
   SchoolName: string;
   ClassName: string[];
   SchoolRoleName: string[];
+  Username: string;
 }

@@ -9,9 +9,7 @@ import { grpc, proto } from 'cil-lib'
 import { InterceptorOptions, NextCall } from '@grpc/grpc-js/build/src/client-interceptors'
 import { InterceptingListener } from '@grpc/grpc-js/build/src/call-stream'
 import { Metadata } from '@grpc/grpc-js/build/src/metadata'
-import { Responses } from "cil-lib/dist/main/lib/protos";
 import logger from '../utils/logging';
-import { ServiceError } from '@grpc/grpc-js';
 
 const { 
   Action, 
@@ -21,8 +19,16 @@ const {
   User, 
   School,
   Class,
-  Link, 
-  AddProgramsToSchool
+  Link,
+  Gender,
+  RequestMetadata,
+  AddProgramsToSchool,
+  AddClassesToSchool,
+  AddProgramsToClass,
+  //AddUsersToOrganization,
+  //AddUsersToClass,
+  AddUsersToSchool,
+  //AddOrganizationRolesToUser
 } = proto;
 
 export class BackendService {
@@ -77,21 +83,23 @@ export class BackendService {
 				organization.setName(org.OrganizationName)
 					.setExternalUuid(org.OrganizationUUID)
 
-				onboardOrgRequest.setOrganization(organization)
-					.setRequestId(uuidv4())
+        const requestMeta = new RequestMetadata();
+        const requestId = uuidv4();
+        requestMeta.setId(requestId).setN('1');
+
+        onboardOrgRequest.setOrganization(organization)
+          .setRequestId(requestMeta)
 					.setAction(Action.CREATE)
 
 				request.addRequests(onboardOrgRequest)
 			})
 
-			this._client.onboard(request, (err: ServiceError | null, responses: Responses) => {
+			this._client.onboard(request, (err, response) => {
 				if (err !== null) {
 					reject(err); return;
 				}
-
-				logger.info(responses)
-
-				resolve(responses);
+				logger.info(response)
+				resolve(response);
 			});
 		});
 	};
@@ -108,19 +116,21 @@ export class BackendService {
 					.setShortCode(school.SchoolShortCode)
 					.setExternalOrganizationUuid(organizationUuid);
 
+        const requestMeta = new RequestMetadata();
+        const requestId = uuidv4();
+        requestMeta.setId(requestId).setN('1');
+
 				onboardSchoolRequest.setSchool(schoolProto)
-					.setRequestId(uuidv4())
+					.setRequestId(requestMeta)
 					.setAction(Action.CREATE);
 				request.addRequests(onboardSchoolRequest);
 			})
 
-			this._client.onboard(request, (err: ServiceError | null, responses: Responses) => {
+			this._client.onboard(request, (err, responses) => {
 				if (err !== null) {
 					reject(err); return;
 				}
-
 				logger.info(responses)
-
 				resolve(responses);
 			});
 		});
@@ -134,6 +144,10 @@ export class BackendService {
         const onboardClassRequest = new OnboardingRequest();
         const clazz = new Class();
 
+        const requestMeta = new RequestMetadata();
+        const requestId = uuidv4();
+        requestMeta.setId(requestId).setN('1');
+
         clazz
           .setName(c.ClassName)
           // .setShortCode(c.ClassShortCode)
@@ -143,21 +157,19 @@ export class BackendService {
 
         onboardClassRequest
           .setClass(clazz)
-          .setRequestId(uuidv4())
+          .setRequestId(requestMeta)
           .setAction(Action.CREATE);
         request.addRequests(onboardClassRequest);
       });
 
       this._client.onboard(
         request,
-        (err: ServiceError | null, responses: Responses) => {
+        (err, responses) => {
           if (err != null) {
             reject(err);
             return;
           }
-
           logger.info(responses);
-
           resolve(responses);
         }
       );
@@ -171,6 +183,9 @@ export class BackendService {
       users.forEach((us) => {
         const onboardUserRequest = new OnboardingRequest();
         const user = new User();
+        const requestMeta = new RequestMetadata();
+        const requestId = uuidv4();
+        requestMeta.setId(requestId).setN('1');
 
         user
           .setExternalUuid(us.UserUUID)
@@ -180,26 +195,28 @@ export class BackendService {
           .setUsername(us.UserFamilyName) // TODO check witch is the username
           .setGivenName(us.UserGivenName)
           .setFamilyName(us.UserFamilyName)
-          .setGender(us.Gender)
           .setDateOfBirth(us.DateOfBirth)
           .setShortCode(us.UserFamilyName) // TODO: check witch is the shortCode of the user
           .setRoleIdentifiersList(us.KLRoleName);
 
+          if (us.Gender === 'Male') {
+            user.setGender(Gender.MALE);
+          } else if (us.Gender === 'Female') {
+            user.setGender(Gender.FEMALE);
+          }
           onboardUserRequest.setUser(user)
-          .setRequestId(uuidv4())
+          .setRequestId(requestMeta)
           .setAction(Action.CREATE);
           
         request.addRequests(onboardUserRequest);
       });
 
-      this._client.onboard(request, (err, responses: Responses) => {
+      this._client.onboard(request, (err, responses) => {
         if (err != null) {
           reject(err);
           return;
         }
-
         logger.info(responses);
-
         resolve(responses);
       });
     });
@@ -209,24 +226,33 @@ export class BackendService {
     organizations.forEach(org => {
       const onboardOrgRequest = new OnboardingRequest()
       const organization = new Organization()
+      const requestMeta = new RequestMetadata();
+      const requestId = uuidv4();
 
+      requestMeta.setId(requestId).setN('1');
       organization.setName(org.OrganizationName)
         .setExternalUuid(org.OrganizationUUID)
 
       onboardOrgRequest.setOrganization(organization)
-        .setRequestId(uuidv4())
+        .setRequestId(requestMeta)
         .setAction(Action.CREATE)
 
       this._request.addRequests(onboardOrgRequest);
     })
 	};
 
-  mapSchoolsToProto(schools: SchoolQuerySchema[] = [], organizationUuid: string) {
+  mapSchoolsToProto(
+    schools: SchoolQuerySchema[] = [],
+    organizationUuid: string
+  ) {
     if (!Array.isArray(schools)) return;
     
     schools.forEach(async school => {
       const onboardSchoolRequest = new OnboardingRequest()
       const schoolProto = new School()
+      const requestMeta = new RequestMetadata();
+      const requestId = uuidv4();
+      requestMeta.setId(requestId).setN('1');
 
       schoolProto.setExternalUuid(school.SchoolUUID)
         .setName(school.SchoolName)
@@ -234,70 +260,195 @@ export class BackendService {
         .setExternalOrganizationUuid(organizationUuid);
 
       onboardSchoolRequest.setSchool(schoolProto)
-        .setRequestId(uuidv4())
+        .setRequestId(requestMeta)
         .setAction(Action.CREATE);
 
       this._request.addRequests(onboardSchoolRequest);
-      this.addProgramToSchool(organizationUuid, school.SchoolUUID, school.ProgramName);
+      this.addProgramsToSchool(organizationUuid,
+        school.SchoolUUID,
+        school.ProgramName,
+        requestId
+      );
     })
 	};
 
-  mapUsersToProto(users: UserQuerySchema[] = [], organizationUuid: string) {
+  mapClassesToProto(
+    classes: ClassQuerySchema[] = [],
+    organizationUuid: string,
+    schoolUuid: string
+  ) {
+    if (!Array.isArray(classes)) return;
+    const classIds: string[] = [];
+    classes.forEach(async clazz => {
+      classIds.push(clazz.ClassUUID);
+      const onboardClassRequest = new OnboardingRequest()
+      const classProto = new Class()
+      const requestMeta = new RequestMetadata();
+      const requestId = uuidv4();
+      requestMeta.setId(requestId).setN('1');
+
+      classProto.setExternalUuid(clazz.ClassUUID)
+        .setName(clazz.ClassName)
+        .setExternalOrganizationUuid(organizationUuid)
+        .setExternalSchoolUuid(schoolUuid)
+      onboardClassRequest.setClass(classProto)
+        .setRequestId(requestMeta)
+        .setAction(Action.CREATE);
+
+      this.addProgramsToClass(organizationUuid,
+        clazz.ClassUUID,
+        clazz.ProgramName,
+        requestId
+      );
+      this._request.addRequests(onboardClassRequest);
+    })
+    this.addClassesToSchool(
+      schoolUuid,
+      classIds
+    );
+  };
+
+  mapUsersToProto(
+    users: UserQuerySchema[] = [],
+    organizationUuid: string,
+    schoolUuid: string
+  ) {
+    const userIds: string[] = [];
     users.forEach((us) => {
+      userIds.push(us.UserUUID);
       const onboardUserRequest = new OnboardingRequest();
       const user = new User();
-
+      const requestMeta = new RequestMetadata();
+      const requestId = uuidv4();
+      requestMeta.setId(requestId).setN('1');
       user
         .setExternalUuid(us.UserUUID)
         .setExternalOrganizationUuid(organizationUuid)
-        .setEmail('ionut@test.com')
-        .setPhone(us.Phone)
-        .setUsername('username') // TODO check witch is the username
         .setGivenName(us.UserGivenName)
         .setFamilyName(us.UserFamilyName)
-        .setGender(us.Gender)
         .setDateOfBirth(us.DateOfBirth)
-        .setShortCode('shortCode')
         .setRoleIdentifiersList(us.KLRoleName);
 
+        if (us.Email) {
+          user.setEmail(us.Email)
+        }
+        if (us.Phone) {
+          user.setPhone(us.Phone)
+        }
+        if (us.Username) {
+          user.setUsername(us.Username)
+        }
+        if (us.DateOfBirth) {
+          user.setDateOfBirth(us.DateOfBirth)
+        }
+        if (us.Gender === 'Male') {
+          user.setGender(Gender.MALE);
+        } else if (us.Gender === 'Female') {
+          user.setGender(Gender.FEMALE);
+        }
         onboardUserRequest.setUser(user)
-          .setRequestId(uuidv4())
+          .setRequestId(requestMeta)
           .setAction(Action.CREATE);
       
       this._request.addRequests(onboardUserRequest);
     });
+
+    this.addUsersToSchool(schoolUuid, userIds);
   }
 
-  private addProgramToSchool(
+  private addProgramsToSchool(
     organizationUuid: string, 
     schoolUuid: string,
-    programNames: string[]
+    programNames: string[],
+    requestUuid: string
   ) {
     const onboardRequest = new OnboardingRequest()
     const linkPrograms = new Link();
     const addProgramsToSchool = new AddProgramsToSchool();
+    const requestMeta = new RequestMetadata();
 
+    requestMeta.setId(requestUuid).setN('2');
     addProgramsToSchool
       .setExternalOrganizationUuid(organizationUuid)
       .setExternalSchoolUuid(schoolUuid)
       .setProgramNamesList(programNames);
     
     linkPrograms.setAddProgramsToSchool(addProgramsToSchool);
-    // TODO check if need to add reqId and action
-    onboardRequest.setLinkEntities(linkPrograms);
+    onboardRequest.setLinkEntities(linkPrograms).setRequestId(requestMeta);
+
+    this._request.addRequests(onboardRequest)
+  }
+
+  private addClassesToSchool(
+    schoolUuid: string,
+    classIds: string[],
+  ) {
+    const onboardRequest = new OnboardingRequest()
+    const linkClasses = new Link();
+    const addClassesToSchool = new AddClassesToSchool();
+    const requestMeta = new RequestMetadata();
+    const requestId = uuidv4();
+    requestMeta.setId(requestId).setN('1');
+    addClassesToSchool
+      .setExternalSchoolUuid(schoolUuid)
+      .setExternalClassUuidsList(classIds);
+
+    linkClasses.setAddClassesToSchool(addClassesToSchool);
+    onboardRequest.setLinkEntities(linkClasses).setRequestId(requestMeta);
+
+    this._request.addRequests(onboardRequest)
+  }
+
+  private addProgramsToClass(
+    organizationUuid: string,
+    classUuid: string,
+    programNames: string[],
+    requestUuid: string
+  ) {
+    const onboardRequest = new OnboardingRequest()
+    const linkPrograms = new Link();
+    const addProgramsToClass = new AddProgramsToClass();
+    const requestMeta = new RequestMetadata();
+
+    requestMeta.setId(requestUuid).setN('2');
+    addProgramsToClass
+      .setExternalOrganizationUuid(organizationUuid)
+      .setExternalClassUuid(classUuid)
+      .setProgramNamesList(programNames);
+
+    linkPrograms.setAddProgramsToClass(addProgramsToClass);
+    onboardRequest.setLinkEntities(linkPrograms).setRequestId(requestMeta);
+
+    this._request.addRequests(onboardRequest)
+  }
+
+  private addUsersToSchool(
+    schoolUuid: string,
+    userIds: string[],
+  ) {
+    const onboardRequest = new OnboardingRequest()
+    const linkUsers = new Link();
+    const addUsersToSchool = new AddUsersToSchool();
+    const requestMeta = new RequestMetadata();
+    const requestId = uuidv4();
+    requestMeta.setId(requestId).setN('1');
+    addUsersToSchool
+      .setExternalSchoolUuid(schoolUuid)
+      .setExternalUserUuidsList(userIds);
+
+    linkUsers.setAddUsersToSchool(addUsersToSchool);
+    onboardRequest.setLinkEntities(linkUsers).setRequestId(requestMeta);
 
     this._request.addRequests(onboardRequest)
   }
 
   async sendRequest() {
     return new Promise((resolve, reject) => {
-      this._client.onboard(this._request, (err: ServiceError | null, responses: Responses) => {
+      this._client.onboard(this._request, (err, responses) => {
         if (err !== null) {
           reject(err); return;
         }
-  
         logger.info(responses)
-  
         resolve(responses);
       });
     })

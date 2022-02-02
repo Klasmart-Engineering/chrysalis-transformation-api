@@ -36,22 +36,34 @@ router.post('/', async (req: Request, res: Response) => {
     backendService.mapSchoolsToProto(orgSchools, organization.OrganizationUUID);
 
     for (const school of schools) {
-      const schoolUsers: UserQuerySchema[] = (await service.getAllSchoolUsers(school.SchoolUUID))
+      const schoolUsers: UserQuerySchema[] =
+        await service.getAllSchoolUsers(school.SchoolUUID);
+      const schoolClasses: ClassQuerySchema[] =
+        await service.getClasses([school.SchoolUUID]);
       classes = [
         ...classes,
-        ...(await service.getClasses([school.SchoolUUID]))
+        ...schoolClasses,
       ];
+      backendService.mapClassesToProto(
+        schoolClasses,
+        organization.OrganizationUUID,
+        school.SchoolUUID,
+      );
 
       users = [
         ...users,
-        ...schoolUsers
+        ...schoolUsers,
       ];
 
-      backendService.mapUsersToProto(schoolUsers, organization.OrganizationUUID)
+      backendService.mapUsersToProto(
+        schoolUsers,
+        organization.OrganizationUUID,
+        school.SchoolUUID,
+      )
     }
   }
 
-  await backendService.sendRequest();
+  //await backendService.sendRequest();
 
   return res.status(200).json(
     {
