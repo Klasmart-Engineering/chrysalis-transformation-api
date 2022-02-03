@@ -4,3 +4,9 @@ export interface UsersToOrganizationSchema {
     ExternalUserUUIDs: string[],
     RoleIdentifiers: string[]
 }
+
+export interface UsersToClassSchema {
+    ExternalClassUUID: string,
+    ExternalTeacherUUIDs: string[],
+    ExternalStudentUUIDs: string[]
+}

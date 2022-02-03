@@ -10,7 +10,7 @@ import { InterceptorOptions, NextCall } from '@grpc/grpc-js/build/src/client-int
 import { InterceptingListener } from '@grpc/grpc-js/build/src/call-stream'
 import { Metadata } from '@grpc/grpc-js/build/src/metadata'
 import logger from '../utils/logging';
-import { UsersToOrganizationSchema } from '../interfaces/backendSchemas';
+import { UsersToClassSchema, UsersToOrganizationSchema } from '../interfaces/backendSchemas';
 
 const {
   Action,
@@ -27,7 +27,7 @@ const {
   AddClassesToSchool,
   AddProgramsToClass,
   AddUsersToOrganization,
-  //AddUsersToClass,
+  AddUsersToClass,
   AddUsersToSchool,
   //AddOrganizationRolesToUser
 } = proto;
@@ -374,6 +374,29 @@ export class BackendService {
         .setExternalOrganizationUuid(userToOrg.ExternalOrganizationUUID);
 
       linkUsers.setAddUsersToOrganization(addUsersToOrganization);
+      onboardRequest.setLinkEntities(linkUsers).setRequestId(requestMeta);
+
+      this._request.addRequests(onboardRequest);
+    });
+  }
+
+  addUsersToClasses(
+    usersToClasses: UsersToClassSchema[]
+  ) {
+    usersToClasses.forEach(usersToClass => {
+      const requestUuid = uuidv4();
+      const onboardRequest = new OnboardingRequest();
+      const linkUsers = new Link();
+      const addUsersToClass = new AddUsersToClass();
+      const requestMeta = new RequestMetadata();
+
+      requestMeta.setId(requestUuid).setN('1');
+      addUsersToClass
+        .setExternalClassUuid(usersToClass.ExternalClassUUID)
+        .setExternalStudentUuidList(usersToClass.ExternalStudentUUIDs)
+        .setExternalTeacherUuidList(usersToClass.ExternalTeacherUUIDs);
+
+      linkUsers.setAddUsersToClass(addUsersToClass);
       onboardRequest.setLinkEntities(linkUsers).setRequestId(requestMeta);
 
       this._request.addRequests(onboardRequest);
