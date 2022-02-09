@@ -15,3 +15,8 @@ export interface ClassQuerySchema {
   SchoolName: string;
   ProgramName: string[];
 }
+
+export interface FeedbackSchema {
+  Status: boolean;
+  Messages: string;
+}

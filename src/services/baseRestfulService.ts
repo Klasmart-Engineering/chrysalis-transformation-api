@@ -1,11 +1,11 @@
-import { HttpOptions } from '../interfaces/httpOptions';
 import https from 'https';
+import { HttpOptions } from '../interfaces/httpOptions';
 import { HttpError } from '../utils';
 import { C1Endpoints } from '../config/c1Endpoints';
 import { McbEndpoints } from '../config/mcbEnpoints';
 import { stringify } from 'query-string';
 
-enum Methods {
+export enum Methods {
   get = 'GET',
   post = 'POST',
 }
@@ -18,7 +18,8 @@ export abstract class BaseRestfulService {
     path: C1Endpoints | McbEndpoints,
     pathSegments?: string[],
     queryParams?: Record<string, string>,
-    method?: Methods
+    method?: Methods,
+    contentLength?: number
   ): HttpOptions {
     this.hostnameCheck();
     this.jwtTokenCheck();
@@ -26,19 +27,25 @@ export abstract class BaseRestfulService {
     if (pathSegments)
       processedPath += '/' + pathSegments.map((el) => encodeURI(el)).join('/');
     if (queryParams) processedPath += '?' + stringify(queryParams);
+
+    let headers = {
+      //Bearer Authorization token for authorize through C1 Api endpoint
+      Authorization: 'Bearer ' + this.jwtToken,
+      'Content-Type': 'application/json',
+    };
+    if (contentLength) {
+      headers = { ...headers, ...{ 'Content-Length': contentLength } };
+    }
+
     return {
       hostname: this.hostname,
       path: processedPath,
       method: method ? method : Methods.get,
-      headers: {
-        //Bearer Authorization token for authorize through C1 Api endpoint
-        Authorization: 'Bearer ' + this.jwtToken,
-        'Content-Type': 'application/json',
-      },
+      headers: headers,
     };
   }
 
-  getData(options: HttpOptions) {
+  getData(options: HttpOptions, postData?: string) {
     return new Promise((resolve, reject) => {
       const req = https.request(options, (res) => {
         const chunks: Buffer[] = [];
@@ -59,6 +66,9 @@ export abstract class BaseRestfulService {
       req.on('error', (error) => {
         reject(error);
       });
+      if (postData) {
+        req.write(postData);
+      }
       req.end();
     });
   }

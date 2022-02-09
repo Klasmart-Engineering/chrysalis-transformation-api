@@ -9,6 +9,7 @@ import {
   schoolSchema,
   classSchema,
   userSchema,
+  feedbackSchema,
   organizationSchema,
 } from '../utils/schemas/c1';
 import { createFakeClient } from '../utils/createFakeClient';
@@ -17,6 +18,7 @@ import {
   getClasses,
   getUsers,
   getOrganizations,
+  postFeedback,
 } from '../utils/responses/c1';
 
 chai.use(spies);
@@ -30,6 +32,16 @@ const headers = {
   Authorization: 'Bearer ',
   'Content-Type': 'application/json',
 };
+
+const feedbackData = [
+  {
+    UUID: 'c0def826-e930-75bc-620f-b9eec5f43b76',
+    Entity: 'fugiat sint dolor anim',
+    HasSuccess: false,
+    ErrorMessage: 'nostrud anim occaecat',
+  },
+];
+const feedbackBody = JSON.stringify(feedbackData);
 
 describe('C1 Service', () => {
   describe('#getSchools', () => {
@@ -84,9 +96,7 @@ describe('C1 Service', () => {
         expect(res).to.be.an('array');
         expect(res).to.have.length(2);
         if (Array.isArray(res)) {
-          res.forEach((c) =>
-            expect(c).to.be.jsonSchema(classSchema)
-          );
+          res.forEach((c) => expect(c).to.be.jsonSchema(classSchema));
         }
       });
     });
@@ -146,9 +156,41 @@ describe('C1 Service', () => {
         expect(res).to.be.an('array');
         expect(res).to.have.length(3);
         if (Array.isArray(res)) {
-          res.forEach((user) =>
-            expect(user).to.be.jsonSchema(userSchema)
-          );
+          res.forEach((user) => expect(user).to.be.jsonSchema(userSchema));
+        }
+      });
+    });
+  });
+
+  describe('#postFeedback', () => {
+    beforeEach(() => {
+      nock('https://' + hostname, { reqheaders: headers })
+        .replyContentLength()
+        .post(C1Endpoints.feedbackApiEndpoint)
+        .reply(200, postFeedback);
+      service = new C1Service();
+      chai.spy.on(logger, 'error', () => true);
+      chai.spy.on(service, 'createClient', () =>
+        createFakeClient(
+          hostname,
+          C1Endpoints.feedbackApiEndpoint,
+          'POST',
+          feedbackBody.length
+        )
+      );
+    });
+
+    afterEach(() => {
+      chai.spy.restore(logger, 'error');
+      chai.spy.restore(service, 'createClient');
+    });
+
+    it('should send feedback to client and return result', function () {
+      return service.postFeedback(feedbackData).then((res) => {
+        expect(service.createClient).to.have.been.called.once;
+        expect(res).to.be.an('object');
+        if (Array.isArray(res)) {
+          res.forEach((user) => expect(user).to.be.jsonSchema(feedbackSchema));
         }
       });
     });
