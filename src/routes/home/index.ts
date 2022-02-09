@@ -7,7 +7,11 @@ import { AdminService } from '../../services/adminService';
 import { C1Service } from '../../services/c1Service';
 import { MappedClass, MappedSchool } from '../../utils/mapResKeys';
 import { validateClasses, validateSchool } from '../../utils/validations';
-import { ClassQuerySchema, SchoolQuerySchema } from '../../services/c1Schemas';
+import {
+  ClassQuerySchema,
+  SchoolQuerySchema,
+  FeedbackSchema,
+} from '../../services/c1Schemas';
 import { onboardingSchema } from '../../validatorsSchemes/requests/onboarding';
 import { shorten } from '../../utils/string';
 import { validationRules } from '../../config/validationRules';
@@ -247,6 +251,26 @@ router.get('/roles', async (req: Request, res: Response) => {
     if (roles) {
       await Database.createRoles(roles);
     }
+  } catch (e) {
+    e instanceof HttpError
+      ? res.status(e.status).json(e)
+      : res.status(500).json(e);
+  }
+});
+
+// (testing purpose, will delete later) get programs from Admin User service
+router.get('/feedback', async (req: Request, res: Response) => {
+  try {
+    const data = [
+      {
+        UUID: 'c0def826-e930-75bc-620f-b9eec5f43b76',
+        Entity: 'fugiat sint dolor anim',
+        HasSuccess: false,
+        ErrorMessage: 'nostrud anim occaecat',
+      },
+    ];
+    const response = (await service.postFeedback(data)) as FeedbackSchema;
+    res.json(response);
   } catch (e) {
     e instanceof HttpError
       ? res.status(e.status).json(e)

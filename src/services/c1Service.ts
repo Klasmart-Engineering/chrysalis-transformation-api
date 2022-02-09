@@ -1,6 +1,7 @@
 import { BaseRestfulService } from './baseRestfulService';
 import { C1AuthEndpoints, C1Endpoints } from '../config/c1Endpoints';
 import { AuthServer } from '../utils/authServer';
+import { Methods } from './baseRestfulService';
 
 const loginData = JSON.stringify({
   Username: String(process.env.C1_API_USERNAME),
@@ -28,12 +29,12 @@ export class C1Service extends BaseRestfulService {
         setInterval(() => {
           authServer
             .doRefreshToken(C1AuthEndpoints.refresh)
-            .then(response => {
+            .then((response) => {
               this.jwtToken = response;
             })
             .catch(() => {
               throw new Error('Failed to refresh token');
-            })
+            });
         }, REFRESH_TOKEN_INTERVAL);
       })
       .catch(() => {
@@ -58,15 +59,26 @@ export class C1Service extends BaseRestfulService {
   }
 
   getUsers(pathSegments: string[]) {
-    const client = this.createClient(
-      C1Endpoints.userApiEndpoint,
-      pathSegments
-    );
+    const client = this.createClient(C1Endpoints.userApiEndpoint, pathSegments);
     return this.getData(client);
   }
 
   getOrganizations() {
     const client = this.createClient(C1Endpoints.organizationApiEndpoint);
     return this.getData(client);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  postFeedback(data: Record<string, any>[]) {
+    const postData = JSON.stringify(data);
+    const client = this.createClient(
+      C1Endpoints.feedbackApiEndpoint,
+      [],
+      undefined,
+      Methods.post,
+      postData.length
+    );
+
+    return this.getData(client, postData);
   }
 }
