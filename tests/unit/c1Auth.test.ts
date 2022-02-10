@@ -39,15 +39,11 @@ describe('C1 Auth', () => {
 describe('C1 Refresh token', () => {
   describe('#refreshToken', () => {
     beforeEach(() => {
-      chai.spy.on(
-        authServer,
-        'makeRequest',
-        () => {
-          return new Promise((resolve) => {
-            resolve(getToken)
-          });
-        }
-      );
+      chai.spy.on(authServer, 'makeRequest', () => {
+        return new Promise((resolve) => {
+          resolve(getToken);
+        });
+      });
     });
 
     afterEach(() => {
@@ -55,8 +51,8 @@ describe('C1 Refresh token', () => {
     });
     it('should return access token', function () {
       return authServer.doRefreshToken(refreshPath).then((res) => {
-        expect(authServer["makeRequest"]).to.have.been.called;
-        expect(authServer["jwtToken"]).length.to.be.greaterThan(0);
+        expect(authServer['makeRequest']).to.have.been.called;
+        expect(authServer['jwtToken']).length.to.be.greaterThan(0);
         expect(typeof res).to.equal('string');
         expect(res).length.greaterThan(0);
       });

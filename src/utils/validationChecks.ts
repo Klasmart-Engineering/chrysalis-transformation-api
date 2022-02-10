@@ -1,3 +1,4 @@
+
 import {
   CLASS_VALIDATION_FAILED,
   SCHOOL_VALIDATION_FAILED,
@@ -5,8 +6,8 @@ import {
   PROGRAM_NOT_EXIST,
   SCHOOL_NOT_EXIST,
 } from '../config/errorMessages';
-import { schoolSchema } from '../validatorsSchemes';
-import { classSchema } from '../validatorsSchemes';
+import { schoolSchema } from '../validations/c1';
+import { classSchema } from '../validations/c1';
 import logger from './logging';
 import Database from './database';
 import { ValidationErrorItem } from 'joi';

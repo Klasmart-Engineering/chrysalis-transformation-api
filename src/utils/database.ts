@@ -85,21 +85,27 @@ const getSchoolByName = async (schoolName: string): Promise<School | null> => {
   return school;
 };
 
-const getProgramByName = async (programName: string): Promise<Program | null> => {
+const getProgramByName = async (
+  programName: string
+): Promise<Program | null> => {
   const query = { where: { name: programName } };
   const program = await prisma.program.findFirst(query);
 
   return program;
 };
 
-const getOrganizationByName = async (organizationName: string): Promise<Organization | null> => {
+const getOrganizationByName = async (
+  organizationName: string
+): Promise<Organization | null> => {
   const query = { where: { name: organizationName } };
   const organization = await prisma.organization.findFirst(query);
 
   return organization;
 };
 
-const createOrganization = async (organization: Prisma.OrganizationCreateInput) => {
+const createOrganization = async (
+  organization: Prisma.OrganizationCreateInput
+) => {
   const payload = await prisma.organization.create({
     data: organization,
   });

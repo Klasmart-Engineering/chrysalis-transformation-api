@@ -1,0 +1,101 @@
+import chai, { expect } from 'chai';
+import spies from 'chai-spies';
+import { BackendService } from '../../../src/services/backendService';
+import {
+  getOrganizations, 
+  getSchools, 
+  getClasses,
+  getUsers
+} from '../../utils/responses/c1';
+
+chai.use(spies);
+
+const backendService = BackendService.getInstance();
+
+describe('Backend Service', () => {
+
+  afterEach(() => { backendService.resetRequest() })
+
+  describe('mapOrgsToProto', () => {
+    it('should add organizations to request', () => {
+      backendService.mapOrganizationsToProto(getOrganizations);
+      expect(backendService['_request'].getRequestsList()).to.have.length(getOrganizations.length)
+    });
+
+    it('request array must be empty', () => {
+      backendService.mapOrganizationsToProto([]);
+      expect(backendService['_request'].getRequestsList()).to.be.empty
+    });
+  });
+
+  describe('onboardSchools', () => {
+    before(() => {
+      chai.spy.on(backendService, 'addProgramsToSchool', () => {});
+    });
+ 
+    after(() => {
+      chai.spy.restore(backendService, 'addProgramsToSchool');
+    });
+
+    it('should add schools to request', () => {
+      backendService.mapSchoolsToProto(getSchools);
+      expect(backendService['_request'].getRequestsList()).to.have.length(2);
+      expect(backendService['addProgramsToSchool']).to.have.been.called.twice;
+    });
+
+    it('request array must be empty', () => {
+      backendService.mapSchoolsToProto([]);
+      expect(backendService['_request'].getRequestsList()).to.be.empty;
+      expect(backendService['addProgramsToSchool']).to.have.been.not.called;
+    });
+  });
+
+  describe('onboardClasses', () => {
+    before(() => {
+      chai.spy.on(backendService, 'addProgramsToClass', () => {});
+      chai.spy.on(backendService, 'addClassesToSchool', () => {});
+    });
+ 
+    after(() => {
+      chai.spy.restore(backendService, 'addProgramsToClass');
+      chai.spy.restore(backendService, 'addClassesToSchool');
+    });
+
+    it('should add classes to request', () => {
+      backendService.mapClassesToProto(getClasses);
+      expect(backendService['_request'].getRequestsList()).to.have.length(2);
+      expect(backendService['addProgramsToClass']).to.have.been.called.twice;
+      expect(backendService['addClassesToSchool']).to.have.been.called.once;
+    });
+
+    it('request array must be empty', () => {
+      backendService.mapSchoolsToProto([]);
+      expect(backendService['_request'].getRequestsList()).to.be.empty;
+      expect(backendService['addProgramsToClass']).to.have.been.not.called;
+      expect(backendService['addClassesToSchool']).to.have.been.called.once;
+    });
+  });
+
+  describe('onboardUsers', () => {
+    before(() => {
+      chai.spy.on(backendService, 'addUsersToSchool', () => {});
+    });
+ 
+    after(() => {
+      chai.spy.restore(backendService, 'addUsersToSchool');
+    });
+
+    it('should add users to request', () => {
+      backendService.mapUsersToProto(getUsers, "0c5ed9bb-afb1-4342-87c6-bdb0f323598e");
+      expect(backendService['_request'].getRequestsList()).to.have.length(3);
+      expect(backendService['addUsersToSchool']).to.have.been.called.once;
+    });
+
+    it('request array must be empty', () => {
+      backendService.mapSchoolsToProto([]);
+      expect(backendService['_request'].getRequestsList()).to.be.empty;
+      expect(backendService['addUsersToSchool']).to.have.been.called.once;
+    });
+  });
+});
+  

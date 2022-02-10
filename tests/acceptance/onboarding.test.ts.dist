@@ -1,13 +1,21 @@
 import fs from 'fs';
 import path from 'path';
+import spies from 'chai-spies';
 import chaiAsPromised from 'chai-as-promised';
 import supertest from 'supertest';
-import { expect, use } from 'chai';
+import chai, { expect, use } from 'chai';
 import dotenv from 'dotenv';
 import app from '../../src/app';
+import { BackendService } from '../../src/services/backendService';
+import nock from 'nock';
+import { C1Service } from '../../src/services/c1Service';
+import { C1Endpoints } from '../../src/config/c1Endpoints';
+import { getClasses, getOrganizations, getSchools, getUsers } from '../utils/responses/c1';
+import logger from '../../src/utils/logging';
+import { createFakeClient } from '../utils/createFakeClient';
 
 use(chaiAsPromised);
-
+use(spies);
 // Override environment variables
 const envConfig = dotenv.parse(
   fs.readFileSync(path.resolve(__dirname, '../../.env.test'))
@@ -16,16 +24,20 @@ for (const k in envConfig) {
   process.env[k] = envConfig[k];
 }
 
+let service: C1Service;
+const hostname = 'testapi.ezmis.in';
+
+const headers = {
+  Authorization: 'Bearer ',
+  'Content-Type': 'application/json',
+};
 const requestWithSupertest = supertest(app);
+const backendService = BackendService.getInstance();
 
-describe('POST /onboarding', () => {
-  beforeEach(async () => {
-    // something here
-  });
-
+describe('POST /onboard', () => {
   it('returns 401 error if X_API_SECRET is empty', async () => {
     const res = await requestWithSupertest
-      .post('/onboarding')
+      .post('/onboard')
       .send({ organizationName: 'organization', schoolName: 'school' });
 
     expect(res.status).to.eq(401);
@@ -33,28 +45,10 @@ describe('POST /onboarding', () => {
 
   it('returns 401 error if X_API_SECRET is invalid', async () => {
     const res = await requestWithSupertest
-      .post('/onboarding')
+      .post('/onboard')
       .set('X_API_SECRET', 'invalid')
       .send({ organizationName: 'organization', schoolName: 'school' });
 
     expect(res.status).to.eq(401);
-  });
-
-  it('returns 400 error if organizationName is empty', async () => {
-    const res = await requestWithSupertest
-      .post('/onboarding')
-      .set('X_API_SECRET', process.env.API_SECRET || 'API_SECRET')
-      .send({ organizationName: '', schoolName: 'school' });
-
-    expect(res.status).to.eq(400);
-  });
-
-  it('returns 400 error if schoolName is empty', async () => {
-    const res = await requestWithSupertest
-      .post('/onboarding')
-      .set('X_API_SECRET', process.env.API_SECRET || 'API_SECRET')
-      .send({ organizationName: 'organization', schoolName: '' });
-
-    expect(res.status).to.eq(400);
   });
 });

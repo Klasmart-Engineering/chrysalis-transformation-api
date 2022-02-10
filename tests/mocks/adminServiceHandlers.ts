@@ -196,7 +196,7 @@ export const adminServiceHandlers = [
         ])
       );
     }
- 
+
     if (!req.body) {
       return res(
         ctx.errors([
@@ -208,8 +208,6 @@ export const adminServiceHandlers = [
       );
     }
 
-    return res(
-      ctx.data(schoolForUs)
-    )
+    return res(ctx.data(schoolForUs));
   }),
 ];
