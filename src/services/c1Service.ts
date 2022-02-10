@@ -2,11 +2,12 @@ import { BaseRestfulService } from './baseRestfulService';
 import { C1AuthEndpoints, C1Endpoints } from '../config/c1Endpoints';
 import { AuthServer } from '../utils/authServer';
 import {
-  ClassQuerySchema, FeedbackSchema,
+  ClassQuerySchema,
+  FeedbackSchema,
   OrganizationQuerySchema,
   SchoolQuerySchema,
   UserQuerySchema,
-  UsersQuerySchema
+  UsersQuerySchema,
 } from '../interfaces/clientSchemas';
 import { Methods } from './baseRestfulService';
 
@@ -25,7 +26,6 @@ const authServer = new AuthServer(
 export class C1Service extends BaseRestfulService {
   hostname = String(process.env.C1_API_HOSTNAME);
   jwtToken = '';
-  refreshToken = '';
 
   constructor() {
     super();
@@ -54,7 +54,7 @@ export class C1Service extends BaseRestfulService {
       C1Endpoints.schoolsApiEndpoint,
       pathSegments
     );
-    return await this.getData(client) as Array<SchoolQuerySchema>;
+    return (await this.getData(client)) as Array<SchoolQuerySchema>;
   }
 
   async getClasses(pathSegments: string[]): Promise<Array<ClassQuerySchema>> {
@@ -62,7 +62,7 @@ export class C1Service extends BaseRestfulService {
       C1Endpoints.classesApiEndpoint,
       pathSegments
     );
-    return await this.getData(client) as Array<ClassQuerySchema>;
+    return (await this.getData(client)) as Array<ClassQuerySchema>;
   }
 
   async getUsers(
@@ -72,9 +72,9 @@ export class C1Service extends BaseRestfulService {
     const client = this.createClient(
       C1Endpoints.usersApiEndpoint,
       pathSegments,
-      queryParams,
+      queryParams
     );
-    return await this.getData(client) as UsersQuerySchema;
+    return (await this.getData(client)) as UsersQuerySchema;
   }
 
   async getUser(
@@ -84,9 +84,9 @@ export class C1Service extends BaseRestfulService {
     const client = this.createClient(
       C1Endpoints.userApiEndpoint,
       pathSegments,
-      queryParams,
+      queryParams
     );
-    return await this.getData(client) as UsersQuerySchema;
+    return (await this.getData(client)) as UsersQuerySchema;
   }
 
   async getAllSchoolUsers(schoolUuid: string): Promise<UserQuerySchema[]> {
@@ -97,22 +97,22 @@ export class C1Service extends BaseRestfulService {
     let users: UsersQuerySchema;
 
     do {
-      users = await this.getUsers(['SchoolGUID'], {Skip: start.toString(), Take: pageSize.toString(), ID: schoolUuid})
+      users = await this.getUsers(['SchoolGUID'], {
+        Skip: start.toString(),
+        Take: pageSize.toString(),
+        ID: schoolUuid,
+      });
       if (!users.data) users.data = [];
       allUsers.push(...users.data);
       start += Number(pageSize);
     } while (users.data.length);
 
-    return allUsers
+    return allUsers;
   }
 
   async getOrganizations(): Promise<Array<OrganizationQuerySchema>> {
     const client = this.createClient(C1Endpoints.organizationApiEndpoint);
-    const organizations = (await this.getData(
-      client
-    )) as Array<OrganizationQuerySchema>;
-
-    return organizations;
+    return (await this.getData(client)) as Array<OrganizationQuerySchema>;
   }
 
   async getSchool(pathSegments: string[]): Promise<SchoolQuerySchema> {

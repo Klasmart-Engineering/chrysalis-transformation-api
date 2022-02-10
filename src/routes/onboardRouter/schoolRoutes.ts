@@ -1,34 +1,28 @@
 import express, { Request, Response } from 'express';
 import { C1Service } from '../../services/c1Service';
-import { Cache } from '../../utils/cache';
 import { BackendService } from '../../services/backendService';
-import { SuccessResponse } from '../../utils';
 import { SchoolQuerySchema } from '../../interfaces/clientSchemas';
 
 const router = express.Router();
 const service = new C1Service();
-const cache = Cache.getInstance();
 const backendService = BackendService.getInstance();
 
 router.post('/:organizationUUID', async (req: Request, res: Response) => {
   const { organizationUUID } = req.params;
   const { schoolIds = [] }: { schoolIds: string[] } = req.body;
 
-  const response = new SuccessResponse();
-  let schools: Array<SchoolQuerySchema> = await service.getSchools([organizationUUID, 'Schools']);
+  let schools: Array<SchoolQuerySchema> = await service.getSchools([
+    organizationUUID,
+    'Schools',
+  ]);
 
   if (!schools || schools.length === 0) {
-    return res.json(response);
+    return res.json([]);
   }
-
-  // cache schools
-  schools.forEach((school: SchoolQuerySchema) => {
-    cache.addSchoolId(school.SchoolName, school.SchoolUUID);
-  });
 
   // filter out schools that aren't in schoolIds array
   if (schoolIds.length) {
-    schools = schools.filter(school => schoolIds.includes(school.SchoolUUID));
+    schools = schools.filter((school) => schoolIds.includes(school.SchoolUUID));
   }
 
   // call generic backend
@@ -36,6 +30,6 @@ router.post('/:organizationUUID', async (req: Request, res: Response) => {
 
   // check in response for validation errors
 
-  return response;
+  res.status(204).json();
 });
 export default router;

@@ -3,7 +3,7 @@ import OrganizationRoutes from './organizationRoutes';
 import SchoolRoutes from './schoolRoutes';
 import ClassRoutes from './classRoutes';
 import UserRoutes from './userRoutes';
-import CascadeRoutes from './cascadeRoutes'
+import CascadeRoutes from './cascadeRoutes';
 
 const router = express.Router();
 

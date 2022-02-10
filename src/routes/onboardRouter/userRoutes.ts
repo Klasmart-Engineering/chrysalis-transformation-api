@@ -1,5 +1,8 @@
 import express, { Request, Response } from 'express';
-import { UserQuerySchema, UsersQuerySchema } from '../../interfaces/clientSchemas';
+import {
+  UserQuerySchema,
+  UsersQuerySchema,
+} from '../../interfaces/clientSchemas';
 import { C1Service } from '../../services/c1Service';
 import { validate as isValidUUID } from 'uuid';
 import logger from '../../utils/logging';
@@ -25,21 +28,21 @@ router.post('/', async (req: Request, res: Response) => {
     const id: string = validIds[index];
 
     try {
-      const user: UsersQuerySchema = (await service.getUser([
-        id,
-      ], {})) as UsersQuerySchema;
+      const user: UsersQuerySchema = (await service.getUser(
+        [id],
+        {}
+      )) as UsersQuerySchema;
       users.push(user.data[0]);
     } catch (error) {
       logger.error(error);
     }
   }
 
-  if (users.length)
-    return res.status(404).json({ message: 'No users found' });
+  if (users.length) return res.status(404).json({ message: 'No users found' });
 
-    const result = await backendService.onboardUsers(users);
+  const result = await backendService.onboardUsers(users);
 
-    return res.json(result);
+  return res.json(result);
 });
 
 router.post('/classes/:classId', async (req: Request, res: Response) => {
@@ -58,9 +61,9 @@ router.post('/classes/:classId', async (req: Request, res: Response) => {
   if (!users || users.data.length)
     return res.status(404).json({ message: 'No users found' });
 
-    const result = await backendService.onboardUsers(users.data);
+  const result = await backendService.onboardUsers(users.data);
 
-    return res.json(result);
+  return res.json(result);
 });
 
 router.post('/schools/:schoolId', async (req: Request, res: Response) => {

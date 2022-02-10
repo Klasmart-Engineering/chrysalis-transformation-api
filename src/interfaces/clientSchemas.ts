@@ -53,7 +53,7 @@ export interface UserQuerySchema {
 
 enum classRole {
   'Student',
-  'Teacher'
+  'Teacher',
 }
 
 export interface FeedbackSchema {

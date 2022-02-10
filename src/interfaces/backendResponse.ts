@@ -1,21 +1,20 @@
 import { Entity } from 'cil-lib';
 
 export interface BackendResponses {
-  'responsesList': BackendResponse[];
+  responsesList: BackendResponse[];
 }
 
 export interface BackendResponse {
-  'requestId': {
-    'id': string;
-    'n': string;
+  requestId: {
+    id: string;
+    n: string;
   };
-  'entity': number;
-  'entityName': Entity;
-  'entityId': string;
-  'success': boolean;
-  'errors': Record<ErrorKeys, ErrorDetails>;
+  entity: number;
+  entityName: Entity;
+  entityId: string;
+  success: boolean;
+  errors: Record<ErrorKeys, ErrorDetails>;
 }
-
 
 enum ErrorKeys {
   'validation',
@@ -26,5 +25,5 @@ enum ErrorKeys {
 }
 
 interface ErrorDetails {
-  'detailsList': string[];
+  detailsList: string[];
 }

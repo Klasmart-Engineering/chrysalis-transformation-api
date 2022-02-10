@@ -28,7 +28,7 @@ chai.use(jsonSchema);
 let service: C1Service;
 const hostname = 'testapi.ezmis.in';
 const pathSegments = ['test'];
-const queryParams = { Skip: '1', Take: '100', ID: 'test' }
+const queryParams = { Skip: '1', Take: '100', ID: 'test' };
 
 const headers = {
   Authorization: 'Bearer ',
@@ -98,9 +98,7 @@ describe('C1 Service', () => {
         expect(res).to.be.an('array');
         expect(res).to.have.length(2);
         if (Array.isArray(res)) {
-          res.forEach((c) =>
-            expect(c).to.be.jsonSchema(classSchema)
-          );
+          res.forEach((c) => expect(c).to.be.jsonSchema(classSchema));
         }
       });
     });
