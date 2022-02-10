@@ -18,6 +18,7 @@ import {
   getClasses,
   getUsers,
   getOrganizations,
+  getSchool,
   postFeedback,
 } from '../utils/responses/c1';
 
@@ -27,6 +28,7 @@ chai.use(jsonSchema);
 let service: C1Service;
 const hostname = 'testapi.ezmis.in';
 const pathSegments = ['test'];
+const queryParams = { Skip: '1', Take: '100', ID: 'test' }
 
 const headers = {
   Authorization: 'Bearer ',
@@ -47,12 +49,12 @@ describe('C1 Service', () => {
   describe('#getSchools', () => {
     beforeEach(() => {
       nock('https://' + hostname, { reqheaders: headers })
-        .get(C1Endpoints.schoolApiEndpoint)
+        .get(C1Endpoints.schoolsApiEndpoint)
         .reply(200, getSchools);
       chai.spy.on(logger, 'error', () => true);
       service = new C1Service();
       chai.spy.on(service, 'createClient', () =>
-        createFakeClient(hostname, C1Endpoints.schoolApiEndpoint)
+        createFakeClient(hostname, C1Endpoints.schoolsApiEndpoint)
       );
     });
 
@@ -96,7 +98,9 @@ describe('C1 Service', () => {
         expect(res).to.be.an('array');
         expect(res).to.have.length(2);
         if (Array.isArray(res)) {
-          res.forEach((c) => expect(c).to.be.jsonSchema(classSchema));
+          res.forEach((c) =>
+            expect(c).to.be.jsonSchema(classSchema)
+          );
         }
       });
     });
@@ -151,7 +155,7 @@ describe('C1 Service', () => {
     });
 
     it('should return users list', function () {
-      return service.getUsers(pathSegments).then((res) => {
+      return service.getUsers(pathSegments, queryParams).then((res) => {
         expect(service.createClient).to.have.been.called.once;
         expect(res).to.be.an('array');
         expect(res).to.have.length(3);
@@ -192,6 +196,32 @@ describe('C1 Service', () => {
         if (Array.isArray(res)) {
           res.forEach((user) => expect(user).to.be.jsonSchema(feedbackSchema));
         }
+      });
+    });
+  });
+
+  describe('#getSchool', () => {
+    beforeEach(() => {
+      nock('https://' + hostname, { reqheaders: headers })
+        .get(C1Endpoints.schoolApiEndpoint)
+        .reply(200, getSchool);
+      service = new C1Service();
+      chai.spy.on(logger, 'error', () => true);
+      chai.spy.on(service, 'createClient', () =>
+        createFakeClient(hostname, C1Endpoints.schoolApiEndpoint)
+      );
+    });
+
+    afterEach(() => {
+      chai.spy.restore(logger, 'error');
+      chai.spy.restore(service, 'createClient');
+    });
+
+    it('should return school details', function () {
+      return service.getSchool(pathSegments).then((res) => {
+        expect(service.createClient).to.have.been.called.once;
+        expect(res).to.be.an('object');
+        expect(res).to.be.jsonSchema(schoolSchema);
       });
     });
   });

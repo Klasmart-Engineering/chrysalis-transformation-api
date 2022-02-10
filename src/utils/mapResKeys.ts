@@ -1,4 +1,4 @@
-import { SchoolQuerySchema, ClassQuerySchema } from '../services/c1Schemas';
+import { SchoolQuerySchema, ClassQuerySchema } from '../interfaces/clientSchemas';
 
 export class MappedSchool {
   name: string;

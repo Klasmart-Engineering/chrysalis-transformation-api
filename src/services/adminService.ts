@@ -173,20 +173,17 @@ export class AdminService {
   /**
    * Adds schools to user service.
    * @param schools
-   * @param klOrgUuid 
+   * @param klOrgUuid
    */
   async addSchools(schools: CreateSchoolInput[]) {
     try {
-      await addSchool(
-        process.env.ADMIN_SERVICE_JWT || '',
-        schools
-      );
+      await addSchool(process.env.ADMIN_SERVICE_JWT || '', schools);
     } catch (err) {
       logger.error(err);
       throw new Error('Error adding school in school service');
     }
   }
-  
+
   // While loop to get all organizations from Admin User service
   async getOrganizations(
     name: string

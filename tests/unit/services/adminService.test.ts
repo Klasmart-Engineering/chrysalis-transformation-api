@@ -42,9 +42,7 @@ describe('Admin Service', () => {
   describe('#addSchools', () => {
     it('should not throw an error', async () => {
       const adminService = await AdminService.getInstance();
-      const graphQlRes = await adminService.addSchools(
-       [schoolForUs]
-      )
+      const graphQlRes = await adminService.addSchools([schoolForUs]);
       expect(graphQlRes).to.be.not.throw;
     });
   });
@@ -52,7 +50,9 @@ describe('Admin Service', () => {
   describe('#getOrganizations', () => {
     it('returns all organizations when has pagination', async () => {
       const adminService = await AdminService.getInstance();
-      const organizations = await adminService.getOrganizations('Chrysalis BLP Classic');
+      const organizations = await adminService.getOrganizations(
+        'Chrysalis BLP Classic'
+      );
 
       expect(typeof organizations).to.equal('object');
       expect(Array.isArray(organizations)).to.equal(true);

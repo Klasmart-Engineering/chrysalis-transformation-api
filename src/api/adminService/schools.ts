@@ -6,7 +6,7 @@ export const ADD_SCHOOLS = gql`
   mutation createSchools($input: [CreateSchoolInput!]!) {
     createSchools(input: $input) {
       schools {
-        name,
+        name
         shortCode
         organizationId
       }
@@ -23,12 +23,12 @@ export const addSchool = async (
   return await adminServiceClient.mutate({
     mutation: ADD_SCHOOLS,
     variables: {
-      input: schools
+      input: schools,
     },
     context: {
       headers: {
         authorization,
       },
     },
-  })
-}
+  });
+};
