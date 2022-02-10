@@ -32,7 +32,7 @@ const addUsersToClass = (
     {}
   );
 
-return schoolClasses.reduce((acc: UsersToClassSchema[], classData) => {
+  return schoolClasses.reduce((acc: UsersToClassSchema[], classData) => {
     const { ClassUUID, ClassName } = classData;
 
     usersForClassName[ClassName].forEach((user) => {

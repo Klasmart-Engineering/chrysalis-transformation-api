@@ -15,11 +15,12 @@ import { log, protobufToEntity } from 'cil-lib';
 import { addUsersToClass, addUsersToOrganization } from '../../utils';
 
 const router = express.Router();
-const service = new C1Service();
-const backendService = BackendService.getInstance();
 
 router.post('/', async (req: Request, res: Response) => {
+  const service = await C1Service.getInstance();
+  const backendService = BackendService.getInstance();
   backendService.resetRequest();
+
   const { organizationNames = [] }: { organizationNames: string[] } = req.body;
 
   let allOrganizations: Array<OrganizationQuerySchema> =

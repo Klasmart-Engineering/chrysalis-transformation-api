@@ -24,29 +24,31 @@ const authServer = new AuthServer(
 );
 
 export class C1Service extends BaseRestfulService {
+  private static _instance: C1Service;
   hostname = String(process.env.C1_API_HOSTNAME);
   jwtToken = '';
 
-  constructor() {
+  constructor(jwtToken: string) {
     super();
-    authServer
-      .getAccessToken(C1AuthEndpoints.login)
-      .then((res) => {
-        this.jwtToken = res;
-        setInterval(() => {
-          authServer
-            .doRefreshToken(C1AuthEndpoints.refresh)
-            .then((response) => {
-              this.jwtToken = response;
-            })
-            .catch(() => {
-              throw new Error('Failed to refresh token');
-            });
-        }, REFRESH_TOKEN_INTERVAL);
-      })
-      .catch(() => {
-        throw new Error('Failed to get access token');
-      });
+    this.jwtToken = jwtToken;
+    setInterval(() => {
+      authServer
+        .doRefreshToken(C1AuthEndpoints.refresh)
+        .then((response) => {
+          this.jwtToken = response;
+        })
+        .catch(() => {
+          throw new Error('Failed to refresh token');
+        });
+    }, REFRESH_TOKEN_INTERVAL);
+  }
+
+  public static async getInstance() {
+    if (this._instance) return this._instance;
+    const token = await authServer
+      .getAccessToken(C1AuthEndpoints.login);
+    this._instance = new C1Service(token);
+    return this._instance;
   }
 
   async getSchools(pathSegments: string[]): Promise<Array<SchoolQuerySchema>> {

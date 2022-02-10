@@ -10,13 +10,13 @@ import { BackendService } from '../../services/backendService';
 
 const router = express.Router();
 
-const service = new C1Service();
-const backendService = BackendService.getInstance();
 interface userBody {
   userIds: string[];
 }
 
 router.post('/', async (req: Request, res: Response) => {
+  const service = await C1Service.getInstance();
+  const backendService = BackendService.getInstance();
   const { userIds }: userBody = req.body;
   const users: UserQuerySchema[] = [];
 
@@ -46,6 +46,8 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 router.post('/classes/:classId', async (req: Request, res: Response) => {
+  const service = await C1Service.getInstance();
+  const backendService = BackendService.getInstance();
   const { classId } = req.params;
 
   if (!classId) return res.status(400).json('No class id provided');
@@ -67,6 +69,8 @@ router.post('/classes/:classId', async (req: Request, res: Response) => {
 });
 
 router.post('/schools/:schoolId', async (req: Request, res: Response) => {
+  const service = await C1Service.getInstance();
+  const backendService = BackendService.getInstance();
   const { schoolId } = req.params;
 
   if (!schoolId) return res.status(400).json('No school id provided');

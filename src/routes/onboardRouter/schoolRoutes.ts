@@ -4,10 +4,10 @@ import { BackendService } from '../../services/backendService';
 import { SchoolQuerySchema } from '../../interfaces/clientSchemas';
 
 const router = express.Router();
-const service = new C1Service();
-const backendService = BackendService.getInstance();
 
 router.post('/:organizationUUID', async (req: Request, res: Response) => {
+  const service = await C1Service.getInstance();
+  const backendService = BackendService.getInstance();
   const { organizationUUID } = req.params;
   const { schoolIds = [] }: { schoolIds: string[] } = req.body;
 

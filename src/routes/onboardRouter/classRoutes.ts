@@ -9,10 +9,10 @@ import { C1Service } from '../../services/c1Service';
 import { BackendService } from '../../services/backendService';
 
 const router = express.Router();
-const service = new C1Service();
-const backendService = BackendService.getInstance();
 
 router.post('/:schoolId', async (req: Request, res: Response) => {
+  const service = await C1Service.getInstance();
+  const backendService = BackendService.getInstance();
   const { schoolId } = req.params;
   const { classIds } = req.body;
 
