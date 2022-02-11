@@ -1,15 +1,16 @@
-import { BaseRestfulService } from './baseRestfulService';
+import { BaseRestfulService, Methods } from './baseRestfulService';
 import { C1AuthEndpoints, C1Endpoints } from '../config/c1Endpoints';
 import { AuthServer } from '../utils/authServer';
 import {
+  ClassesQuerySchema,
   ClassQuerySchema,
   FeedbackSchema,
   OrganizationQuerySchema,
   SchoolQuerySchema,
+  SchoolsQuerySchema,
   UserQuerySchema,
   UsersQuerySchema,
 } from '../interfaces/clientSchemas';
-import { Methods } from './baseRestfulService';
 
 const loginData = JSON.stringify({
   Username: String(process.env.C1_API_USERNAME),
@@ -17,6 +18,7 @@ const loginData = JSON.stringify({
 });
 
 const REFRESH_TOKEN_INTERVAL = 600000;
+const pageSize = process.env.PAGE_SIZE || 250;
 
 const authServer = new AuthServer(
   String(process.env.C1_API_HOSTNAME),
@@ -51,15 +53,60 @@ export class C1Service extends BaseRestfulService {
     return this._instance;
   }
 
-  async getSchools(pathSegments: string[]): Promise<Array<SchoolQuerySchema>> {
+  async getOrganizations(): Promise<Array<OrganizationQuerySchema>> {
+    const client = this.createClient(C1Endpoints.organizationApiEndpoint);
+    return (await this.getData(client)) as Array<OrganizationQuerySchema>;
+  }
+
+  async getSchool(pathSegments: string[]): Promise<SchoolQuerySchema> {
     const client = this.createClient(
-      C1Endpoints.schoolsApiEndpoint,
+      C1Endpoints.schoolApiEndpoint,
+      pathSegments
+    );
+    return (await this.getData(client)) as SchoolQuerySchema;
+  }
+
+  async getOrgSchools(pathSegments: string[]): Promise<Array<SchoolQuerySchema>> {
+    const client = this.createClient(
+      C1Endpoints.organizationApiEndpoint,
       pathSegments
     );
     return (await this.getData(client)) as Array<SchoolQuerySchema>;
   }
 
-  async getClasses(pathSegments: string[]): Promise<Array<ClassQuerySchema>> {
+  private async getSchools(
+    pathSegments: string[],
+    queryParams: Record<string, string>
+  ): Promise<SchoolsQuerySchema> {
+    const client = this.createClient(
+      C1Endpoints.schoolsApiEndpoint,
+      pathSegments,
+      queryParams
+    );
+    return (await this.getData(client)) as SchoolsQuerySchema;
+  }
+
+  async getAllSchools(): Promise<Array<SchoolQuerySchema>> {
+    const allSchools: SchoolQuerySchema[] = [];
+    let start = 1;
+    let schools: SchoolsQuerySchema;
+
+    do {
+      schools = await this.getSchools([], {
+        Skip: start.toString(),
+        Take: pageSize.toString(),
+      });
+      if (!schools.data) schools.data = [];
+      allSchools.push(...schools.data);
+      start += Number(pageSize);
+    } while (schools.data.length);
+
+    return allSchools;
+  }
+
+  async getSchoolClasses(
+    pathSegments: string[]
+  ): Promise<Array<ClassQuerySchema>> {
     const client = this.createClient(
       C1Endpoints.classesApiEndpoint,
       pathSegments
@@ -67,16 +114,34 @@ export class C1Service extends BaseRestfulService {
     return (await this.getData(client)) as Array<ClassQuerySchema>;
   }
 
-  async getUsers(
+  private async getClasses(
     pathSegments: string[],
     queryParams: Record<string, string>
-  ): Promise<UsersQuerySchema> {
+  ): Promise<ClassesQuerySchema> {
     const client = this.createClient(
-      C1Endpoints.usersApiEndpoint,
+      C1Endpoints.classesApiEndpoint,
       pathSegments,
       queryParams
     );
-    return (await this.getData(client)) as UsersQuerySchema;
+    return (await this.getData(client)) as ClassesQuerySchema;
+  }
+
+  async getAllClasses(): Promise<Array<ClassQuerySchema>> {
+    const allClasses: ClassQuerySchema[] = [];
+    let start = 1;
+    let classes: ClassesQuerySchema;
+
+    do {
+      classes = await this.getClasses([], {
+        Skip: start.toString(),
+        Take: pageSize.toString(),
+      });
+      if (!classes.data) classes.data = [];
+      allClasses.push(...classes.data);
+      start += Number(pageSize);
+    } while (classes.data.length);
+
+    return allClasses;
   }
 
   async getUser(
@@ -91,9 +156,19 @@ export class C1Service extends BaseRestfulService {
     return (await this.getData(client)) as UsersQuerySchema;
   }
 
-  async getAllSchoolUsers(schoolUuid: string): Promise<UserQuerySchema[]> {
-    const pageSize = process.env.PAGE_SIZE || 250;
+  private async getUsers(
+    pathSegments: string[],
+    queryParams: Record<string, string>
+  ): Promise<UsersQuerySchema> {
+    const client = this.createClient(
+      C1Endpoints.usersApiEndpoint,
+      pathSegments,
+      queryParams
+    );
+    return (await this.getData(client)) as UsersQuerySchema;
+  }
 
+  async getAllSchoolUsers(schoolUuid: string): Promise<UserQuerySchema[]> {
     const allUsers: UserQuerySchema[] = [];
     let start = 1;
     let users: UsersQuerySchema;
@@ -112,17 +187,22 @@ export class C1Service extends BaseRestfulService {
     return allUsers;
   }
 
-  async getOrganizations(): Promise<Array<OrganizationQuerySchema>> {
-    const client = this.createClient(C1Endpoints.organizationApiEndpoint);
-    return (await this.getData(client)) as Array<OrganizationQuerySchema>;
-  }
+  async getAllUsers(): Promise<UserQuerySchema[]> {
+    const allUsers: UserQuerySchema[] = [];
+    let start = 1;
+    let users: UsersQuerySchema;
 
-  async getSchool(pathSegments: string[]): Promise<SchoolQuerySchema> {
-    const client = this.createClient(
-      C1Endpoints.schoolApiEndpoint,
-      pathSegments
-    );
-    return (await this.getData(client)) as SchoolQuerySchema;
+    do {
+      users = await this.getUsers([], {
+        Skip: start.toString(),
+        Take: pageSize.toString(),
+      });
+      if (!users.data) users.data = [];
+      allUsers.push(...users.data);
+      start += Number(pageSize);
+    } while (users.data.length);
+
+    return allUsers;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

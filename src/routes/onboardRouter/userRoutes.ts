@@ -1,94 +1,28 @@
 import express, { Request, Response } from 'express';
 import {
   UserQuerySchema,
-  UsersQuerySchema,
 } from '../../interfaces/clientSchemas';
 import { C1Service } from '../../services/c1Service';
-import { validate as isValidUUID } from 'uuid';
-import logger from '../../utils/logging';
 import { BackendService } from '../../services/backendService';
+import { parseResponse } from '../../utils';
 
 const router = express.Router();
-
-interface userBody {
-  userIds: string[];
-}
 
 router.post('/', async (req: Request, res: Response) => {
   const service = await C1Service.getInstance();
   const backendService = BackendService.getInstance();
-  const { userIds }: userBody = req.body;
-  const users: UserQuerySchema[] = [];
+  backendService.resetRequest();
 
-  if (!userIds) return res.status(400).json('No user ids provided');
+  const users: UserQuerySchema[] = await service.getAllUsers();
 
-  const validIds: string[] = userIds.filter((userId) => isValidUUID(userId));
+  //TODO delete school uuid when be provided by C1 in user object
+  backendService.mapUsersToProto(users, 'to-be-changed');
 
-  for (let index = 0; index < validIds.length; index++) {
-    const id: string = validIds[index];
+  //TODO map users by organization and use addUsersToOrganization function
+  //TODO map users by school classes and use addUsersToClass function
+  const { statusCode, response } = await parseResponse();
 
-    try {
-      const user: UsersQuerySchema = (await service.getUser(
-        [id],
-        {}
-      )) as UsersQuerySchema;
-      users.push(user.data[0]);
-    } catch (error) {
-      logger.error(error);
-    }
-  }
-
-  if (users.length) return res.status(404).json({ message: 'No users found' });
-
-  const result = await backendService.onboardUsers(users);
-
-  return res.json(result);
-});
-
-router.post('/classes/:classId', async (req: Request, res: Response) => {
-  const service = await C1Service.getInstance();
-  const backendService = BackendService.getInstance();
-  const { classId } = req.params;
-
-  if (!classId) return res.status(400).json('No class id provided');
-
-  if (!isValidUUID(classId))
-    return res.status(400).json('Invalid class id provided');
-
-  const users: UsersQuerySchema = (await service.getUsers(
-    [classId],
-    {}
-  )) as UsersQuerySchema;
-
-  if (!users || users.data.length)
-    return res.status(404).json({ message: 'No users found' });
-
-  const result = await backendService.onboardUsers(users.data);
-
-  return res.json(result);
-});
-
-router.post('/schools/:schoolId', async (req: Request, res: Response) => {
-  const service = await C1Service.getInstance();
-  const backendService = BackendService.getInstance();
-  const { schoolId } = req.params;
-
-  if (!schoolId) return res.status(400).json('No school id provided');
-
-  if (!isValidUUID(schoolId))
-    return res.status(400).json('Invalid school id provided');
-
-  const users: UsersQuerySchema = (await service.getUsers(
-    [schoolId, 'School'],
-    {}
-  )) as UsersQuerySchema;
-
-  if (!users || users.data.length)
-    res.status(404).json({ message: 'No users found' });
-
-  const result = await backendService.onboardUsers(users.data);
-
-  return res.json(result);
+  return res.status(statusCode).json(response);
 });
 
 export default router;

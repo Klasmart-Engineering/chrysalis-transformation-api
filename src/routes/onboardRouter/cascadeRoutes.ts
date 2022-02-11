@@ -8,11 +8,10 @@ import {
 import { BackendService } from '../../services/backendService';
 import { C1Service } from '../../services/c1Service';
 import {
-  BackendResponse,
-  BackendResponses,
-} from '../../interfaces/backendResponse';
-import { log, protobufToEntity } from 'cil-lib';
-import { addUsersToClass, addUsersToOrganization } from '../../utils';
+  addUsersToClass,
+  addUsersToOrganization,
+  parseResponse
+} from '../../utils';
 
 const router = express.Router();
 
@@ -38,7 +37,7 @@ router.post('/', async (req: Request, res: Response) => {
   for (const organization of allOrganizations) {
     const organizationUsers: Array<UserQuerySchema> = [];
 
-    const orgSchools: SchoolQuerySchema[] = await service.getSchools([
+    const orgSchools: SchoolQuerySchema[] = await service.getOrgSchools([
       organization.OrganizationUUID,
       'Schools',
     ]);
@@ -50,13 +49,14 @@ router.post('/', async (req: Request, res: Response) => {
       const schoolUsers: UserQuerySchema[] = await service.getAllSchoolUsers(
         school.SchoolUUID
       );
-      const schoolClasses: ClassQuerySchema[] = await service.getClasses([
+      const schoolClasses: ClassQuerySchema[] = await service.getSchoolClasses([
         school.SchoolUUID,
       ]);
 
       backendService.mapClassesToProto(schoolClasses);
 
       organizationUsers.push(...schoolUsers);
+      //TODO delete school uuid when be provided by C1 in user object
       backendService.mapUsersToProto(schoolUsers, school.SchoolUUID);
 
       const usersToClass = addUsersToClass(schoolClasses, schoolUsers);
@@ -71,14 +71,8 @@ router.post('/', async (req: Request, res: Response) => {
     backendService.addUsersToOrganization(usersToOrganization);
   }
 
-  const response = (await backendService.sendRequest()) as BackendResponses;
-  let statusCode = 400;
-  response.responsesList.forEach((rsp: BackendResponse) => {
-    rsp.entityName = protobufToEntity(rsp.entity, log);
-    if (rsp.success) {
-      statusCode = 200;
-    }
-  });
+  const { statusCode, response } = await parseResponse();
+
   return res.status(statusCode).json(response);
 });
 

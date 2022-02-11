@@ -68,7 +68,7 @@ describe('C1 Service', () => {
     });
 
     it('should return schools array of defined school schema', function () {
-      return service.getSchools(pathSegments).then((res) => {
+      return service.getOrgSchools(pathSegments).then((res) => {
         expect(service.createClient).to.have.been.called.once;
         expect(res).to.be.an('array');
         if (Array.isArray(res))
@@ -94,7 +94,7 @@ describe('C1 Service', () => {
     });
 
     it('should return classes list', function () {
-      return service.getClasses(pathSegments).then((res) => {
+      return service.getSchoolClasses(pathSegments).then((res) => {
         expect(service.createClient).to.have.been.called.once;
         expect(res).to.be.an('array');
         expect(res).to.have.length(2);
@@ -148,7 +148,7 @@ describe('C1 Service', () => {
     });
 
     it('should return users list', function () {
-      return service.getUsers(pathSegments, queryParams).then((res) => {
+      return service['getUsers'](pathSegments, queryParams).then((res) => {
         expect(service.createClient).to.have.been.called.once;
         expect(res).to.be.an('array');
         expect(res).to.have.length(3);
