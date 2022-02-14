@@ -6,6 +6,7 @@ import {
   ClassQuerySchema,
   OrganizationQuerySchema,
   UserQuerySchema,
+  UsersByOrgs,
 } from '../interfaces/clientSchemas';
 
 const addUsersToClass = (
@@ -101,4 +102,67 @@ const addUsersToOrganization = (
   }, []);
 };
 
-export { addUsersToClass, addUsersToOrganization };
+const mapUsersByOrgs = (users: UserQuerySchema[]) => {
+  return users.reduce((acc: UsersByOrgs[], user: UserQuerySchema) => {
+    const organization: OrganizationQuerySchema = {
+      OrganizationUUID: user.OrganizationUUID, 
+      OrganizationName: user.OrganizationName
+    };
+  
+    const existingOrg = acc.find(
+      org => org.organization.OrganizationName === user.OrganizationName
+    );
+  
+    if (existingOrg) {
+      existingOrg.users.push(user);
+    } else {
+      acc.push(
+        {
+          organization,
+          users: [user]
+        }
+      );
+    }
+  
+    return acc;
+  }, []);
+}
+
+const addUsersToClassroom = (users: UserQuerySchema[]) => {
+  return users.reduce((acc: UsersToClassSchema[], user) => {
+    const { ClassUUID } = user.ClassInformation;
+    
+    // TODO after c1 the add ClassInformation: [...] map over it instead of ClassName
+    user.ClassName.forEach((className) => {
+      const userToClass = acc.find(
+        (u2c) => u2c.ExternalClassUUID === ClassUUID
+      );
+
+       // TODO after c1 the add ClassInformation: [...] remove this map will be above
+      user.KLRoleName.forEach((role) => {
+        if (userToClass) {
+          appendUserIdBasedOnRole(
+            userToClass, 
+            { UserUUID: user.UserUUID, KLRoleName: role }
+          );
+        } else {
+          const newUserToClass = {
+            ExternalClassUUID: ClassUUID,
+            ExternalTeacherUUIDs: [],
+            ExternalStudentUUIDs: [],
+          };
+
+          appendUserIdBasedOnRole(
+            newUserToClass, 
+            { UserUUID: user.UserUUID, KLRoleName: role }
+          );
+          acc.push(newUserToClass);
+        }
+      })
+    });
+
+    return acc;
+  }, []);
+}
+
+export { addUsersToClass, addUsersToOrganization, mapUsersByOrgs, addUsersToClassroom };
