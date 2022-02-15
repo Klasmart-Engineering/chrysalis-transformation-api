@@ -58,8 +58,10 @@ export abstract class BaseRestfulService {
           } catch (e) {
             resBody = stringBuffer;
           }
-          (res.statusCode === 200 || res.statusCode === 204)
-            ? res.statusCode === 200 ? resolve(resBody) : resolve([])
+          res.statusCode === 200 || res.statusCode === 204
+            ? res.statusCode === 200
+              ? resolve(resBody)
+              : resolve([])
             : reject(new HttpError(Number(res.statusCode), resBody));
         });
       });

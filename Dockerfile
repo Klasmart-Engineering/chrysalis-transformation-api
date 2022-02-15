@@ -12,4 +12,4 @@ RUN npm install
 
 EXPOSE 4200
 
-CMD npx prisma db push ; npm run prisma:generate ; npm start
+CMD npm start

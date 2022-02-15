@@ -28,7 +28,7 @@ chai.use(jsonSchema);
 let service: C1Service;
 const hostname = 'testapi.ezmis.in';
 const pathSegments = ['test'];
-const queryParams = { Skip: '1', Take: '100', ID: 'test' }
+const queryParams = { Skip: '1', Take: '100', ID: 'test' };
 
 const headers = {
   Authorization: 'Bearer ',
@@ -46,20 +46,24 @@ const feedbackData = [
 const feedbackBody = JSON.stringify(feedbackData);
 
 describe('C1 Service', () => {
+  before(() => {
+    service = new C1Service('test');
+    chai.spy.on(logger, 'error', () => true);
+  });
+  after(() => {
+    chai.spy.restore(logger, 'error');
+  });
   describe('#getSchools', () => {
     beforeEach(() => {
       nock('https://' + hostname, { reqheaders: headers })
         .get(C1Endpoints.schoolsApiEndpoint)
         .reply(200, getSchools);
-      chai.spy.on(logger, 'error', () => true);
-      service = new C1Service();
       chai.spy.on(service, 'createClient', () =>
         createFakeClient(hostname, C1Endpoints.schoolsApiEndpoint)
       );
     });
 
     afterEach(() => {
-      chai.spy.restore(logger, 'error');
       chai.spy.restore(service, 'createClient');
     });
 
@@ -80,15 +84,12 @@ describe('C1 Service', () => {
       nock('https://' + hostname, { reqheaders: headers })
         .get(C1Endpoints.classApiEndpoint)
         .reply(200, getClasses);
-      service = new C1Service();
-      chai.spy.on(logger, 'error', () => true);
       chai.spy.on(service, 'createClient', () =>
         createFakeClient(hostname, C1Endpoints.classApiEndpoint)
       );
     });
 
     afterEach(() => {
-      chai.spy.restore(logger, 'error');
       chai.spy.restore(service, 'createClient');
     });
 
@@ -98,9 +99,7 @@ describe('C1 Service', () => {
         expect(res).to.be.an('array');
         expect(res).to.have.length(2);
         if (Array.isArray(res)) {
-          res.forEach((c) =>
-            expect(c).to.be.jsonSchema(classSchema)
-          );
+          res.forEach((c) => expect(c).to.be.jsonSchema(classSchema));
         }
       });
     });
@@ -111,15 +110,12 @@ describe('C1 Service', () => {
       nock('https://' + hostname, { reqheaders: headers })
         .get(C1Endpoints.organizationApiEndpoint)
         .reply(200, getOrganizations);
-      service = new C1Service();
-      chai.spy.on(logger, 'error', () => true);
       chai.spy.on(service, 'createClient', () =>
         createFakeClient(hostname, C1Endpoints.organizationApiEndpoint)
       );
     });
 
     afterEach(() => {
-      chai.spy.restore(logger, 'error');
       chai.spy.restore(service, 'createClient');
     });
 
@@ -142,15 +138,12 @@ describe('C1 Service', () => {
       nock('https://' + hostname, { reqheaders: headers })
         .get(C1Endpoints.userApiEndpoint)
         .reply(200, getUsers);
-      service = new C1Service();
-      chai.spy.on(logger, 'error', () => true);
       chai.spy.on(service, 'createClient', () =>
         createFakeClient(hostname, C1Endpoints.userApiEndpoint)
       );
     });
 
     afterEach(() => {
-      chai.spy.restore(logger, 'error');
       chai.spy.restore(service, 'createClient');
     });
 
@@ -172,8 +165,6 @@ describe('C1 Service', () => {
         .replyContentLength()
         .post(C1Endpoints.feedbackApiEndpoint)
         .reply(200, postFeedback);
-      service = new C1Service();
-      chai.spy.on(logger, 'error', () => true);
       chai.spy.on(service, 'createClient', () =>
         createFakeClient(
           hostname,
@@ -185,7 +176,6 @@ describe('C1 Service', () => {
     });
 
     afterEach(() => {
-      chai.spy.restore(logger, 'error');
       chai.spy.restore(service, 'createClient');
     });
 
@@ -205,8 +195,6 @@ describe('C1 Service', () => {
       nock('https://' + hostname, { reqheaders: headers })
         .get(C1Endpoints.schoolApiEndpoint)
         .reply(200, getSchool);
-      service = new C1Service();
-      chai.spy.on(logger, 'error', () => true);
       chai.spy.on(service, 'createClient', () =>
         createFakeClient(hostname, C1Endpoints.schoolApiEndpoint)
       );
