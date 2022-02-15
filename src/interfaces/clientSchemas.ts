@@ -59,8 +59,3 @@ export interface FeedbackSchema {
   Status: boolean;
   Messages: string;
 }
-
-export interface UsersByOrgs {
-  organization: OrganizationQuerySchema;
-  users: UserQuerySchema[];
-}
