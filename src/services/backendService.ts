@@ -167,7 +167,7 @@ export class BackendService {
     this.addClassesToSchool(schoolUuid, classIds);
   }
 
-  mapUsersToProto(users: UserQuerySchema[] = [], schoolUuid: string) {
+  mapUsersToProto(users: UserQuerySchema[] = []) {
     const userIds: string[] = [];
     users.forEach((us) => {
       userIds.push(us.UserUUID);
@@ -208,8 +208,6 @@ export class BackendService {
 
       this._request.addRequests(onboardUserRequest);
     });
-
-    this.addUsersToSchool(schoolUuid, userIds);
   }
 
   private addProgramsToSchool(school: SchoolQuerySchema) {
@@ -264,7 +262,7 @@ export class BackendService {
     this._request.addRequests(onboardRequest);
   }
 
-  private addUsersToSchool(schoolUuid: string, userIds: string[]) {
+  addUsersToSchool(schoolUuid: string, userIds: string[]) {
     const onboardRequest = new OnboardingRequest();
     const linkUsers = new Link();
     const addUsersToSchool = new AddUsersToSchool();

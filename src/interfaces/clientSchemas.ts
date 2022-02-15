@@ -1,3 +1,5 @@
+type classRoles = 'Student' | 'Teacher';
+
 export interface OrganizationQuerySchema {
   OrganizationName: string;
   OrganizationUUID: string;
@@ -35,17 +37,20 @@ export interface UserQuerySchema {
   Gender: string;
   KLRoleName: string[];
   SchoolName: string;
+  SchoolUUID: string;
   ClassName: string[];
   SchoolRoleName: string[];
   Username: string;
   OrganizationUUID: string;
-  ClassInformation: {
-    ClassUUID: string;
-    ClassRole: classRole;
-  };
+  ClassInformation: ClassInformation[]
 }
 
-enum classRole {
+export interface ClassInformation {
+  ClassUUID: string;
+  ClassRole: classRoles;
+}
+
+export enum classRole {
   'Student',
   'Teacher',
 }

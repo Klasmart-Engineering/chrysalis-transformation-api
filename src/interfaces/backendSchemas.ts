@@ -16,3 +16,8 @@ export interface UsersByOrgs {
   organization: OrganizationQuerySchema;
   users: UserQuerySchema[];
 }
+
+export interface UsersBySchools {
+  schoolUuid: string;
+  usersUuids: string[];
+}

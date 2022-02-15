@@ -1,9 +1,11 @@
 import {
   UsersByOrgs,
+  UsersBySchools,
   UsersToClassSchema,
   UsersToOrganizationSchema,
 } from '../interfaces/backendSchemas';
 import {
+  ClassInformation,
   ClassQuerySchema,
   OrganizationQuerySchema,
   UserQuerySchema,
@@ -63,10 +65,10 @@ const appendUserIdBasedOnRole = (
   userToClass: UsersToClassSchema,
   user: { UserUUID: string; KLRoleName: string }
 ) => {
-  if (user.KLRoleName.includes('teacher')) {
+  if (user.KLRoleName.toLowerCase().includes('teacher')) {
     userToClass.ExternalTeacherUUIDs.push(user.UserUUID);
   }
-  if (user.KLRoleName.includes('student')) {
+  if (user.KLRoleName.toLowerCase().includes('student')) {
     userToClass.ExternalStudentUUIDs.push(user.UserUUID);
   }
 
@@ -128,22 +130,43 @@ const mapUsersByOrgs = (users: UserQuerySchema[]) => {
   }, []);
 }
 
+const mapUsersBySchools = (users: UserQuerySchema[]) => {
+  return users.reduce((acc: UsersBySchools[], user: UserQuerySchema) => {
+    const { SchoolUUID, UserUUID } = user;
+    const existingSchool = acc.find(
+      school => school.schoolUuid === SchoolUUID
+    );
+
+    if (existingSchool) {
+      existingSchool.usersUuids.push(UserUUID);
+    } else {
+      acc.push(
+        {
+          schoolUuid: SchoolUUID,
+          usersUuids: [UserUUID]
+        }
+      );
+    }
+  
+    return acc;
+  }, []);
+}
+
 const addUsersToClassroom = (users: UserQuerySchema[]) => {
   return users.reduce((acc: UsersToClassSchema[], user) => {
-    const { ClassUUID } = user.ClassInformation;
-    
-    // TODO after c1 the add ClassInformation: [...] map over it instead of ClassName
-    user.ClassName.forEach((className) => {
-      const userToClass = acc.find(
-        (u2c) => u2c.ExternalClassUUID === ClassUUID
-      );
+    user.ClassInformation &&
+     user.ClassInformation.forEach(
+      (classInfo: ClassInformation) => {
+        const { ClassRole, ClassUUID } = classInfo;
 
-       // TODO after c1 the add ClassInformation: [...] remove this map will be above
-      user.KLRoleName.forEach((role) => {
+        const userToClass = acc.find(
+          (u2c) => u2c.ExternalClassUUID === classInfo.ClassUUID
+        );
+  
         if (userToClass) {
           appendUserIdBasedOnRole(
             userToClass, 
-            { UserUUID: user.UserUUID, KLRoleName: role }
+            { UserUUID: user.UserUUID, KLRoleName: ClassRole }
           );
         } else {
           const newUserToClass = {
@@ -154,15 +177,21 @@ const addUsersToClassroom = (users: UserQuerySchema[]) => {
 
           appendUserIdBasedOnRole(
             newUserToClass, 
-            { UserUUID: user.UserUUID, KLRoleName: role }
+            { UserUUID: user.UserUUID, KLRoleName: ClassRole }
           );
           acc.push(newUserToClass);
         }
-      })
-    });
+      }
+    )
 
     return acc;
   }, []);
 }
 
-export { addUsersToClass, addUsersToOrganization, mapUsersByOrgs, addUsersToClassroom };
+export { 
+  addUsersToClass, 
+  addUsersToOrganization, 
+  mapUsersByOrgs, 
+  addUsersToClassroom,
+  mapUsersBySchools 
+};

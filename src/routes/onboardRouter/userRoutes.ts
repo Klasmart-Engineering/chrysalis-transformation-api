@@ -8,9 +8,10 @@ import {
   addUsersToClassroom,
   addUsersToOrganization,
   mapUsersByOrgs,
+  mapUsersBySchools,
   parseResponse
 } from '../../utils';
-import { UsersByOrgs } from '../../interfaces/backendSchemas';
+import { UsersByOrgs, UsersBySchools } from '../../interfaces/backendSchemas';
 
 const router = express.Router();
 
@@ -20,10 +21,9 @@ router.post('/', async (req: Request, res: Response) => {
   backendService.resetRequest();
 
   const users: UserQuerySchema[] = await service.getUsers();
-  //TODO delete school uuid when be provided by C1 in user object
-  // backendService.mapUsersToProto(users, 'to-be-changed-with-school-uuid');
+  
+  backendService.mapUsersToProto(users);
 
-  // map users by organization and use addUsersToOrganization function
   const orgUsers: UsersByOrgs[] = mapUsersByOrgs(users); 
 
   for (const user of orgUsers) {
@@ -35,8 +35,14 @@ router.post('/', async (req: Request, res: Response) => {
     backendService.addUsersToOrganization(usersToOrganization);
   }
 
-  // map users by school classes and use addUsersToClass function
+  const schoolUsers: UsersBySchools[] = mapUsersBySchools(users);
+
+  for (const user of schoolUsers) {
+    backendService.addUsersToSchool(user.schoolUuid, user.usersUuids);
+  }
+
   const usersToClass = addUsersToClassroom(users);
+  
   backendService.addUsersToClasses(usersToClass);
 
   const { statusCode, response } = await parseResponse();
