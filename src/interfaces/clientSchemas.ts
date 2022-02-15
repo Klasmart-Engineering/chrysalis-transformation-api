@@ -13,12 +13,6 @@ export interface SchoolQuerySchema {
   OrganizationUUID: string;
 }
 
-export interface SchoolsQuerySchema {
-  totalRecords: number;
-  totalDisplayRecords: number;
-  data: SchoolQuerySchema[];
-}
-
 export interface ClassQuerySchema {
   ClassUUID: string;
   ClassName: string;
@@ -28,18 +22,6 @@ export interface ClassQuerySchema {
   ProgramName: string[];
   OrganizationUUID: string;
   SchoolUUID: string;
-}
-
-export interface ClassesQuerySchema {
-  totalRecords: number;
-  totalDisplayRecords: number;
-  data: ClassQuerySchema[];
-}
-
-export interface UsersQuerySchema {
-  totalRecords: number;
-  totalDisplayRecords: number;
-  data: UserQuerySchema[];
 }
 
 export interface UserQuerySchema {
@@ -71,9 +53,4 @@ enum classRole {
 export interface FeedbackSchema {
   Status: boolean;
   Messages: string;
-}
-
-export interface UsersByOrgs {
-  organization: OrganizationQuerySchema;
-  users: UserQuerySchema[];
 }

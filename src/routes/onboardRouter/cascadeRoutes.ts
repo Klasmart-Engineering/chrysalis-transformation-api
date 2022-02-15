@@ -46,12 +46,8 @@ router.post('/', async (req: Request, res: Response) => {
     backendService.mapSchoolsToProto(orgSchools);
 
     for (const school of allSchools) {
-      const schoolUsers: UserQuerySchema[] = await service.getAllSchoolUsers(
-        school.SchoolUUID
-      );
-      const schoolClasses: ClassQuerySchema[] = await service.getSchoolClasses([
-        school.SchoolUUID,
-      ]);
+      const schoolUsers: UserQuerySchema[] = await service.getUsers();
+      const schoolClasses: ClassQuerySchema[] = await service.getClasses();
 
       backendService.mapClassesToProto(schoolClasses);
 

@@ -1,4 +1,5 @@
 import {
+  UsersByOrgs,
   UsersToClassSchema,
   UsersToOrganizationSchema,
 } from '../interfaces/backendSchemas';
@@ -6,7 +7,6 @@ import {
   ClassQuerySchema,
   OrganizationQuerySchema,
   UserQuerySchema,
-  UsersByOrgs,
 } from '../interfaces/clientSchemas';
 
 const addUsersToClass = (

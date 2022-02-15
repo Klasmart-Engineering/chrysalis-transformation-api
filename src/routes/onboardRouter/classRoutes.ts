@@ -13,7 +13,7 @@ router.post('/', async (req: Request, res: Response) => {
   const backendService = BackendService.getInstance();
   backendService.resetRequest();
 
-  const classes: ClassQuerySchema[] = await service.getAllClasses();
+  const classes: ClassQuerySchema[] = await service.getClasses();
 
   backendService.mapClassesToProto(classes);
 

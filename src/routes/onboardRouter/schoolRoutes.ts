@@ -11,7 +11,7 @@ router.post('/', async (req: Request, res: Response) => {
   const backendService = BackendService.getInstance();
   backendService.resetRequest();
 
-  const schools: SchoolQuerySchema[] = await service.getAllSchools();
+  const schools: SchoolQuerySchema[] = await service.getSchools();
 
   backendService.mapSchoolsToProto(schools);
 

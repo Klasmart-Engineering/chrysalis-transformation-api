@@ -1,14 +1,16 @@
 import express, { Request, Response } from 'express';
 import {
   UserQuerySchema,
-  UsersByOrgs,
 } from '../../interfaces/clientSchemas';
 import { C1Service } from '../../services/c1Service';
 import { BackendService } from '../../services/backendService';
-import { addUsersToClassroom, addUsersToOrganization,
+import {
+  addUsersToClassroom,
+  addUsersToOrganization,
   mapUsersByOrgs,
   parseResponse
 } from '../../utils';
+import { UsersByOrgs } from '../../interfaces/backendSchemas';
 
 const router = express.Router();
 
@@ -17,7 +19,7 @@ router.post('/', async (req: Request, res: Response) => {
   const backendService = BackendService.getInstance();
   backendService.resetRequest();
 
-  const users: UserQuerySchema[] = await service.getAllUsers();
+  const users: UserQuerySchema[] = await service.getUsers();
   //TODO delete school uuid when be provided by C1 in user object
   // backendService.mapUsersToProto(users, 'to-be-changed-with-school-uuid');
 
