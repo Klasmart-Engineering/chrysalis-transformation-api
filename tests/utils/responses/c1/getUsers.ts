@@ -1,6 +1,6 @@
 enum classRole {
   'Student',
-  'Teacher'
+  'Teacher',
 }
 
 export const getUsers = [
@@ -20,9 +20,9 @@ export const getUsers = [
     SchoolRoleName: ['Chrysalis Student'],
     Username: '',
     ClassInformation: {
-      ClassUUID: "0c5ed9bb-afb1-4342-87c6-bdb0f323598e",
-      ClassRole: classRole.Student
-    }
+      ClassUUID: '0c5ed9bb-afb1-4342-87c6-bdb0f323598e',
+      ClassRole: classRole.Student,
+    },
   },
   {
     OrganizationName: 'Chrysalis BLP Classic',
@@ -40,9 +40,9 @@ export const getUsers = [
     SchoolRoleName: ['Chrysalis Student'],
     Username: '',
     ClassInformation: {
-      ClassUUID: "0c5ed9bb-afb1-4342-87c6-bdb0f323598e",
-      ClassRole: classRole.Student
-    }
+      ClassUUID: '0c5ed9bb-afb1-4342-87c6-bdb0f323598e',
+      ClassRole: classRole.Student,
+    },
   },
   {
     OrganizationName: 'Chrysalis BLP Classic',
@@ -60,9 +60,8 @@ export const getUsers = [
     SchoolRoleName: ['Chrysalis Student'],
     Username: '',
     ClassInformation: {
-      ClassUUID: "0c5ed9bb-afb1-4342-87c6-bdb0f323598e",
-      ClassRole: classRole.Teacher
-    }
+      ClassUUID: '0c5ed9bb-afb1-4342-87c6-bdb0f323598e',
+      ClassRole: classRole.Teacher,
+    },
   },
 ];
-
