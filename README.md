@@ -28,3 +28,7 @@ Start the application:
 You can also run the application with its dependencies through a docker-compose. For this just run:
 
 - `docker-compose up`
+
+## Generic Backend
+
+For the Generic Backend setup please follow [these instructions](https://github.com/KL-Engineering/client-integration-layer-backend/blob/main/README.md)
