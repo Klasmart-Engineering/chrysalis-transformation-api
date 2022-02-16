@@ -1,7 +1,5 @@
 import express, { Request, Response } from 'express';
-import {
-  ClassQuerySchema,
-} from '../../interfaces/clientSchemas';
+import { ClassQuerySchema } from '../../interfaces/clientSchemas';
 import { C1Service } from '../../services/c1Service';
 import { BackendService } from '../../services/backendService';
 import { parseResponse } from '../../utils/parseResponse';
