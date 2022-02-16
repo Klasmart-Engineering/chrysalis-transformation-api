@@ -32,18 +32,18 @@ router.post('/', async (req: Request, res: Response) => {
       user.users
     );
   
-    backendService.addUsersToOrganization(usersToOrganization);
+    backendService.addUsersToOrganization(usersToOrganization, '4');
   }
 
   const schoolUsers: UsersBySchools[] = mapUsersBySchools(users);
 
   for (const user of schoolUsers) {
-    backendService.addUsersToSchool(user.schoolUuid, user.usersUuids);
+    backendService.addUsersToSchool(user.schoolUuid, user.usersUuids, '2');
   }
 
   const usersToClass = addUsersToClassroom(users);
   
-  backendService.addUsersToClasses(usersToClass);
+  backendService.addUsersToClasses(usersToClass, '3');
 
   const { statusCode, response } = await parseResponse();
 

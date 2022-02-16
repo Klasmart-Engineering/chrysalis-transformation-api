@@ -24,7 +24,6 @@ router.post('/', async (req: Request, res: Response) => {
 
   let allOrganizations: Array<OrganizationQuerySchema> =
     await service.getOrganizations();
-  const allSchools: Array<SchoolQuerySchema> = [];
 
   if (organizationNames.length) {
     allOrganizations = allOrganizations.filter((org) =>
@@ -41,7 +40,6 @@ router.post('/', async (req: Request, res: Response) => {
       organization.OrganizationUUID,
       'Schools',
     ]);
-    allSchools.push(...orgSchools);
 
     backendService.mapSchoolsToProto(orgSchools);
 
@@ -56,7 +54,7 @@ router.post('/', async (req: Request, res: Response) => {
     backendService.mapUsersToProto(schoolUsers);
 
     const usersToClass = addUsersToClass(schoolClasses, schoolUsers);
-    backendService.addUsersToClasses(usersToClass);
+    backendService.addUsersToClasses(usersToClass, '3');
 
 
     const usersToOrganization = addUsersToOrganization(
@@ -64,7 +62,7 @@ router.post('/', async (req: Request, res: Response) => {
       organizationUsers
     );
 
-    backendService.addUsersToOrganization(usersToOrganization);
+    backendService.addUsersToOrganization(usersToOrganization, '4');
   }
 
   const { statusCode, response } = await parseResponse();
