@@ -10,8 +10,8 @@ import { C1Service } from '../../services/c1Service';
 import {
   addUsersToClass,
   addUsersToOrganization,
-  parseResponse
 } from '../../utils';
+import { parseResponse } from '../../utils/parseResponse';
 
 const router = express.Router();
 

@@ -1,10 +1,10 @@
 import express, { Request, Response } from 'express';
-import { parseResponse } from '../../utils';
 import {
   ClassQuerySchema,
 } from '../../interfaces/clientSchemas';
 import { C1Service } from '../../services/c1Service';
 import { BackendService } from '../../services/backendService';
+import { parseResponse } from '../../utils/parseResponse';
 
 const router = express.Router();
 

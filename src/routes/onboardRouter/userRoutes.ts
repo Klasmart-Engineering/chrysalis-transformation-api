@@ -9,9 +9,9 @@ import {
   addUsersToOrganization,
   mapUsersByOrgs,
   mapUsersBySchools,
-  parseResponse
 } from '../../utils';
 import { UsersByOrgs, UsersBySchools } from '../../interfaces/backendSchemas';
+import { parseResponse } from '../../utils/parseResponse';
 
 const router = express.Router();
 
