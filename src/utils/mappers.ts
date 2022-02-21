@@ -1,8 +1,11 @@
 import {
+  UsersByOrgs,
+  UsersBySchools,
   UsersToClassSchema,
   UsersToOrganizationSchema,
 } from '../interfaces/backendSchemas';
 import {
+  ClassInformation,
   ClassQuerySchema,
   OrganizationQuerySchema,
   UserQuerySchema,
@@ -62,10 +65,10 @@ const appendUserIdBasedOnRole = (
   userToClass: UsersToClassSchema,
   user: { UserUUID: string; KLRoleName: string }
 ) => {
-  if (user.KLRoleName.includes('teacher')) {
+  if (user.KLRoleName.toLowerCase().includes('teacher')) {
     userToClass.ExternalTeacherUUIDs.push(user.UserUUID);
   }
-  if (user.KLRoleName.includes('student')) {
+  if (user.KLRoleName.toLowerCase().includes('student')) {
     userToClass.ExternalStudentUUIDs.push(user.UserUUID);
   }
 
@@ -101,4 +104,94 @@ const addUsersToOrganization = (
   }, []);
 };
 
-export { addUsersToClass, addUsersToOrganization };
+const mapUsersByOrgs = (users: UserQuerySchema[]) => {
+  return users.reduce((acc: UsersByOrgs[], user: UserQuerySchema) => {
+    const organization: OrganizationQuerySchema = {
+      OrganizationUUID: user.OrganizationUUID, 
+      OrganizationName: user.OrganizationName
+    };
+  
+    const existingOrg = acc.find(
+      org => org.organization.OrganizationName === user.OrganizationName
+    );
+  
+    if (existingOrg) {
+      existingOrg.users.push(user);
+    } else {
+      acc.push(
+        {
+          organization,
+          users: [user]
+        }
+      );
+    }
+  
+    return acc;
+  }, []);
+}
+
+const mapUsersBySchools = (users: UserQuerySchema[]) => {
+  return users.reduce((acc: UsersBySchools[], user: UserQuerySchema) => {
+    const { SchoolUUID, UserUUID } = user;
+    const existingSchool = acc.find(
+      school => school.schoolUuid === SchoolUUID
+    );
+
+    if (existingSchool) {
+      existingSchool.usersUuids.push(UserUUID);
+    } else {
+      acc.push(
+        {
+          schoolUuid: SchoolUUID,
+          usersUuids: [UserUUID]
+        }
+      );
+    }
+  
+    return acc;
+  }, []);
+}
+
+const addUsersToClassroom = (users: UserQuerySchema[]) => {
+  return users.reduce((acc: UsersToClassSchema[], user) => {
+    user.ClassInformation &&
+     user.ClassInformation.forEach(
+      (classInfo: ClassInformation) => {
+        const { ClassRole, ClassUUID } = classInfo;
+
+        const userToClass = acc.find(
+          (u2c) => u2c.ExternalClassUUID === classInfo.ClassUUID
+        );
+  
+        if (userToClass) {
+          appendUserIdBasedOnRole(
+            userToClass, 
+            { UserUUID: user.UserUUID, KLRoleName: ClassRole }
+          );
+        } else {
+          const newUserToClass = {
+            ExternalClassUUID: ClassUUID,
+            ExternalTeacherUUIDs: [],
+            ExternalStudentUUIDs: [],
+          };
+
+          appendUserIdBasedOnRole(
+            newUserToClass, 
+            { UserUUID: user.UserUUID, KLRoleName: ClassRole }
+          );
+          acc.push(newUserToClass);
+        }
+      }
+    )
+
+    return acc;
+  }, []);
+}
+
+export { 
+  addUsersToClass, 
+  addUsersToOrganization, 
+  mapUsersByOrgs, 
+  addUsersToClassroom,
+  mapUsersBySchools 
+};
