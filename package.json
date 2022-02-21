@@ -28,7 +28,7 @@
   },
   "homepage": "https://bitbucket.org/calmisland/mcb-integration-layer#readme",
   "dependencies": {
-    "@grpc/grpc-js": "1.5.3",
+    "@grpc/grpc-js": "1.5.4",
     "@newrelic/winston-enricher": "2.1.0",
     "cil-lib": "file:../client-integration-layer-backend-github/cil-lib",
     "dotenv": "10.0.0",

@@ -13,7 +13,7 @@ export interface BackendResponse {
   entityName: Entity;
   entityId: string;
   success: boolean;
-  errors: Record<ErrorKeys, ErrorDetails>;
+  errors: Record<ErrorKeys, object>;
 }
 
 enum ErrorKeys {
@@ -24,6 +24,3 @@ enum ErrorKeys {
   'entityDoesNotExist',
 }
 
-interface ErrorDetails {
-  detailsList: string[];
-}
