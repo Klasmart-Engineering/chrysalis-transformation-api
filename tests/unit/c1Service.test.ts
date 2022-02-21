@@ -18,7 +18,6 @@ import {
   getClasses,
   getUsers,
   getOrganizations,
-  getSchool,
   postFeedback,
 } from '../utils/responses/c1';
 
@@ -27,8 +26,6 @@ chai.use(jsonSchema);
 
 let service: C1Service;
 const hostname = 'testapi.ezmis.in';
-const pathSegments = ['test'];
-const queryParams = { Skip: '1', Take: '100', ID: 'test' };
 
 const headers = {
   Authorization: 'Bearer ',
@@ -68,7 +65,7 @@ describe('C1 Service', () => {
     });
 
     it('should return schools array of defined school schema', function () {
-      return service.getSchools(pathSegments).then((res) => {
+      return service.getSchools().then((res) => {
         expect(service.createClient).to.have.been.called.once;
         expect(res).to.be.an('array');
         if (Array.isArray(res))
@@ -94,7 +91,7 @@ describe('C1 Service', () => {
     });
 
     it('should return classes list', function () {
-      return service.getClasses(pathSegments).then((res) => {
+      return service.getClasses().then((res) => {
         expect(service.createClient).to.have.been.called.once;
         expect(res).to.be.an('array');
         expect(res).to.have.length(2);
@@ -148,7 +145,7 @@ describe('C1 Service', () => {
     });
 
     it('should return users list', function () {
-      return service.getUsers(pathSegments, queryParams).then((res) => {
+      return service.getUsers().then((res) => {
         expect(service.createClient).to.have.been.called.once;
         expect(res).to.be.an('array');
         expect(res).to.have.length(3);
@@ -186,30 +183,6 @@ describe('C1 Service', () => {
         if (Array.isArray(res)) {
           res.forEach((user) => expect(user).to.be.jsonSchema(feedbackSchema));
         }
-      });
-    });
-  });
-
-  describe('#getSchool', () => {
-    beforeEach(() => {
-      nock('https://' + hostname, { reqheaders: headers })
-        .get(C1Endpoints.schoolApiEndpoint)
-        .reply(200, getSchool);
-      chai.spy.on(service, 'createClient', () =>
-        createFakeClient(hostname, C1Endpoints.schoolApiEndpoint)
-      );
-    });
-
-    afterEach(() => {
-      chai.spy.restore(logger, 'error');
-      chai.spy.restore(service, 'createClient');
-    });
-
-    it('should return school details', function () {
-      return service.getSchool(pathSegments).then((res) => {
-        expect(service.createClient).to.have.been.called.once;
-        expect(res).to.be.an('object');
-        expect(res).to.be.jsonSchema(schoolSchema);
       });
     });
   });

@@ -4,7 +4,6 @@ import {
   SchoolQuerySchema,
   ClassQuerySchema,
 } from '../interfaces/clientSchemas';
-import { v4 as uuidv4 } from 'uuid';
 import { grpc, proto } from 'cil-lib';
 import {
   InterceptorOptions,
@@ -17,6 +16,7 @@ import {
   UsersToClassSchema,
   UsersToOrganizationSchema,
 } from '../interfaces/backendSchemas';
+import { requestIds } from '../config/requestIds';
 
 const {
   Action,
@@ -35,7 +35,6 @@ const {
   AddUsersToOrganization,
   AddUsersToClass,
   AddUsersToSchool,
-  //AddOrganizationRolesToUser
 } = proto;
 
 export class BackendService {
@@ -95,168 +94,12 @@ export class BackendService {
     this._request.clearRequestsList();
   }
 
-  async onboardOrganizations(organizations: OrganizationQuerySchema[] = []) {
-    return new Promise((resolve, reject) => {
-      const request: proto.BatchOnboarding = new BatchOnboarding();
-
-      organizations.forEach((org) => {
-        const onboardOrgRequest = new OnboardingRequest();
-        const organization = new Organization();
-
-        organization
-          .setName(org.OrganizationName)
-          .setExternalUuid(org.OrganizationUUID);
-
-        const requestMeta = new RequestMetadata();
-        const requestId = uuidv4();
-        requestMeta.setId(requestId).setN('1');
-
-        onboardOrgRequest
-          .setOrganization(organization)
-          .setRequestId(requestMeta)
-          .setAction(Action.CREATE);
-
-        request.addRequests(onboardOrgRequest);
-      });
-
-      this._client.onboard(request, (err, response) => {
-        if (err !== null) {
-          reject(err);
-          return;
-        }
-        logger.info(response);
-        resolve(response);
-      });
-    });
-  }
-
-  async onboardSchools(
-    organizationUuid: string,
-    schools: SchoolQuerySchema[] = []
-  ) {
-    return new Promise((resolve, reject) => {
-      const request = new BatchOnboarding();
-
-      schools.forEach(async (school) => {
-        const onboardSchoolRequest = new OnboardingRequest();
-        const schoolProto = new School();
-        schoolProto
-          .setExternalUuid(school.SchoolUUID)
-          .setName(school.SchoolName)
-          .setShortCode(school.SchoolShortCode)
-          .setExternalOrganizationUuid(organizationUuid);
-
-        const requestMeta = new RequestMetadata();
-        const requestId = uuidv4();
-        requestMeta.setId(requestId).setN('1');
-
-        onboardSchoolRequest
-          .setSchool(schoolProto)
-          .setRequestId(requestMeta)
-          .setAction(Action.CREATE);
-        request.addRequests(onboardSchoolRequest);
-      });
-
-      this._client.onboard(request, (err, responses) => {
-        if (err !== null) {
-          reject(err);
-          return;
-        }
-        logger.info(responses);
-        resolve(responses);
-      });
-    });
-  }
-
-  async onboardClasses(classes: ClassQuerySchema[] = []) {
-    return new Promise((resolve, reject) => {
-      const request = new BatchOnboarding();
-
-      classes.forEach((c) => {
-        const onboardClassRequest = new OnboardingRequest();
-        const clazz = new Class();
-
-        const requestMeta = new RequestMetadata();
-        const requestId = uuidv4();
-        requestMeta.setId(requestId).setN('1');
-
-        clazz
-          .setName(c.ClassName)
-          // .setShortCode(c.ClassShortCode)
-          .setExternalUuid(c.ClassUUID);
-        //.setExternalOrganizationUuid(c.OrganizationUUID)
-        //.setExternalSchoolUuid(c.SchoolUUID);
-
-        onboardClassRequest
-          .setClass(clazz)
-          .setRequestId(requestMeta)
-          .setAction(Action.CREATE);
-        request.addRequests(onboardClassRequest);
-      });
-
-      this._client.onboard(request, (err, responses) => {
-        if (err != null) {
-          reject(err);
-          return;
-        }
-        logger.info(responses);
-        resolve(responses);
-      });
-    });
-  }
-
-  async onboardUsers(users: UserQuerySchema[] = []) {
-    return new Promise((resolve, reject) => {
-      const request = new BatchOnboarding();
-
-      users.forEach((us) => {
-        const onboardUserRequest = new OnboardingRequest();
-        const user = new User();
-        const requestMeta = new RequestMetadata();
-        const requestId = uuidv4();
-        requestMeta.setId(requestId).setN('1');
-
-        user
-          .setExternalUuid(us.UserUUID)
-          .setExternalOrganizationUuid(us.UserUUID) // TODO here should be the org uuid (from cache or from c1 api)
-          .setEmail(us.Email)
-          .setPhone(us.Phone)
-          .setUsername(us.UserFamilyName) // TODO check witch is the username
-          .setGivenName(us.UserGivenName)
-          .setFamilyName(us.UserFamilyName)
-          .setDateOfBirth(us.DateOfBirth)
-          .setRoleIdentifiersList(us.KLRoleName);
-
-        if (us.Gender === 'Male') {
-          user.setGender(Gender.MALE);
-        } else if (us.Gender === 'Female') {
-          user.setGender(Gender.FEMALE);
-        }
-        onboardUserRequest
-          .setUser(user)
-          .setRequestId(requestMeta)
-          .setAction(Action.CREATE);
-
-        request.addRequests(onboardUserRequest);
-      });
-
-      this._client.onboard(request, (err, responses) => {
-        if (err != null) {
-          reject(err);
-          return;
-        }
-        logger.info(responses);
-        resolve(responses);
-      });
-    });
-  }
-
   mapOrganizationsToProto(organizations: OrganizationQuerySchema[] = []) {
     organizations.forEach((org) => {
       const onboardOrgRequest = new OnboardingRequest();
       const organization = new Organization();
       const requestMeta = new RequestMetadata();
-      requestMeta.setId(org.OrganizationUUID).setN('1');
+      requestMeta.setId(requestIds.CREATE_ORG).setN('1');
       organization
         .setName(org.OrganizationName)
         .setExternalUuid(org.OrganizationUUID);
@@ -277,7 +120,7 @@ export class BackendService {
       const onboardSchoolRequest = new OnboardingRequest();
       const schoolProto = new School();
       const requestMeta = new RequestMetadata();
-      requestMeta.setId(school.SchoolUUID).setN('1');
+      requestMeta.setId(requestIds.CREATE_SCHOOL).setN('1');
 
       schoolProto
         .setExternalUuid(school.SchoolUUID)
@@ -291,7 +134,7 @@ export class BackendService {
         .setAction(Action.CREATE);
 
       this._request.addRequests(onboardSchoolRequest);
-      this.addProgramsToSchool(school);
+      this.addProgramsToSchool(school, '2');
     });
   }
 
@@ -304,8 +147,7 @@ export class BackendService {
       const onboardClassRequest = new OnboardingRequest();
       const classProto = new Class();
       const requestMeta = new RequestMetadata();
-      const requestId = uuidv4();
-      requestMeta.setId(requestId).setN('1');
+      requestMeta.setId(requestIds.CREATE_CLASS).setN('1');
 
       classProto
         .setExternalUuid(clazz.ClassUUID)
@@ -317,21 +159,18 @@ export class BackendService {
         .setRequestId(requestMeta)
         .setAction(Action.CREATE);
 
-      this.addProgramsToClass(clazz, requestId);
+      this.addProgramsToClass(clazz, '2');
       this._request.addRequests(onboardClassRequest);
     });
-    this.addClassesToSchool(schoolUuid, classIds);
+    this.addClassesToSchool(schoolUuid, classIds, '3');
   }
 
-  mapUsersToProto(users: UserQuerySchema[] = [], schoolUuid: string) {
-    const userIds: string[] = [];
+  mapUsersToProto(users: UserQuerySchema[] = []) {
     users.forEach((us) => {
-      userIds.push(us.UserUUID);
       const onboardUserRequest = new OnboardingRequest();
       const user = new User();
       const requestMeta = new RequestMetadata();
-      const requestId = uuidv4();
-      requestMeta.setId(requestId).setN('1');
+      requestMeta.setId(requestIds.CREATE_USER).setN('1');
       user
         .setExternalUuid(us.UserUUID)
         .setExternalOrganizationUuid(us.OrganizationUUID)
@@ -364,17 +203,15 @@ export class BackendService {
 
       this._request.addRequests(onboardUserRequest);
     });
-
-    this.addUsersToSchool(schoolUuid, userIds);
   }
 
-  private addProgramsToSchool(school: SchoolQuerySchema) {
+  private addProgramsToSchool(school: SchoolQuerySchema, n: string) {
     const onboardRequest = new OnboardingRequest();
     const linkPrograms = new Link();
     const addProgramsToSchool = new AddProgramsToSchool();
     const requestMeta = new RequestMetadata();
 
-    requestMeta.setId(school.SchoolUUID).setN('2');
+    requestMeta.setId(requestIds.ADD_PROGRAMS_TO_SCHOOL).setN(n);
     addProgramsToSchool
       .setExternalOrganizationUuid(school.OrganizationUUID)
       .setExternalSchoolUuid(school.SchoolUUID)
@@ -386,12 +223,12 @@ export class BackendService {
     this._request.addRequests(onboardRequest);
   }
 
-  private addClassesToSchool(schoolUuid: string, classIds: string[]) {
+  private addClassesToSchool(schoolUuid: string, classIds: string[], n: string) {
     const onboardRequest = new OnboardingRequest();
     const linkClasses = new Link();
     const addClassesToSchool = new AddClassesToSchool();
     const requestMeta = new RequestMetadata();
-    requestMeta.setId(schoolUuid).setN('3');
+    requestMeta.setId(requestIds.ADD_CLASSES_TO_SCHOOL).setN(n);
     addClassesToSchool
       .setExternalSchoolUuid(schoolUuid)
       .setExternalClassUuidsList(classIds);
@@ -402,13 +239,13 @@ export class BackendService {
     this._request.addRequests(onboardRequest);
   }
 
-  private addProgramsToClass(clazz: ClassQuerySchema, requestUuid: string) {
+  private addProgramsToClass(clazz: ClassQuerySchema, n: string) {
     const onboardRequest = new OnboardingRequest();
     const linkPrograms = new Link();
     const addProgramsToClass = new AddProgramsToClass();
     const requestMeta = new RequestMetadata();
 
-    requestMeta.setId(requestUuid).setN('2');
+    requestMeta.setId(requestIds.ADD_PROGRAMS_TO_CLASS).setN(n);
     addProgramsToClass
       .setExternalOrganizationUuid(clazz.OrganizationUUID)
       .setExternalClassUuid(clazz.ClassUUID)
@@ -420,13 +257,12 @@ export class BackendService {
     this._request.addRequests(onboardRequest);
   }
 
-  private addUsersToSchool(schoolUuid: string, userIds: string[]) {
+  addUsersToSchool(schoolUuid: string, userIds: string[], n: string) {
     const onboardRequest = new OnboardingRequest();
     const linkUsers = new Link();
     const addUsersToSchool = new AddUsersToSchool();
     const requestMeta = new RequestMetadata();
-    const requestId = uuidv4();
-    requestMeta.setId(requestId).setN('2');
+    requestMeta.setId(requestIds.ADD_USERS_TO_SCHOOL).setN(n);
     addUsersToSchool
       .setExternalSchoolUuid(schoolUuid)
       .setExternalUserUuidsList(userIds);
@@ -437,15 +273,14 @@ export class BackendService {
     this._request.addRequests(onboardRequest);
   }
 
-  addUsersToOrganization(usersToOrganization: UsersToOrganizationSchema[]) {
+  addUsersToOrganization(usersToOrganization: UsersToOrganizationSchema[], n: string) {
     usersToOrganization.forEach((userToOrg) => {
-      const requestUuid = uuidv4();
       const onboardRequest = new OnboardingRequest();
       const linkUsers = new Link();
       const addUsersToOrganization = new AddUsersToOrganization();
       const requestMeta = new RequestMetadata();
 
-      requestMeta.setId(requestUuid).setN('4');
+      requestMeta.setId(requestIds.ADD_USERS_TO_ORG).setN(n);
       addUsersToOrganization
         .setRoleIdentifiersList(userToOrg.RoleIdentifiers)
         .setExternalUserUuidsList(userToOrg.ExternalUserUUIDs)
@@ -458,15 +293,14 @@ export class BackendService {
     });
   }
 
-  addUsersToClasses(usersToClasses: UsersToClassSchema[]) {
+  addUsersToClasses(usersToClasses: UsersToClassSchema[], n: string) {
     usersToClasses.forEach((usersToClass) => {
-      const requestUuid = uuidv4();
       const onboardRequest = new OnboardingRequest();
       const linkUsers = new Link();
       const addUsersToClass = new AddUsersToClass();
       const requestMeta = new RequestMetadata();
 
-      requestMeta.setId(requestUuid).setN('3');
+      requestMeta.setId(requestIds.ADD_USERS_TO_CLASS).setN(n);
       addUsersToClass
         .setExternalClassUuid(usersToClass.ExternalClassUUID)
         .setExternalStudentUuidList(usersToClass.ExternalStudentUUIDs)
