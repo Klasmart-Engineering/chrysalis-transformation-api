@@ -12,5 +12,73 @@ export async function parseResponse() {
       statusCode = 200;
     }
   });
-  return { statusCode, response }
+  const mappedResponses = generateFeedback(response);
+  return { statusCode, response, mappedResponses}
+}
+
+function generateFeedback(responses: BackendResponses) {
+  const mappedRespponses: Array<{entityId: string, responses: BackendResponse[]}> = [];
+  responses.responsesList.forEach(el => {
+    const entityExists = mappedRespponses.find(item => item.entityId === el.entityId)
+    if (entityExists) {
+      entityExists.responses.push(el);
+    } else {
+      mappedRespponses.push({ entityId: el.entityId, responses: [el]})
+    }
+  });
+
+  const feedback: Feedback[] = [];
+  mappedRespponses.forEach(entity => {
+    entity.responses.forEach(response => {
+      const entityExists = feedback.find(item => item.UUID === entity.entityId);
+      if (response.success || 'entityAlreadyExists' in response.errors) {
+        if (!entityExists) feedback.push(
+          {
+            UUID: response.entityId,
+            Entity: response.entityName,
+            HasSuccess: response.success,
+            ErrorMessage: mapErrors(response.errors),
+            OutputResult: {
+              Status: true,
+              Messages: ''
+            }
+          }
+        )
+      } else {
+        if (!entityExists) {
+          feedback.push({
+              UUID: response.entityId,
+              Entity: response.entityName,
+              HasSuccess: true,
+              ErrorMessage: [],
+              OutputResult: {
+                Status: true,
+                Messages: ''
+              }
+            }
+          )
+        } else {
+          //TODO push to existing
+        }
+      }
+    })
+  })
+  return mappedRespponses;
+}
+
+interface Feedback {
+  UUID: string;
+  Entity: string;
+  HasSuccess: boolean;
+  ErrorMessage: string[];
+  OutputResult: OutputResult;
+}
+
+interface OutputResult {
+  Status: boolean;
+  Messages: string;
+}
+
+function mapErrors(errors: object) {
+  return [];
 }
