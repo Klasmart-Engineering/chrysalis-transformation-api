@@ -59,3 +59,16 @@ export interface FeedbackSchema {
   Status: boolean;
   Messages: string;
 }
+
+export interface Feedback {
+  UUID: string;
+  Entity: string;
+  HasSuccess: boolean;
+  ErrorMessage: string[];
+  OutputResult: OutputResult;
+}
+
+export interface OutputResult {
+  Status: boolean;
+  Messages: string;
+}

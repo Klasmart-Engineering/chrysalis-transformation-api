@@ -3,6 +3,7 @@ import { C1AuthEndpoints, C1Endpoints } from '../config/c1Endpoints';
 import { AuthServer } from '../utils/authServer';
 import {
   ClassQuerySchema,
+  Feedback,
   FeedbackSchema,
   OrganizationQuerySchema,
   SchoolQuerySchema,
@@ -79,8 +80,8 @@ export class C1Service extends BaseRestfulService {
 
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async postFeedback(data: Record<string, any>[]): Promise<FeedbackSchema> {
-    const postData = JSON.stringify(data);
+  async postFeedback(feedback: Feedback[]): Promise<FeedbackSchema> {
+    const postData = JSON.stringify(feedback);
     const client = this.createClient(
       C1Endpoints.feedbackApiEndpoint,
       [],

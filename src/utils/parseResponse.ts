@@ -1,6 +1,10 @@
 import { BackendResponse, BackendResponses } from '../interfaces/backendResponse';
 import { log, protobufToEntity } from 'cil-lib';
 import { BackendService } from '../services/backendService';
+import { Feedback } from '../interfaces/clientSchemas';
+
+let messages: string[] = [];
+const messageKey = 'detailsList';
 
 export async function parseResponse() {
   const backendService = BackendService.getInstance();
@@ -12,73 +16,106 @@ export async function parseResponse() {
       statusCode = 200;
     }
   });
-  const mappedResponses = generateFeedback(response);
-  return { statusCode, response, mappedResponses}
+  const feedback = generateFeedback(response);
+  return { statusCode, response, feedback}
 }
 
-function generateFeedback(responses: BackendResponses) {
-  const mappedRespponses: Array<{entityId: string, responses: BackendResponse[]}> = [];
+const generateFeedback = (responses: BackendResponses) => {
+  const mappedResponses: Array<{entityId: string, entityName: string, responses: BackendResponse[]}> = [];
+
   responses.responsesList.forEach(el => {
-    const entityExists = mappedRespponses.find(item => item.entityId === el.entityId)
+    const entityExists = mappedResponses.find(item => item.entityId === el.entityId)
     if (entityExists) {
       entityExists.responses.push(el);
     } else {
-      mappedRespponses.push({ entityId: el.entityId, responses: [el]})
+      mappedResponses.push({ entityId: el.entityId, entityName: el.entityName, responses: [el] })
     }
   });
 
   const feedback: Feedback[] = [];
-  mappedRespponses.forEach(entity => {
-    entity.responses.forEach(response => {
-      const entityExists = feedback.find(item => item.UUID === entity.entityId);
-      if (response.success || 'entityAlreadyExists' in response.errors) {
-        if (!entityExists) feedback.push(
-          {
-            UUID: response.entityId,
-            Entity: response.entityName,
-            HasSuccess: response.success,
-            ErrorMessage: mapErrors(response.errors),
-            OutputResult: {
-              Status: true,
-              Messages: ''
-            }
+
+  mappedResponses.forEach(entity => {
+    const isOnboard = processFeedback(entity.responses);
+
+    if (isOnboard) {
+      feedback.push(
+        {
+          UUID: entity.entityId,
+          Entity: entity.entityName,
+          HasSuccess: isOnboard,
+          ErrorMessage: [],
+          OutputResult: {
+            Status: true,
+            Messages: ''
           }
-        )
-      } else {
-        if (!entityExists) {
-          feedback.push({
-              UUID: response.entityId,
-              Entity: response.entityName,
-              HasSuccess: true,
-              ErrorMessage: [],
-              OutputResult: {
-                Status: true,
-                Messages: ''
-              }
-            }
-          )
-        } else {
-          //TODO push to existing
         }
+      );
+    }
+
+    if (!isOnboard) {
+      feedback.push(
+        {
+          UUID: entity.entityId,
+          Entity: entity.entityName,
+          HasSuccess: isOnboard,
+          ErrorMessage: processErrors(entity.responses),
+          OutputResult: {
+            Status: true,
+            Messages: ''
+          }
+        }
+      )
+    }
+  });
+  
+  return feedback;
+}
+
+const processFeedback = (
+  responses: BackendResponse[]
+) => {
+  let isOnboard = true;
+  for (const response of responses) {
+    if (!response.success) {
+      if (typeof response.errors.entityAlreadyExists === 'object') {
+        return true;
       }
-    })
-  })
-  return mappedRespponses;
+
+      isOnboard = false;
+    }
+  }
+
+  return isOnboard;
 }
 
-interface Feedback {
-  UUID: string;
-  Entity: string;
-  HasSuccess: boolean;
-  ErrorMessage: string[];
-  OutputResult: OutputResult;
+const processErrors = (
+  responses: BackendResponse[]
+) => {
+  const errorMessages = [];
+  for (const response of responses) {
+    if (!response.success) {
+      errorMessages.push(...mapErrors(response.errors))
+      messages = [];
+    }
+  }
+  return errorMessages;
 }
 
-interface OutputResult {
-  Status: boolean;
-  Messages: string;
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapErrors = (errors: any)  => {
+  if (!messages) messages = [];
 
-function mapErrors(errors: object) {
-  return [];
+  if (errors instanceof Object) {
+    const objectKeys = Object.keys(errors);
+    
+    if (objectKeys.includes(messageKey)) {
+      messages = [...messages, ...errors[messageKey]];
+    } else {
+      for (const key in errors) {
+        if (errors[key] instanceof Object) mapErrors(errors[key]);
+      }
+    }
+  }
+  
+  return messages;
 }
