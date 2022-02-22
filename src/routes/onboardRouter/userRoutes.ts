@@ -45,9 +45,16 @@ router.post('/', async (req: Request, res: Response) => {
   
   backendService.addUsersToClasses(usersToClass, '3');
 
-  const { statusCode, response } = await parseResponse();
+  const { statusCode, response, feedback } = await parseResponse();
 
-  return res.status(statusCode).json(response);
+  // let feedbackResponse;
+  try {
+    // feedbackResponse = await service.postFeedback(feedback);
+  } catch (error) {
+    throw new Error('Something went wrong on sending feedback!') ;
+  }
+
+  return res.status(statusCode).json({feedback, response});
 });
 
 export default router;

@@ -16,11 +16,12 @@ export interface BackendResponse {
   errors: Record<ErrorKeys, object>;
 }
 
-enum ErrorKeys {
-  'validation',
-  'request',
-  'internalServer',
-  'entityAlreadyExists',
-  'entityDoesNotExist',
-}
+type ErrorKeys = 
+  'validation'          |
+  'request'             | 
+  'internalServer'      |   
+  'entityAlreadyExists' | 
+  'entityDoesNotExist';
 
+
+  
