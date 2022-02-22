@@ -10,3 +10,6 @@ services:
       - '4200'
     ports:
       - '4200:4200'
+    env_file: .env
+    volumes:
+      - ./../client-integration-layer-backend/cil-lib:/usr/app/node_modules/cil-lib
