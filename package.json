@@ -30,7 +30,7 @@
   "dependencies": {
     "@grpc/grpc-js": "1.5.4",
     "@newrelic/winston-enricher": "2.1.0",
-    "cil-lib": "file:../client-integration-layer-backend-github/cil-lib",
+    "cil-lib": "file:../client-integration-layer-backend/cil-lib",
     "dotenv": "10.0.0",
     "express": "4.17.1",
     "newrelic": "8.4.0",
