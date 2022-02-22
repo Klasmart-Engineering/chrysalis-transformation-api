@@ -40,7 +40,7 @@ const feedbackData: Feedback[] = [
     HasSuccess: false,
     ErrorMessage: ['nostrud anim occaecat'],
     OutputResult: {
-      Status: true;
+      Status: true,
       Messages: 'feedback works',
     }
   },
