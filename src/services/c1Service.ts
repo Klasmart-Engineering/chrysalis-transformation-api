@@ -78,8 +78,6 @@ export class C1Service extends BaseRestfulService {
     return (await this.getData(client)) as UserQuerySchema[];
   }
 
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async postFeedback(feedback: Feedback[]): Promise<FeedbackSchema> {
     const postData = JSON.stringify(feedback);
     const client = this.createClient(

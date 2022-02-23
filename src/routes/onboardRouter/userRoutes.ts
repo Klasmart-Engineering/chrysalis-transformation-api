@@ -47,14 +47,14 @@ router.post('/', async (req: Request, res: Response) => {
 
   const { statusCode, response, feedback } = await parseResponse();
 
-  // let feedbackResponse;
+  let feedbackResponse;
   try {
-    // feedbackResponse = await service.postFeedback(feedback);
+    feedbackResponse = await service.postFeedback(feedback);
   } catch (error) {
     throw new Error('Something went wrong on sending feedback!') ;
   }
 
-  return res.status(statusCode).json({feedback, response});
+  return res.status(statusCode).json({feedback, response, feedbackResponse});
 });
 
 export default router;
