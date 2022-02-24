@@ -74,18 +74,12 @@ const generateFeedback = (responses: BackendResponses) => {
 const processFeedback = (
   responses: BackendResponse[]
 ) => {
-  let isOnboard = true;
+  const isOnboard = [];
   for (const response of responses) {
-    if (!response.success) {
-      if (typeof response.errors.entityAlreadyExists === 'object') {
-        return true;
-      }
-
-      isOnboard = false;
-    }
+    isOnboard.push((response.success || typeof response.errors.entityAlreadyExists === 'object'));
   }
 
-  return isOnboard;
+  return !isOnboard.includes(false);
 }
 
 const processErrors = (
