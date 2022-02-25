@@ -1,4 +1,5 @@
 import {
+  ClassesBySchools,
   UsersByOrgs,
   UsersBySchools,
   UsersToClassSchema,
@@ -104,6 +105,29 @@ const addUsersToOrganization = (
   }, []);
 };
 
+
+const mapClassesBySchools = (classes: ClassQuerySchema[]) => {
+  return classes.reduce((acc: ClassesBySchools[], clazz: ClassQuerySchema) => {
+    const { SchoolUUID, ClassUUID } = clazz;
+    const existingSchool = acc.find(
+      school => school.schoolUuid === SchoolUUID
+    );
+
+    if (existingSchool) {
+      existingSchool.classesUuids.push(ClassUUID);
+    } else {
+      acc.push(
+        {
+          schoolUuid: SchoolUUID,
+          classesUuids: [ClassUUID]
+        }
+      );
+    }
+
+    return acc;
+  }, []);
+}
+
 const mapUsersByOrgs = (users: UserQuerySchema[]) => {
   return users.reduce((acc: UsersByOrgs[], user: UserQuerySchema) => {
     const organization: OrganizationQuerySchema = {
@@ -190,8 +214,9 @@ const addUsersToClassroom = (users: UserQuerySchema[]) => {
 
 export { 
   addUsersToClass, 
-  addUsersToOrganization, 
+  addUsersToOrganization,
+  mapClassesBySchools,
   mapUsersByOrgs, 
   addUsersToClassroom,
-  mapUsersBySchools 
+  mapUsersBySchools,
 };

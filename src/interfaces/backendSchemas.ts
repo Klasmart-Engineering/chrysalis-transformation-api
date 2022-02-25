@@ -21,3 +21,8 @@ export interface UsersBySchools {
   schoolUuid: string;
   usersUuids: string[];
 }
+
+export interface ClassesBySchools {
+  schoolUuid: string;
+  classesUuids: string[];
+}
