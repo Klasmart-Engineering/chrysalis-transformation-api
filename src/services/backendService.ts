@@ -4,7 +4,7 @@ import {
   SchoolQuerySchema,
   ClassQuerySchema,
 } from '../interfaces/clientSchemas';
-import { grpc, proto } from 'cil-lib';
+import { grpc, proto } from '@kl-engineering/cil-lib';
 import {
   InterceptorOptions,
   NextCall,

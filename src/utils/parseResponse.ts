@@ -1,5 +1,5 @@
 import { BackendResponse, BackendResponses } from '../interfaces/backendResponse';
-import { log, protobufToEntity } from 'cil-lib';
+import { log, protobufToEntity } from '@kl-engineering/cil-lib';
 import { BackendService } from '../services/backendService';
 import { Feedback } from '../interfaces/clientSchemas';
 
