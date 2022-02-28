@@ -7,11 +7,13 @@ import { BackendService } from '../../services/backendService';
 import {
   addUsersToClassroom,
   addUsersToOrganization,
+  HttpError,
   mapUsersByOrgs,
   mapUsersBySchools,
 } from '../../utils';
 import { UsersByOrgs, UsersBySchools } from '../../interfaces/backendSchemas';
 import { parseResponse } from '../../utils/parseResponse';
+import logger from '../../utils/logging';
 
 const router = express.Router();
 
@@ -45,16 +47,18 @@ router.post('/', async (req: Request, res: Response) => {
   
   backendService.addUsersToClasses(usersToClass, '3');
 
-  const { statusCode, response, feedback } = await parseResponse();
+  const { statusCode, feedback } = await parseResponse();
 
   let feedbackResponse;
   try {
     feedbackResponse = await service.postFeedback(feedback);
   } catch (error) {
-    throw new Error('Something went wrong on sending feedback!') ;
+    logger.error(error)
+    return res.status(error instanceof HttpError ? error.status : 500)
+              .json({message: 'Something went wrong on sending feedback!'});
   }
 
-  return res.status(statusCode).json({feedback, response, feedbackResponse});
+  return res.status(statusCode).json(feedbackResponse);
 });
 
 export default router;

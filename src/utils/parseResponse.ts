@@ -1,5 +1,5 @@
 import { BackendResponse, BackendResponses } from '../interfaces/backendResponse';
-import { log, protobufToEntity } from 'cil-lib';
+import { log, protobufToEntity } from '@kl-engineering/cil-lib';
 import { BackendService } from '../services/backendService';
 import { Feedback } from '../interfaces/clientSchemas';
 
@@ -10,21 +10,31 @@ export async function parseResponse() {
   const backendService = BackendService.getInstance();
   const response = (await backendService.sendRequest()) as BackendResponses;
   let statusCode = 400;
+
   response.responsesList.forEach((rsp: BackendResponse) => {
     rsp.entityName = protobufToEntity(rsp.entity, log);
-    if (rsp.success) {
+  });
+  
+  const feedback = generateFeedback(response);
+  
+  feedback.forEach((item: Feedback) => {
+    if (item.HasSuccess) {
       statusCode = 200;
+      return;
     }
   });
-  const feedback = generateFeedback(response);
-  return { statusCode, response, feedback}
+
+  return { statusCode, response, feedback }
 }
 
 const generateFeedback = (responses: BackendResponses) => {
-  const mappedResponses: Array<{entityId: string, entityName: string, responses: BackendResponse[]}> = [];
+  const mappedResponses: Array<{ entityId: string, entityName: string, responses: BackendResponse[] }> = [];
 
   responses.responsesList.forEach(el => {
-    const entityExists = mappedResponses.find(item => item.entityId === el.entityId)
+    const entityExists = mappedResponses.find(
+      item => item.entityId.toLowerCase() === el.entityId.toLowerCase()
+    );
+
     if (entityExists) {
       entityExists.responses.push(el);
     } else {
@@ -37,37 +47,16 @@ const generateFeedback = (responses: BackendResponses) => {
   mappedResponses.forEach(entity => {
     const isOnboard = processFeedback(entity.responses);
 
-    if (isOnboard) {
-      feedback.push(
-        {
-          UUID: entity.entityId,
-          Entity: entity.entityName,
-          HasSuccess: isOnboard,
-          ErrorMessage: [],
-          OutputResult: {
-            Status: true,
-            Messages: ''
-          }
-        }
-      );
-    }
-
-    if (!isOnboard) {
-      feedback.push(
-        {
-          UUID: entity.entityId,
-          Entity: entity.entityName,
-          HasSuccess: isOnboard,
-          ErrorMessage: processErrors(entity.responses),
-          OutputResult: {
-            Status: true,
-            Messages: ''
-          }
-        }
-      )
-    }
+    feedback.push(
+      {
+        UUID: entity.entityId,
+        Entity: entity.entityName,
+        HasSuccess: isOnboard,
+        ErrorMessage: isOnboard ? [] : processErrors(entity.responses),
+      }
+    );
   });
-  
+
   return feedback;
 }
 
@@ -96,20 +85,29 @@ const processErrors = (
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mapErrors = (errors: any)  => {
+const mapErrors = (errors: any) => {
   if (!messages) messages = [];
 
-  if (errors instanceof Object) {
-    const objectKeys = Object.keys(errors);
-    
+  const localErrors = {...errors}
+
+  if (localErrors instanceof Object) {
+    const objectKeys = Object.keys(localErrors);
+
+    // remove already exist error messages
+    objectKeys.forEach(key => {
+      if (key === 'entityAlreadyExists') {
+        delete localErrors[key];
+      }
+    });
+
     if (objectKeys.includes(messageKey)) {
-      messages = [...messages, ...errors[messageKey]];
+      messages = [...messages, ...localErrors[messageKey]];
     } else {
       for (const key in errors) {
-        if (errors[key] instanceof Object) mapErrors(errors[key]);
+        if (localErrors[key] instanceof Object) mapErrors(localErrors[key]);
       }
     }
   }
-  
+
   return messages;
 }

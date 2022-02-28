@@ -4,55 +4,42 @@ import { C1Service } from '../../services/c1Service';
 import { BackendService } from '../../services/backendService';
 import { parseResponse } from '../../utils/parseResponse';
 import { ClassesBySchools } from '../../interfaces/backendSchemas';
-import { mapClassesBySchools } from '../../utils';
-import { BackendResponses } from '../../interfaces/backendResponse';
+import { HttpError, mapClassesBySchools } from '../../utils';
+import logger from '../../utils/logging';
 
 const router = express.Router();
 
 router.post('/', async (req: Request, res: Response) => {
   const service = await C1Service.getInstance();
   const backendService = BackendService.getInstance();
-  const allResponses: BackendResponses = {responsesList: []};
-  const allFeedback = [];
-  const allFeedbackResponses = [];
-  const allStatuses = [];
 
-  let classes: ClassQuerySchema[] = await service.getClasses();
+  backendService.resetRequest();
 
-  while (classes.length > 0) {
-    backendService.resetRequest();
-    backendService.mapClassesToProto(classes);
+  const classes: ClassQuerySchema[] = await service.getClasses();
 
-    const schoolClasses: ClassesBySchools[] = mapClassesBySchools(classes);
-    for (const clazz of schoolClasses) {
-      backendService.addClassesToSchool(
-        clazz.schoolUuid,
-        clazz.classesUuids,
-        '3'
-      );
-    }
+  backendService.mapClassesToProto(classes);
 
-    const { statusCode, response, feedback } = await parseResponse();
-    allResponses.responsesList.push(...response.responsesList)
-    allFeedback.push(...feedback)
-    allStatuses.push(statusCode);
-    let feedbackResponse;
-    try {
-      feedbackResponse = await service.postFeedback(feedback);
-      allFeedbackResponses.push(...feedbackResponse);
-    } catch (error) {
-      throw new Error('Something went wrong on sending feedback!');
-    }
-    classes = await service.getClasses();
+  const schoolClasses: ClassesBySchools[] = mapClassesBySchools(classes);
+  for (const clazz of schoolClasses) {
+    backendService.addClassesToSchool(
+      clazz.schoolUuid,
+      clazz.classesUuids,
+      '3'
+    );
   }
 
-  const statusCode = allStatuses.includes(200) ? 200 : 400;
+  const { statusCode, feedback } = await parseResponse();
 
-  return res.status(statusCode).json({
-    feedback: allFeedback,
-    response: allResponses,
-    feedbackResponse: allFeedbackResponses
-  });
+  let feedbackResponse;
+  try {
+    feedbackResponse = await service.postFeedback(feedback);
+  } catch (error) {
+    logger.error(error)
+    return res.status(error instanceof HttpError ? error.status : 500)
+              .json({message: 'Something went wrong on sending feedback!'});
+  }
+
+  return res.status(statusCode).json(feedbackResponse);
 });
 
 export default router;

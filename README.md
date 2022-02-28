@@ -1,4 +1,4 @@
-# Welcome to the C1 integration layer!
+# Welcome to chrysalis-transformation-api!
 
 - Follow installation & running instructions below.
 

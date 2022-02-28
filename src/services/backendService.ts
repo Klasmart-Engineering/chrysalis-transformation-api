@@ -4,7 +4,7 @@ import {
   SchoolQuerySchema,
   ClassQuerySchema,
 } from '../interfaces/clientSchemas';
-import { grpc, proto } from 'cil-lib';
+import { grpc, proto } from '@kl-engineering/cil-lib';
 import {
   InterceptorOptions,
   NextCall,
@@ -147,7 +147,7 @@ export class BackendService {
       requestMeta.setId(requestIds.CREATE_CLASS).setN('1');
 
       classProto
-        .setExternalUuid(clazz.ClassUUID)
+        .setExternalUuid(clazz.ClassUUID.toLowerCase())
         .setName(clazz.ClassName)
         .setExternalOrganizationUuid(clazz.OrganizationUUID)
         .setExternalSchoolUuid(clazz.SchoolUUID);
@@ -242,7 +242,7 @@ export class BackendService {
 
     requestMeta.setId(requestIds.ADD_PROGRAMS_TO_CLASS).setN(n);
     addProgramsToClass
-      .setExternalClassUuid(clazz.ClassUUID)
+      .setExternalClassUuid(clazz.ClassUUID.toLowerCase())
       .setProgramNamesList(clazz.ProgramName);
 
     linkPrograms.setAddProgramsToClass(addProgramsToClass);

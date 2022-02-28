@@ -55,12 +55,14 @@ export enum classRole {
   'Teacher',
 }
 
-export interface FeedbackSchema {
-  Status: boolean;
-  Messages: string;
+export interface Feedback {
+  UUID: string;
+  Entity: string;
+  HasSuccess: boolean;
+  ErrorMessage: string[];
 }
 
-export interface Feedback {
+export interface FeedbackResponse {
   UUID: string;
   Entity: string;
   HasSuccess: boolean;
