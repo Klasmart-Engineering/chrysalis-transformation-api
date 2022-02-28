@@ -15,6 +15,7 @@
     "prettier-format": "prettier --config .prettierrc \"./**/*.{ts,test.ts}\" --write",
     "prettier-check": "prettier --config .prettierrc \"./**/*.{ts,test.ts}\" --check",
     "commitlint-check": "commitlint",
+    "postinstall": "npx prisma generate --schema='./node_modules/@kl-engineering/cil-lib/prisma/schema.prisma'",
     "prepare": "husky install"
   },
   "repository": {
@@ -30,7 +31,7 @@
   "dependencies": {
     "@grpc/grpc-js": "1.5.4",
     "@newrelic/winston-enricher": "2.1.0",
-    "@kl-engineering/cil-lib": "1.0.0",
+    "@kl-engineering/cil-lib": "1.0.1",
     "dotenv": "10.0.0",
     "express": "4.17.1",
     "newrelic": "8.4.0",
@@ -42,6 +43,7 @@
     "@commitlint/cli": "15.0.0",
     "@commitlint/config-conventional": "15.0.0",
     "@commitlint/cz-commitlint": "15.0.0",
+    "@prisma/client": "^3.9.2",
     "@types/chai": "4.2.22",
     "@types/chai-as-promised": "7.1.4",
     "@types/chai-json-schema": "1.4.6",
