@@ -7,6 +7,7 @@ import { BackendService } from '../../services/backendService';
 import {
   addUsersToClassroom,
   addUsersToOrganization,
+  HttpError,
   mapUsersByOrgs,
   mapUsersBySchools,
 } from '../../utils';
@@ -53,7 +54,8 @@ router.post('/', async (req: Request, res: Response) => {
     feedbackResponse = await service.postFeedback(feedback);
   } catch (error) {
     logger.error(error)
-    return res.status(503).json({message: 'Something went wrong on sending feedback!'});
+    return res.status(error instanceof HttpError ? error.status : 500)
+              .json({message: 'Something went wrong on sending feedback!'});
   }
 
   return res.status(statusCode).json({feedback, response, feedbackResponse});

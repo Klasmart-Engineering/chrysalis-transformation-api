@@ -32,7 +32,7 @@ const generateFeedback = (responses: BackendResponses) => {
 
   responses.responsesList.forEach(el => {
     const entityExists = mappedResponses.find(
-      item => item.entityId.toLocaleLowerCase() === el.entityId.toLocaleLowerCase()
+      item => item.entityId.toLowerCase() === el.entityId.toLowerCase()
     );
 
     if (entityExists) {

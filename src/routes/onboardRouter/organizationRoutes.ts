@@ -4,6 +4,7 @@ import { BackendService } from '../../services/backendService';
 import { OrganizationQuerySchema } from '../../interfaces/clientSchemas';
 import { parseResponse } from '../../utils/parseResponse';
 import logger from '../../utils/logging';
+import { HttpError } from '../../utils';
 
 const router = express.Router();
 
@@ -24,7 +25,8 @@ router.post('/', async (req: Request, res: Response) => {
     feedbackResponse = await service.postFeedback(feedback);
   } catch (error) {
     logger.error(error)
-    return res.status(503).json({message: 'Something went wrong on sending feedback!'});
+    return res.status(error instanceof HttpError ? error.status : 500)
+              .json({message: 'Something went wrong on sending feedback!'});
   }
 
   return res.status(statusCode).json({feedback, response, feedbackResponse});
