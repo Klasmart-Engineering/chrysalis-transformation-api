@@ -39,10 +39,6 @@ const feedbackData: Feedback[] = [
     Entity: 'fugiat sint dolor anim',
     HasSuccess: false,
     ErrorMessage: ['nostrud anim occaecat'],
-    OutputResult: {
-      Status: true,
-      Messages: 'feedback works',
-    }
   },
 ];
 const feedbackBody = JSON.stringify(feedbackData);

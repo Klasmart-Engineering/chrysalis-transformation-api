@@ -4,7 +4,7 @@ import { AuthServer } from '../utils/authServer';
 import {
   ClassQuerySchema,
   Feedback,
-  FeedbackSchema,
+  FeedbackResponse,
   OrganizationQuerySchema,
   SchoolQuerySchema,
   UserQuerySchema,
@@ -78,7 +78,7 @@ export class C1Service extends BaseRestfulService {
     return (await this.getData(client)) as UserQuerySchema[];
   }
 
-  async postFeedback(feedback: Feedback[]): Promise<FeedbackSchema> {
+  async postFeedback(feedback: Feedback[]): Promise<Array<FeedbackResponse>> {
     const postData = JSON.stringify(feedback);
     const client = this.createClient(
       C1Endpoints.feedbackApiEndpoint,
@@ -88,6 +88,6 @@ export class C1Service extends BaseRestfulService {
       postData.length
     );
 
-    return (await this.getData(client, postData)) as FeedbackSchema;
+    return (await this.getData(client, postData)) as FeedbackResponse[];
   }
 }

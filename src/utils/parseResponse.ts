@@ -10,13 +10,20 @@ export async function parseResponse() {
   const backendService = BackendService.getInstance();
   const response = (await backendService.sendRequest()) as BackendResponses;
   let statusCode = 400;
+
   response.responsesList.forEach((rsp: BackendResponse) => {
     rsp.entityName = protobufToEntity(rsp.entity, log);
-    if (rsp.success) {
+  });
+  
+  const feedback = generateFeedback(response);
+  
+  feedback.forEach((item: Feedback) => {
+    if (item.HasSuccess) {
       statusCode = 200;
+      return;
     }
   });
-  const feedback = generateFeedback(response);
+
   return { statusCode, response, feedback }
 }
 
@@ -24,7 +31,10 @@ const generateFeedback = (responses: BackendResponses) => {
   const mappedResponses: Array<{ entityId: string, entityName: string, responses: BackendResponse[] }> = [];
 
   responses.responsesList.forEach(el => {
-    const entityExists = mappedResponses.find(item => item.entityId === el.entityId)
+    const entityExists = mappedResponses.find(
+      item => item.entityId.toLocaleLowerCase() === el.entityId.toLocaleLowerCase()
+    );
+
     if (entityExists) {
       entityExists.responses.push(el);
     } else {
@@ -43,10 +53,6 @@ const generateFeedback = (responses: BackendResponses) => {
         Entity: entity.entityName,
         HasSuccess: isOnboard,
         ErrorMessage: isOnboard ? [] : processErrors(entity.responses),
-        OutputResult: {
-          Status: true,
-          Messages: ''
-        }
       }
     );
   });
