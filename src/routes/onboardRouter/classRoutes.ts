@@ -14,8 +14,7 @@ router.post('/', async (req: Request, res: Response) => {
   const backendService = BackendService.getInstance();
   backendService.resetRequest();
 
-  let classes: ClassQuerySchema[] = await service.getClasses();
-  classes = [classes[4], classes[5]];
+  const classes: ClassQuerySchema[] = await service.getClasses();
 
   backendService.mapClassesToProto(classes);
 
@@ -28,7 +27,7 @@ router.post('/', async (req: Request, res: Response) => {
     );
   }
 
-  const { statusCode, response, feedback } = await parseResponse();
+  const { statusCode, feedback } = await parseResponse();
 
   let feedbackResponse;
   try {
@@ -39,7 +38,7 @@ router.post('/', async (req: Request, res: Response) => {
               .json({message: 'Something went wrong on sending feedback!'});
   }
 
-  return res.status(statusCode).json({feedback, response, feedbackResponse});
+  return res.status(statusCode).json(feedbackResponse);
 });
 
 export default router;

@@ -88,14 +88,23 @@ const processErrors = (
 const mapErrors = (errors: any) => {
   if (!messages) messages = [];
 
-  if (errors instanceof Object) {
-    const objectKeys = Object.keys(errors);
+  const localErrors = {...errors}
+
+  if (localErrors instanceof Object) {
+    const objectKeys = Object.keys(localErrors);
+
+    // remove already exist error messages
+    objectKeys.forEach(key => {
+      if (key === 'entityAlreadyExists') {
+        delete localErrors[key];
+      }
+    });
 
     if (objectKeys.includes(messageKey)) {
-      messages = [...messages, ...errors[messageKey]];
+      messages = [...messages, ...localErrors[messageKey]];
     } else {
       for (const key in errors) {
-        if (errors[key] instanceof Object) mapErrors(errors[key]);
+        if (localErrors[key] instanceof Object) mapErrors(localErrors[key]);
       }
     }
   }
