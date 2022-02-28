@@ -17,11 +17,11 @@ export async function parseResponse() {
     }
   });
   const feedback = generateFeedback(response);
-  return { statusCode, response, feedback}
+  return { statusCode, response, feedback }
 }
 
 const generateFeedback = (responses: BackendResponses) => {
-  const mappedResponses: Array<{entityId: string, entityName: string, responses: BackendResponse[]}> = [];
+  const mappedResponses: Array<{ entityId: string, entityName: string, responses: BackendResponse[] }> = [];
 
   responses.responsesList.forEach(el => {
     const entityExists = mappedResponses.find(item => item.entityId === el.entityId)
@@ -37,37 +37,20 @@ const generateFeedback = (responses: BackendResponses) => {
   mappedResponses.forEach(entity => {
     const isOnboard = processFeedback(entity.responses);
 
-    if (isOnboard) {
-      feedback.push(
-        {
-          UUID: entity.entityId,
-          Entity: entity.entityName,
-          HasSuccess: isOnboard,
-          ErrorMessage: [],
-          OutputResult: {
-            Status: true,
-            Messages: ''
-          }
+    feedback.push(
+      {
+        UUID: entity.entityId,
+        Entity: entity.entityName,
+        HasSuccess: isOnboard,
+        ErrorMessage: isOnboard ? [] : processErrors(entity.responses),
+        OutputResult: {
+          Status: true,
+          Messages: ''
         }
-      );
-    }
-
-    if (!isOnboard) {
-      feedback.push(
-        {
-          UUID: entity.entityId,
-          Entity: entity.entityName,
-          HasSuccess: isOnboard,
-          ErrorMessage: processErrors(entity.responses),
-          OutputResult: {
-            Status: true,
-            Messages: ''
-          }
-        }
-      )
-    }
+      }
+    );
   });
-  
+
   return feedback;
 }
 
@@ -96,12 +79,12 @@ const processErrors = (
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mapErrors = (errors: any)  => {
+const mapErrors = (errors: any) => {
   if (!messages) messages = [];
 
   if (errors instanceof Object) {
     const objectKeys = Object.keys(errors);
-    
+
     if (objectKeys.includes(messageKey)) {
       messages = [...messages, ...errors[messageKey]];
     } else {
@@ -110,6 +93,6 @@ const mapErrors = (errors: any)  => {
       }
     }
   }
-  
+
   return messages;
 }
