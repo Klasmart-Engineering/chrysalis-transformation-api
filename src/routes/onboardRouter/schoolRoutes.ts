@@ -9,21 +9,31 @@ const router = express.Router();
 router.post('/', async (req: Request, res: Response) => {
   const service = await C1Service.getInstance();
   const backendService = BackendService.getInstance();
-  backendService.resetRequest();
+  const allFeedbackResponses = [];
+  const allStatuses = [];
 
-  const schools: SchoolQuerySchema[] = await service.getSchools();
+  let schools: SchoolQuerySchema[] = await service.getSchools();
 
-  backendService.mapSchoolsToProto(schools);
+  while (schools.length > 0) {
+    backendService.resetRequest();
+    backendService.mapSchoolsToProto(schools);
 
-  const { statusCode, response, feedback } = await parseResponse();
-
-  let feedbackResponse;
-  try {
-    feedbackResponse = await service.postFeedback(feedback);
-  } catch (error) {
-    throw new Error('Something went wrong on sending feedback!') ;
+    const { statusCode, feedback } = await parseResponse();
+    allStatuses.push(statusCode);
+    let feedbackResponse;
+    try {
+      feedbackResponse = await service.postFeedback(feedback);
+      allFeedbackResponses.push(...feedbackResponse);
+    } catch (error) {
+      throw new Error('Something went wrong on sending feedback!');
+    }
+    schools = await service.getSchools();
   }
 
-  return res.status(statusCode).json({feedback, response, feedbackResponse});
+  const statusCode = allStatuses.includes(200) ? 200 : 400;
+
+  return res.status(statusCode).json({
+    feedbackResponse: allFeedbackResponses
+  });
 });
 export default router;
