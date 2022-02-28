@@ -5,6 +5,7 @@ import { BackendService } from '../../services/backendService';
 import { parseResponse } from '../../utils/parseResponse';
 import { ClassesBySchools } from '../../interfaces/backendSchemas';
 import { mapClassesBySchools } from '../../utils';
+import logger from '../../utils/logging';
 
 const router = express.Router();
 
@@ -33,7 +34,8 @@ router.post('/', async (req: Request, res: Response) => {
   try {
     feedbackResponse = await service.postFeedback(feedback);
   } catch (error) {
-    throw new Error('Something went wrong on sending feedback!') ;
+    logger.error(error)
+    return res.status(503).json({message: 'Something went wrong on sending feedback!'});
   }
 
   return res.status(statusCode).json({feedback, response, feedbackResponse});
