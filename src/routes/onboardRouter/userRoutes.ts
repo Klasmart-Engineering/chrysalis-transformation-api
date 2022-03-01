@@ -69,7 +69,7 @@ router.post('/', async (req: Request, res: Response) => {
     } catch (error) {
       logger.error(error)
       return res.status(error instanceof HttpError ? error.status : 500)
-          .json({message: 'Something went wrong on sending feedback!', feedback});
+          .json({message: 'Something went wrong on sending feedback!'});
     }
     prevUsersIds = curUsersIds;
     users = await service.getUsers();
