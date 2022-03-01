@@ -19,10 +19,6 @@ router.post('/', async (req: Request, res: Response) => {
       await service.getOrganizations();
   let prevOrgsIds: string[] = [];
 
-  if (!organizations.length) {
-    return res.status(204).json({message: 'No more organizations to process!'})
-  }
-
   while (organizations.length > 0) {
     const curOrgsIds = organizations.map(org => org.OrganizationUUID);
     if (arraysMatch(prevOrgsIds, curOrgsIds)) {
@@ -40,7 +36,7 @@ router.post('/', async (req: Request, res: Response) => {
     } catch (error) {
       logger.error(error)
       return res.status(error instanceof HttpError ? error.status : 500)
-          .json({message: 'Something went wrong on sending feedback!'});
+          .json({message: 'Something went wrong on sending feedback for onboarding organizations!'});
     }
     prevOrgsIds = curOrgsIds;
     organizations = await service.getOrganizations();

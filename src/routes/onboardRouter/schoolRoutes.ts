@@ -19,13 +19,13 @@ router.post('/', async (req: Request, res: Response) => {
   let prevSchoolsIds: string[] = [];
 
   if (!schools.length) {
-    return res.status(204).json({message: 'No more schools to process!'})
+    return res.status(204).json({message: 'No more schools to onboard!'})
   }
 
   while (schools.length > 0) {
     const curSchoolsIds = schools.map(school => school.SchoolUUID);
     if (arraysMatch(prevSchoolsIds, curSchoolsIds)) {
-      return res.status(200).json({message: 'Schools already processed!'})
+      return res.status(200).json({message: 'Schools already onboarded!'})
     }
     backendService.resetRequest();
     backendService.mapSchoolsToProto(schools);
@@ -39,7 +39,7 @@ router.post('/', async (req: Request, res: Response) => {
     } catch (error) {
       logger.error(error)
       return res.status(error instanceof HttpError ? error.status : 500)
-                .json({message: 'Something went wrong on sending feedback!'});
+                .json({message: 'Something went wrong on sending feedback for onboarding schools!'});
     }
     prevSchoolsIds = curSchoolsIds;
     schools = await service.getSchools();

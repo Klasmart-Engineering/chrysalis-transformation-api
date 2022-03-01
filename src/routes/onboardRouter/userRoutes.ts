@@ -28,13 +28,13 @@ router.post('/', async (req: Request, res: Response) => {
   let prevUsersIds: string[] = [];
 
   if (!users.length) {
-    return res.status(204).json({message: 'No more users to process!'})
+    return res.status(204).json({message: 'No more users to onboard!'})
   }
 
   while (users.length > 0) {
     const curUsersIds = users.map(user => user.UserUUID);
     if (arraysMatch(prevUsersIds, curUsersIds)) {
-      return res.status(200).json({message: 'Users already processed!'})
+      return res.status(200).json({message: 'Users already onboarded!'})
     }
     backendService.resetRequest();
     backendService.mapUsersToProto(users);
@@ -69,7 +69,7 @@ router.post('/', async (req: Request, res: Response) => {
     } catch (error) {
       logger.error(error)
       return res.status(error instanceof HttpError ? error.status : 500)
-          .json({message: 'Something went wrong on sending feedback!'});
+          .json({message: 'Something went wrong on sending feedback for onboarding users!'});
     }
     prevUsersIds = curUsersIds;
     users = await service.getUsers();
