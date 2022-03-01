@@ -4,6 +4,7 @@ import './utils/dotenv';
 import createError from 'http-errors';
 import { checkAPIToken } from './middlewares/checkAPIToken';
 import OnboardRouter from './routes/onboardRouter';
+import HealthRouter from './routes/healthRouter';
 import { HttpError } from './utils';
 
 const app = express();
@@ -12,6 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use('/onboard', checkAPIToken, OnboardRouter);
+app.use('/health', checkAPIToken, HealthRouter);
 
 // catch 404 and forward to error handler
 app.use((req: Request, res: Response, next: NextFunction) => {
