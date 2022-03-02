@@ -22,6 +22,3 @@ type ErrorKeys =
   'internalServer'      |   
   'entityAlreadyExists' | 
   'entityDoesNotExist';
-
-
-  
