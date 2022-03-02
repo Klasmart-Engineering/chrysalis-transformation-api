@@ -68,4 +68,16 @@ jobs:
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
 permissions:
+  actions: write
+  checks: write
+  contents: read
+  deployments: write
+  id-token: read
+  issues: read
+  discussions: read
   packages: read
+  pages: write
+  pull-requests: write
+  repository-projects: read
+  security-events: read
+  statuses: write
