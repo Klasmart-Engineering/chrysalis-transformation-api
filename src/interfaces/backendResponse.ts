@@ -1,4 +1,4 @@
-import { Entity } from 'cil-lib';
+import { Entity } from '@kl-engineering/cil-lib';
 
 export interface BackendResponses {
   responsesList: BackendResponse[];
@@ -13,17 +13,12 @@ export interface BackendResponse {
   entityName: Entity;
   entityId: string;
   success: boolean;
-  errors: Record<ErrorKeys, ErrorDetails>;
+  errors: Record<ErrorKeys, object>;
 }
 
-enum ErrorKeys {
-  'validation',
-  'request',
-  'internalServer',
-  'entityAlreadyExists',
-  'entityDoesNotExist',
-}
-
-interface ErrorDetails {
-  detailsList: string[];
-}
+type ErrorKeys = 
+  'validation'          |
+  'request'             | 
+  'internalServer'      |   
+  'entityAlreadyExists' | 
+  'entityDoesNotExist';

@@ -4,7 +4,7 @@ import {
   SchoolQuerySchema,
   ClassQuerySchema,
 } from '../interfaces/clientSchemas';
-import { grpc, proto } from 'cil-lib';
+import { grpc, proto } from '@kl-engineering/cil-lib';
 import {
   InterceptorOptions,
   NextCall,
@@ -140,10 +140,7 @@ export class BackendService {
 
   mapClassesToProto(classes: ClassQuerySchema[] = []) {
     if (!Array.isArray(classes)) return;
-    const classIds: string[] = [];
-    const schoolUuid = classes[0].SchoolUUID;
     classes.forEach(async (clazz) => {
-      classIds.push(clazz.ClassUUID);
       const onboardClassRequest = new OnboardingRequest();
       const classProto = new Class();
       const requestMeta = new RequestMetadata();
@@ -162,7 +159,6 @@ export class BackendService {
       this.addProgramsToClass(clazz, '2');
       this._request.addRequests(onboardClassRequest);
     });
-    this.addClassesToSchool(schoolUuid, classIds, '3');
   }
 
   mapUsersToProto(users: UserQuerySchema[] = []) {
@@ -213,7 +209,6 @@ export class BackendService {
 
     requestMeta.setId(requestIds.ADD_PROGRAMS_TO_SCHOOL).setN(n);
     addProgramsToSchool
-      .setExternalOrganizationUuid(school.OrganizationUUID)
       .setExternalSchoolUuid(school.SchoolUUID)
       .setProgramNamesList(school.ProgramName);
 
@@ -223,7 +218,7 @@ export class BackendService {
     this._request.addRequests(onboardRequest);
   }
 
-  private addClassesToSchool(schoolUuid: string, classIds: string[], n: string) {
+  addClassesToSchool(schoolUuid: string, classIds: string[], n: string) {
     const onboardRequest = new OnboardingRequest();
     const linkClasses = new Link();
     const addClassesToSchool = new AddClassesToSchool();
@@ -247,7 +242,6 @@ export class BackendService {
 
     requestMeta.setId(requestIds.ADD_PROGRAMS_TO_CLASS).setN(n);
     addProgramsToClass
-      .setExternalOrganizationUuid(clazz.OrganizationUUID)
       .setExternalClassUuid(clazz.ClassUUID)
       .setProgramNamesList(clazz.ProgramName);
 

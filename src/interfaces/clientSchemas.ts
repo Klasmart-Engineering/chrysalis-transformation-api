@@ -55,7 +55,22 @@ export enum classRole {
   'Teacher',
 }
 
-export interface FeedbackSchema {
+export interface Feedback {
+  UUID: string;
+  Entity: string;
+  HasSuccess: boolean;
+  ErrorMessage: string[];
+}
+
+export interface FeedbackResponse {
+  UUID: string;
+  Entity: string;
+  HasSuccess: boolean;
+  ErrorMessage: string[];
+  OutputResult: OutputResult;
+}
+
+export interface OutputResult {
   Status: boolean;
   Messages: string;
 }

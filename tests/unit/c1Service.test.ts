@@ -20,6 +20,7 @@ import {
   getOrganizations,
   postFeedback,
 } from '../utils/responses/c1';
+import { Feedback } from '../../src/interfaces/clientSchemas';
 
 chai.use(spies);
 chai.use(jsonSchema);
@@ -32,12 +33,12 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-const feedbackData = [
+const feedbackData: Feedback[] = [
   {
     UUID: 'c0def826-e930-75bc-620f-b9eec5f43b76',
     Entity: 'fugiat sint dolor anim',
     HasSuccess: false,
-    ErrorMessage: 'nostrud anim occaecat',
+    ErrorMessage: ['nostrud anim occaecat'],
   },
 ];
 const feedbackBody = JSON.stringify(feedbackData);
