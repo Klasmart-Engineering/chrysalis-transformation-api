@@ -114,12 +114,12 @@ const mapClassesBySchools = (classes: ClassQuerySchema[]) => {
     );
 
     if (existingSchool) {
-      existingSchool.classesUuids.push(ClassUUID.toLowerCase());
+      existingSchool.classesUuids.push(ClassUUID);
     } else {
       acc.push(
         {
           schoolUuid: SchoolUUID,
-          classesUuids: [ClassUUID.toLowerCase()]
+          classesUuids: [ClassUUID]
         }
       );
     }
