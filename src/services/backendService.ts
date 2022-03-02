@@ -147,7 +147,7 @@ export class BackendService {
       requestMeta.setId(requestIds.CREATE_CLASS).setN('1');
 
       classProto
-        .setExternalUuid(clazz.ClassUUID.toLowerCase())
+        .setExternalUuid(clazz.ClassUUID)
         .setName(clazz.ClassName)
         .setExternalOrganizationUuid(clazz.OrganizationUUID)
         .setExternalSchoolUuid(clazz.SchoolUUID);
@@ -242,7 +242,7 @@ export class BackendService {
 
     requestMeta.setId(requestIds.ADD_PROGRAMS_TO_CLASS).setN(n);
     addProgramsToClass
-      .setExternalClassUuid(clazz.ClassUUID.toLowerCase())
+      .setExternalClassUuid(clazz.ClassUUID)
       .setProgramNamesList(clazz.ProgramName);
 
     linkPrograms.setAddProgramsToClass(addProgramsToClass);
