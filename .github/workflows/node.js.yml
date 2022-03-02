@@ -66,18 +66,3 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --build-arg NPM_TOKEN=$NPM_TOKEN .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-
-permissions:
-  actions: write
-  checks: write
-  contents: read
-  deployments: write
-  id-token: none
-  issues: read
-  discussions: read
-  packages: read
-  pages: write
-  pull-requests: write
-  repository-projects: read
-  security-events: read
-  statuses: write
