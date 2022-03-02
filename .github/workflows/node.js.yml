@@ -72,7 +72,7 @@ permissions:
   checks: write
   contents: read
   deployments: write
-  id-token: read
+  id-token: none
   issues: read
   discussions: read
   packages: read
