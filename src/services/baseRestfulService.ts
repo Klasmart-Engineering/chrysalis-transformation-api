@@ -13,7 +13,7 @@ export enum Methods {
 export abstract class BaseRestfulService {
   abstract hostname: string;
   abstract jwtToken: string;
-  abstract port?: string | null;
+  abstract port: string | undefined;
 
   createClient(
     path: C1Endpoints | McbEndpoints,
@@ -41,7 +41,7 @@ export abstract class BaseRestfulService {
     return {
       hostname: this.hostname,
       path: processedPath,
-      port: this.port ?? null,
+      port: this.port ?? '443',
       method: method ? method : Methods.get,
       headers: headers,
     };
