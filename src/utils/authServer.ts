@@ -14,10 +14,12 @@ export class AuthServer {
   jwtToken = '';
   refreshToken = '';
   postData: string;
+  port;
 
-  constructor(hostname: string, loginData: string) {
+  constructor(hostname: string, loginData: string, port?: string) {
     this.hostname = hostname;
     this.postData = loginData;
+    this.port = port ?? null;
   }
 
   private async login(path: string) {
@@ -60,6 +62,7 @@ export class AuthServer {
   createClient(path: string, postData: string) {
     return {
       hostname: this.hostname,
+      port: this.port,
       path: path,
       method: 'POST',
       headers: {

@@ -18,12 +18,14 @@ const REFRESH_TOKEN_INTERVAL = 600000;
 
 const authServer = new AuthServer(
   String(process.env.C1_API_HOSTNAME),
-  loginData
+  loginData, 
+  String(process.env.C1_API_PORT) ?? null
 );
 
 export class C1Service extends BaseRestfulService {
   private static _instance: C1Service;
   hostname = String(process.env.C1_API_HOSTNAME);
+  port = String(process.env.C1_API_PORT) ?? null;
   jwtToken = '';
 
   constructor(jwtToken: string) {
