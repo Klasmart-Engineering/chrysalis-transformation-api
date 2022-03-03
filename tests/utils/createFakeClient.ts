@@ -19,5 +19,6 @@ export function createFakeClient(
     path: path,
     method: method ? method : 'GET',
     headers: headers,
+    port: null
   };
 }

@@ -3,4 +3,5 @@ export interface HttpOptions {
   path: string;
   method: string;
   headers: Record<string, string>;
+  port: string | null;
 }

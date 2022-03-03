@@ -4,6 +4,7 @@ import { McbEndpoints } from '../config/mcbEnpoints';
 export class McbService extends BaseRestfulService {
   hostname = String(process.env.MCB_API_HOSTNAME);
   jwtToken = String(process.env.MCB_API_TOKEN);
+  port = null;
 
   getSchools(params: Record<string, string>) {
     const client = this.createClient(
