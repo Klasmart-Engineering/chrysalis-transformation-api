@@ -8,8 +8,6 @@ COPY types ./types
 COPY newrelic.js .
 COPY .npmrc .
 
-# RUN echo -e "@kl-engineering:registry=https://npm.pkg.github.com \n //npm.pkg.github.com/:_authToken=\${NPM_TOKEN}" > .npmrc
-
 RUN npm install
 
 EXPOSE 4200
