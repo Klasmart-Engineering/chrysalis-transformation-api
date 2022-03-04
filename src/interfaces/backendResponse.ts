@@ -17,9 +17,9 @@ export interface BackendResponse {
   errors: Record<ErrorKeys, object>;
 }
 
-type ErrorKeys = 
-  'validation'          |
-  'request'             | 
-  'internalServer'      |   
-  'entityAlreadyExists' | 
-  'entityDoesNotExist';
+type ErrorKeys =
+  | 'validation'
+  | 'request'
+  | 'internalServer'
+  | 'entityAlreadyExists'
+  | 'entityDoesNotExist';
