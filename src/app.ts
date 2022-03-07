@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use('/onboard', checkAPIToken, OnboardRouter);
-app.use('/health', checkAPIToken, HealthRouter);
+app.use('/health', HealthRouter);
 
 // catch 404 and forward to error handler
 app.use((req: Request, res: Response, next: NextFunction) => {
