@@ -34,6 +34,8 @@
     "@kl-engineering/cil-lib": "1.0.1",
     "dotenv": "10.0.0",
     "express": "4.17.1",
+    "grpc_tools_node_protoc_ts": "5.3.2",
+    "grpc-tools": "^1.11.2",
     "newrelic": "8.4.0",
     "query-string": "7.0.1",
     "uuid": "8.3.2",
