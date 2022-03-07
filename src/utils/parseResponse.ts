@@ -20,7 +20,10 @@ export async function parseResponse() {
   feedback.forEach((item: Feedback) => {
     if (item.HasSuccess) {
       statusCode = 200;
-      return;
+    }
+
+    if (item.ErrorMessage.length) {
+      item.ErrorMessage = Array.from(new Set(item.ErrorMessage))
     }
   });
 
