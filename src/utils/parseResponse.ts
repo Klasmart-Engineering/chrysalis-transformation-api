@@ -1,5 +1,5 @@
 import { BackendResponse, BackendResponses } from '../interfaces/backendResponse';
-import { log, protobufToEntity } from '@kl-engineering/cil-lib';
+import * as proto from '../protos/api_pb';
 import { BackendService } from '../services/backendService';
 import { Feedback } from '../interfaces/clientSchemas';
 
@@ -12,7 +12,7 @@ export async function parseResponse() {
   let statusCode = 400;
 
   response.responsesList.forEach((rsp: BackendResponse) => {
-    rsp.entityName = protobufToEntity(rsp.entity, log);
+    rsp.entityName = protobufToEntity(rsp.entity);
   });
   
   const feedback = generateFeedback(response);
@@ -110,4 +110,35 @@ const mapErrors = (errors: any) => {
   }
 
   return messages;
+}
+
+export function protobufToEntity(e: proto.Entity): Entity {
+  switch (e) {
+    case proto.Entity.ORGANIZATION:
+      return Entity.ORGANIZATION;
+    case proto.Entity.SCHOOL:
+      return Entity.SCHOOL;
+    case proto.Entity.CLASS:
+      return Entity.CLASS;
+    case proto.Entity.USER:
+      return Entity.USER;
+    case proto.Entity.PROGRAM:
+      return Entity.PROGRAM;
+    case proto.Entity.ROLE:
+      return Entity.ROLE;
+    default:
+      throw new Error(
+        'Unable to map protobuf Entity to app Entity'
+      );
+  }
+}
+
+export enum Entity {
+  ORGANIZATION = 'Organization',
+  SCHOOL = 'School',
+  CLASS = 'Class',
+  USER = 'User',
+  ROLE = 'Role',
+  PROGRAM = 'Program',
+  UNKNOWN = 'Unknown',
 }
