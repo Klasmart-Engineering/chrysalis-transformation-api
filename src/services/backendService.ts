@@ -4,7 +4,9 @@ import {
   SchoolQuerySchema,
   ClassQuerySchema,
 } from '../interfaces/clientSchemas';
-import { grpc, proto } from '@kl-engineering/cil-lib';
+import * as proto from '../protos/api_pb';
+import { OnboardingClient } from '../protos/api_grpc_pb';
+import * as grpc from '@grpc/grpc-js'
 import {
   InterceptorOptions,
   NextCall,
@@ -38,15 +40,15 @@ const {
 } = proto;
 
 export class BackendService {
-  private _client: proto.OnboardingClient;
+  private _client: OnboardingClient;
   private static _instance: BackendService;
   private _request: proto.BatchOnboarding = new BatchOnboarding();
 
-  private constructor(client: proto.OnboardingClient) {
+  private constructor(client: OnboardingClient) {
     this._client = client;
   }
 
-  get client(): proto.OnboardingClient {
+  get client(): OnboardingClient {
     return this._client;
   }
 
@@ -75,7 +77,7 @@ export class BackendService {
           return new grpc.InterceptingCall(nextCall(options), requester);
         };
 
-        const client = new proto.OnboardingClient(
+        const client = new OnboardingClient(
           String(process.env.BACKEND_API_URL),
           channel,
           { interceptors: [interceptor] }

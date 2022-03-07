@@ -1,4 +1,5 @@
-import { Entity } from '@kl-engineering/cil-lib';
+import { Entity } from "../utils/parseResponse";
+
 
 export interface BackendResponses {
   responsesList: BackendResponse[];
