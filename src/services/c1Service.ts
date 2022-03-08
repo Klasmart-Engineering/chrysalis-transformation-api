@@ -108,7 +108,7 @@ export class C1Service extends BaseRestfulService {
     try {
       users = (await this.getData(client)) as UserQuerySchema[];
     } catch (error) {
-      JSON.stringify(error);
+      logger.error(JSON.stringify(error));
     }
 
     return users ?? []; 
