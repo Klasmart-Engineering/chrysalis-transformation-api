@@ -11,19 +11,8 @@ env:
   NPM_TOKEN: ${{secrets.NPM_PERSONAL_ACCESS_TOKEN}}
 
 jobs:
-  code-security-analysis:
-    uses: KL-Global/kidsloop-reusable-workflows/.github/workflows/reusable-extended-sec-codeql.yml@main    
-    with:
-      language: 'node'
-
-  docker-security-analysis:
-    uses: KL-Global/kidsloop-reusable-workflows/.github/workflows/reusable-container-workflow.yml@main
-    with:
-      docker-path: ./Dockerfile
-
   lint:
     name: Run linters
-    needs: [code-security-analysis, docker-security-analysis]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Git repository
