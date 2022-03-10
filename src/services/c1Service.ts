@@ -10,6 +10,7 @@ import {
   UserQuerySchema,
 } from '../interfaces/clientSchemas';
 import logger from '../utils/logging';
+import { stringify } from '../utils/stringify';
 
 const loginData = JSON.stringify({
   Username: String(process.env.C1_API_USERNAME),
@@ -61,7 +62,8 @@ export class C1Service extends BaseRestfulService {
       organizations = (await this.getData(client)) as Array<OrganizationQuerySchema>;
     }
     catch (error) {
-      logger.error(JSON.stringify(error));
+      const stringifyError = stringify(error);
+      logger.error(stringifyError);
     }
 
     return organizations ?? [];
@@ -82,7 +84,8 @@ export class C1Service extends BaseRestfulService {
     try {
       schools = (await this.getData(client)) as SchoolQuerySchema[];   
     } catch (error) {
-      logger.error(JSON.stringify(error));
+      const stringifyError = stringify(error);
+      logger.error(stringifyError);
     }
 
     return schools ?? [];
@@ -95,7 +98,8 @@ export class C1Service extends BaseRestfulService {
     try {
       classes = (await this.getData(client)) as ClassQuerySchema[];
     } catch (error) {
-      logger.error(JSON.stringify(error));
+      const stringifyError = stringify(error);
+      logger.error(stringifyError);
     }
 
     return classes ?? []; 
@@ -108,7 +112,8 @@ export class C1Service extends BaseRestfulService {
     try {
       users = (await this.getData(client)) as UserQuerySchema[];
     } catch (error) {
-      logger.error(JSON.stringify(error));
+      const stringifyError = stringify(error);
+      logger.error(stringifyError);
     }
 
     return users ?? []; 

@@ -2,6 +2,7 @@ import { HttpOptions } from '../interfaces/httpOptions';
 import https from 'https';
 import { HttpError } from './httpResponses';
 import logger from './logging';
+import { stringify } from './stringify';
 
 type TokenResponse = {
   APIUserID: number;
@@ -34,7 +35,8 @@ export class AuthServer {
       if (response.JwtToken) this.jwtToken = response.JwtToken;
       if (response.RefreshToken) this.refreshToken = response.RefreshToken;
     } catch (error) {
-      logger.error(JSON.stringify(error));
+      const stringifyError = stringify(error)
+      logger.error(stringifyError);
     }
   }
 
@@ -50,7 +52,8 @@ export class AuthServer {
       if (response.JwtToken) this.jwtToken = response.JwtToken;
       if (response.RefreshToken) this.refreshToken = response.RefreshToken;
     } catch (error) {
-      logger.error(JSON.stringify(error));
+      const stringifyError = stringify(error)
+      logger.error(stringifyError);
     }
   }
 
