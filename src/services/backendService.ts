@@ -57,8 +57,7 @@ export class BackendService {
       if (this._instance) {
         return this._instance;
       } else {
-        const channel: grpc.ChannelCredentials =
-          grpc.ChannelCredentials.createSsl() as grpc.ChannelCredentials;
+        const channel: grpc.ChannelCredentials = process.env.NODE_ENV == 'development' ? grpc.ChannelCredentials.createInsecure() as grpc.ChannelCredentials : grpc.ChannelCredentials.createSsl() as grpc.ChannelCredentials;
         const interceptor = (
           options: InterceptorOptions,
           nextCall: NextCall
@@ -269,10 +268,7 @@ export class BackendService {
     this._request.addRequests(onboardRequest);
   }
 
-  addUsersToOrganization(
-    usersToOrganization: UsersToOrganizationSchema[],
-    n: string
-  ) {
+  addUsersToOrganization(usersToOrganization: UsersToOrganizationSchema[], n: string) {
     usersToOrganization.forEach((userToOrg) => {
       const onboardRequest = new OnboardingRequest();
       const linkUsers = new Link();
