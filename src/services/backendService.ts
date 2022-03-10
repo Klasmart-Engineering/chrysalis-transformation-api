@@ -6,7 +6,7 @@ import {
 } from '../interfaces/clientSchemas';
 import * as proto from '../protos/api_pb';
 import { OnboardingClient } from '../protos/api_grpc_pb';
-import * as grpc from '@grpc/grpc-js'
+import * as grpc from '@grpc/grpc-js';
 import {
   InterceptorOptions,
   NextCall,
@@ -58,7 +58,7 @@ export class BackendService {
         return this._instance;
       } else {
         const channel: grpc.ChannelCredentials =
-          grpc.ChannelCredentials.createInsecure() as grpc.ChannelCredentials;
+          grpc.ChannelCredentials.createSsl() as grpc.ChannelCredentials;
         const interceptor = (
           options: InterceptorOptions,
           nextCall: NextCall
@@ -269,7 +269,10 @@ export class BackendService {
     this._request.addRequests(onboardRequest);
   }
 
-  addUsersToOrganization(usersToOrganization: UsersToOrganizationSchema[], n: string) {
+  addUsersToOrganization(
+    usersToOrganization: UsersToOrganizationSchema[],
+    n: string
+  ) {
     usersToOrganization.forEach((userToOrg) => {
       const onboardRequest = new OnboardingRequest();
       const linkUsers = new Link();
