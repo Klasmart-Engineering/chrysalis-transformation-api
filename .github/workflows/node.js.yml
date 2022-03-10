@@ -11,22 +11,19 @@ env:
   NPM_TOKEN: ${{secrets.NPM_PERSONAL_ACCESS_TOKEN}}
 
 jobs:
-  security-analysis:
-    name: Security scanning against code and docker container
-    runs-on: ubuntu-latest
-    steps:
-      - name: Code scanning
-        uses: KL-Global/kidsloop-reusable-workflows/.github/workflows/reusable-extended-sec-codeql.yml@main    
-        with:
-          language: 'node'
-      - name: Docker container scanning
-        uses: KL-Global/kidsloop-reusable-workflows/.github/workflows/reusable-container-workflow.yml@main
-        with:
-          docker-path: ./Dockerfile
+  code-security-analysis:
+    uses: KL-Global/kidsloop-reusable-workflows/.github/workflows/reusable-extended-sec-codeql.yml@main    
+    with:
+      language: 'node'
+
+  docker-security-analysis:
+    uses: KL-Global/kidsloop-reusable-workflows/.github/workflows/reusable-container-workflow.yml@main
+    with:
+      docker-path: ./Dockerfile
 
   lint:
     name: Run linters
-    needs: security-analysis
+    needs: [code-security-analysis, docker-security-analysis]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Git repository
@@ -55,7 +52,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: test
+    needs: [docker-security-analysis, test]
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout
