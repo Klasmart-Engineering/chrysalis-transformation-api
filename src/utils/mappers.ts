@@ -12,56 +12,6 @@ import {
   UserQuerySchema,
 } from '../interfaces/clientSchemas';
 
-const addUsersToClass = (
-  schoolClasses: ClassQuerySchema[],
-  schoolUsers: UserQuerySchema[]
-) => {
-  const usersForClassName = schoolUsers.reduce(
-    (acc: Record<string, { UserUUID: string; KLRoleName: string }[]>, user) => {
-      const { UserUUID, KLRoleName, ClassName } = user;
-
-      ClassName.forEach((className) => {
-        // TODO: change this when there'll be a correct mapping between user roles and classes
-        const userRole = KLRoleName[0]?.toLowerCase();
-
-        if (acc[className]) {
-          acc[className].push({ UserUUID, KLRoleName: userRole });
-        } else {
-          acc[className] = [{ UserUUID, KLRoleName: userRole }];
-        }
-      });
-
-      return acc;
-    },
-    {}
-  );
-
-  return schoolClasses.reduce((acc: UsersToClassSchema[], classData) => {
-    const { ClassUUID, ClassName } = classData;
-
-    usersForClassName[ClassName].forEach((user) => {
-      const userToClass = acc.find(
-        (u2c) => u2c.ExternalClassUUID === ClassUUID
-      );
-
-      if (userToClass) {
-        appendUserIdBasedOnRole(userToClass, user);
-      } else {
-        const newUserToClass = {
-          ExternalClassUUID: ClassUUID,
-          ExternalTeacherUUIDs: [],
-          ExternalStudentUUIDs: [],
-        };
-
-        appendUserIdBasedOnRole(newUserToClass, user);
-        acc.push(newUserToClass);
-      }
-    });
-
-    return acc;
-  }, []);
-};
-
 const appendUserIdBasedOnRole = (
   userToClass: UsersToClassSchema,
   user: { UserUUID: string; KLRoleName: string }
@@ -213,7 +163,6 @@ const addUsersToClassroom = (users: UserQuerySchema[]) => {
 }
 
 export { 
-  addUsersToClass, 
   addUsersToOrganization,
   mapClassesBySchools,
   mapUsersByOrgs, 
