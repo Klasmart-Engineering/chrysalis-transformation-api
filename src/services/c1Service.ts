@@ -9,6 +9,8 @@ import {
   SchoolQuerySchema,
   UserQuerySchema,
 } from '../interfaces/clientSchemas';
+import logger from '../utils/logging';
+import { stringify } from '../utils/stringify';
 
 const loginData = JSON.stringify({
   Username: String(process.env.C1_API_USERNAME),
@@ -39,7 +41,7 @@ export class C1Service extends BaseRestfulService {
           this.jwtToken = response;
         })
         .catch(() => {
-          throw new Error('Failed to refresh token');
+          logger.error('Failed to refresh token');
         });
     }, REFRESH_TOKEN_INTERVAL);
   }
@@ -54,7 +56,17 @@ export class C1Service extends BaseRestfulService {
 
   async getOrganizations(): Promise<Array<OrganizationQuerySchema>> {
     const client = this.createClient(C1Endpoints.organizationApiEndpoint);
-    return (await this.getData(client)) as Array<OrganizationQuerySchema>;
+    let organizations: OrganizationQuerySchema[] = [];
+    
+    try {
+      organizations = (await this.getData(client)) as Array<OrganizationQuerySchema>;
+    }
+    catch (error) {
+      const stringifyError = stringify(error);
+      logger.error(stringifyError);
+    }
+
+    return organizations ?? [];
   }
 
   async getOrgSchools(pathSegments: string[]): Promise<Array<SchoolQuerySchema>> {
@@ -67,17 +79,44 @@ export class C1Service extends BaseRestfulService {
 
   async getSchools(): Promise<Array<SchoolQuerySchema>> {
     const client = this.createClient(C1Endpoints.schoolsApiEndpoint);
-    return (await this.getData(client)) as SchoolQuerySchema[];
+    let schools: SchoolQuerySchema[] = [];
+    
+    try {
+      schools = (await this.getData(client)) as SchoolQuerySchema[];   
+    } catch (error) {
+      const stringifyError = stringify(error);
+      logger.error(stringifyError);
+    }
+
+    return schools ?? [];
   }
 
   async getClasses(): Promise<Array<ClassQuerySchema>> {
     const client = this.createClient(C1Endpoints.classesApiEndpoint);
-    return (await this.getData(client)) as ClassQuerySchema[];
+    let classes: ClassQuerySchema[] = [];
+
+    try {
+      classes = (await this.getData(client)) as ClassQuerySchema[];
+    } catch (error) {
+      const stringifyError = stringify(error);
+      logger.error(stringifyError);
+    }
+
+    return classes ?? []; 
   }
 
   async getUsers(): Promise<Array<UserQuerySchema>> {
     const client = this.createClient(C1Endpoints.usersApiEndpoint);
-    return (await this.getData(client)) as UserQuerySchema[];
+    let users: UserQuerySchema[] = [];
+
+    try {
+      users = (await this.getData(client)) as UserQuerySchema[];
+    } catch (error) {
+      const stringifyError = stringify(error);
+      logger.error(stringifyError);
+    }
+
+    return users ?? []; 
   }
 
   async postFeedback(feedback: Feedback[]): Promise<Array<FeedbackResponse>> {

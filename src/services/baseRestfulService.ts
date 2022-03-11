@@ -4,6 +4,7 @@ import { HttpError } from '../utils';
 import { C1Endpoints } from '../config/c1Endpoints';
 import { McbEndpoints } from '../config/mcbEnpoints';
 import { stringify } from 'query-string';
+import logger from '../utils/logging';
 
 export enum Methods {
   get = 'GET',
@@ -78,12 +79,16 @@ export abstract class BaseRestfulService {
   }
 
   private hostnameCheck() {
-    if (!this.hostname || this.hostname === 'undefined')
-      throw new Error('Hostname is not set');
+    if (!this.hostname || this.hostname === 'undefined') {
+      logger.error('Hostname is not set');
+      return;
+    }
   }
 
   private jwtTokenCheck() {
-    if (!this.jwtToken || this.hostname === 'undefined')
-      throw new Error('Jwt token is not set');
+    if (!this.jwtToken || this.hostname === 'undefined') {
+      logger.error('Jwt token is not set');
+      return;
+    }
   }
 }
