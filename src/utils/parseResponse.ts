@@ -2,6 +2,7 @@ import { BackendResponse, BackendResponses } from '../interfaces/backendResponse
 import * as proto from '../protos/api_pb';
 import { BackendService } from '../services/backendService';
 import { Feedback } from '../interfaces/clientSchemas';
+import {requestIds} from "../config/requestIds";
 
 let messages: string[] = [];
 const messageKey = 'detailsList';
@@ -80,7 +81,11 @@ const processErrors = (
   const errorMessages = [];
   for (const response of responses) {
     if (!response.success) {
-      errorMessages.push(...mapErrors(response.errors))
+      const action = Object.keys(requestIds)[Object.values(requestIds).indexOf(response.requestId.id)]
+      errorMessages.push(
+        ...mapErrors(response.errors)
+        .map(error => `${action}: ${error.normalize('NFKC')}`)
+      );
       messages = [];
     }
   }

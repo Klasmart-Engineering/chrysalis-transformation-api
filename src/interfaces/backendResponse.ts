@@ -1,5 +1,5 @@
 import { Entity } from "../utils/parseResponse";
-
+import {requestIds} from "../config/requestIds";
 
 export interface BackendResponses {
   responsesList: BackendResponse[];
@@ -7,7 +7,7 @@ export interface BackendResponses {
 
 export interface BackendResponse {
   requestId: {
-    id: string;
+    id: requestIds;
     n: string;
   };
   entity: number;
