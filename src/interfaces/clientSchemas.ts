@@ -38,7 +38,6 @@ export interface UserQuerySchema {
   KLRoleName: string[];
   SchoolName: string;
   SchoolUUID: string;
-  ClassName: string[];
   SchoolRoleName: string[];
   Username: string;
   OrganizationUUID: string;
