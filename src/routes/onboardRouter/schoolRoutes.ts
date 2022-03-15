@@ -6,6 +6,7 @@ import { parseResponse } from '../../utils/parseResponse';
 import logger from '../../utils/logging';
 import { HttpError } from '../../utils';
 import {arraysMatch} from "../../utils/arraysMatch";
+import { dedupeSchools } from "../../utils/dedupe";
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.post('/', async (req: Request, res: Response) => {
   const allStatuses = [];
 
   let schools: SchoolQuerySchema[] = await service.getSchools();
+  let uniqueSchools = dedupeSchools(schools);
   let prevSchoolsIds: string[] = [];
 
   if (!schools.length) {
@@ -28,7 +30,7 @@ router.post('/', async (req: Request, res: Response) => {
       return res.status(200).json({message: 'Schools already onboarded!'})
     }
     backendService.resetRequest();
-    backendService.mapSchoolsToProto(schools);
+    backendService.mapSchoolsToProto(uniqueSchools);
 
     const { statusCode, feedback } = await parseResponse();
     allStatuses.push(statusCode);
@@ -43,6 +45,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
     prevSchoolsIds = curSchoolsIds;
     schools = await service.getSchools();
+    uniqueSchools = dedupeSchools(schools);
   }
 
   const statusCode = allStatuses.includes(200) ? 200 : 400;
