@@ -21,7 +21,7 @@ export abstract class BaseRestfulService {
     pathSegments?: string[],
     queryParams?: Record<string, string>,
     method?: Methods,
-    contentLength?: number,
+    contentLength?: number
   ): HttpOptions {
     this.hostnameCheck();
     this.jwtTokenCheck();

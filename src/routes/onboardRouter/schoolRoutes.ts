@@ -5,7 +5,7 @@ import { SchoolQuerySchema } from '../../interfaces/clientSchemas';
 import { parseResponse } from '../../utils/parseResponse';
 import logger from '../../utils/logging';
 import { HttpError } from '../../utils';
-import {arraysMatch} from "../../utils/arraysMatch";
+import { arraysMatch } from '../../utils/arraysMatch';
 
 const router = express.Router();
 
@@ -19,13 +19,13 @@ router.post('/', async (req: Request, res: Response) => {
   let prevSchoolsIds: string[] = [];
 
   if (!schools.length) {
-    return res.status(204).json({message: 'No more schools to onboard!'})
+    return res.status(204).json({ message: 'No more schools to onboard!' });
   }
 
   while (schools.length > 0) {
-    const curSchoolsIds = schools.map(school => school.SchoolUUID);
+    const curSchoolsIds = schools.map((school) => school.SchoolUUID);
     if (arraysMatch(prevSchoolsIds, curSchoolsIds)) {
-      return res.status(200).json({message: 'Schools already onboarded!'})
+      return res.status(200).json({ message: 'Schools already onboarded!' });
     }
     backendService.resetRequest();
     backendService.mapSchoolsToProto(schools);
@@ -37,9 +37,11 @@ router.post('/', async (req: Request, res: Response) => {
       feedbackResponse = await service.postFeedback(feedback);
       allFeedbackResponses.push(...feedbackResponse);
     } catch (error) {
-      logger.error(error)
-      return res.status(error instanceof HttpError ? error.status : 500)
-                .json({message: 'Something went wrong on sending feedback for onboarding schools!'});
+      logger.error(error);
+      return res.status(error instanceof HttpError ? error.status : 500).json({
+        message:
+          'Something went wrong on sending feedback for onboarding schools!',
+      });
     }
     prevSchoolsIds = curSchoolsIds;
     schools = await service.getSchools();
