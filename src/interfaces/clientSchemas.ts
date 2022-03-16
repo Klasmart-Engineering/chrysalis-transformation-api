@@ -41,7 +41,7 @@ export interface UserQuerySchema {
   SchoolRoleName: string[];
   Username: string;
   OrganizationUUID: string;
-  ClassInformation: ClassInformation[]
+  ClassInformation: ClassInformation[];
 }
 
 export interface ClassInformation {

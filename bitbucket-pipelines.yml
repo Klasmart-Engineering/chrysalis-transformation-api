@@ -11,14 +11,14 @@ definitions:
       image: redis:alpine
   steps:
     - step: &checks
-        name: "lint"
+        name: 'lint'
         caches:
           - node
         script:
           - npm install
           - npm run lint
     - step: &tests
-        name: "unit tests"
+        name: 'unit tests'
         services:
           - postgres
           - redis

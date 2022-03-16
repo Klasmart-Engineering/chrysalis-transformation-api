@@ -268,7 +268,10 @@ export class BackendService {
     this._request.addRequests(onboardRequest);
   }
 
-  addUsersToOrganization(usersToOrganization: UsersToOrganizationSchema[], n: string) {
+  addUsersToOrganization(
+    usersToOrganization: UsersToOrganizationSchema[],
+    n: string
+  ) {
     usersToOrganization.forEach((userToOrg) => {
       const onboardRequest = new OnboardingRequest();
       const linkUsers = new Link();

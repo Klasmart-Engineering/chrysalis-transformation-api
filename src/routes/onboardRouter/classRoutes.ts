@@ -6,7 +6,7 @@ import { parseResponse } from '../../utils/parseResponse';
 import { ClassesBySchools } from '../../interfaces/backendSchemas';
 import { HttpError, mapClassesBySchools } from '../../utils';
 import logger from '../../utils/logging';
-import {arraysMatch} from "../../utils/arraysMatch";
+import { arraysMatch } from "../../utils/arraysMatch";
 import { dedupeClasses } from "../../utils/dedupe";
 
 const router = express.Router();
@@ -22,13 +22,13 @@ router.post('/', async (req: Request, res: Response) => {
   let prevClassesIds: string[] = [];
 
   if (!classes.length) {
-    return res.status(204).json({message: 'No more classes to onboard!'})
+    return res.status(204).json({ message: 'No more classes to onboard!' });
   }
 
   while (classes.length > 0) {
-    const curClassesIds = classes.map(clazz => clazz.ClassUUID);
+    const curClassesIds = classes.map((clazz) => clazz.ClassUUID);
     if (arraysMatch(prevClassesIds, curClassesIds)) {
-      return res.status(200).json({message: 'Classes already onboarded!'})
+      return res.status(200).json({ message: 'Classes already onboarded!' });
     }
     backendService.resetRequest();
     backendService.mapClassesToProto(uniqueClasses);
@@ -36,22 +36,24 @@ router.post('/', async (req: Request, res: Response) => {
     const schoolClasses: ClassesBySchools[] = mapClassesBySchools(uniqueClasses);
     for (const clazz of schoolClasses) {
       backendService.addClassesToSchool(
-          clazz.schoolUuid,
-          clazz.classesUuids,
-          '3'
+        clazz.schoolUuid,
+        clazz.classesUuids,
+        '3'
       );
     }
 
-    const {statusCode, feedback} = await parseResponse();
+    const { statusCode, feedback } = await parseResponse();
     allStatuses.push(statusCode);
     let feedbackResponse;
     try {
       feedbackResponse = await service.postFeedback(feedback);
       allFeedbackResponses.push(...feedbackResponse);
     } catch (error) {
-      logger.error(error)
-      return res.status(error instanceof HttpError ? error.status : 500)
-          .json({message: 'Something went wrong on sending feedback for onboarding classes!'});
+      logger.error(error);
+      return res.status(error instanceof HttpError ? error.status : 500).json({
+        message:
+          'Something went wrong on sending feedback for onboarding classes!',
+      });
     }
     prevClassesIds = curClassesIds;
     classes = await service.getClasses();

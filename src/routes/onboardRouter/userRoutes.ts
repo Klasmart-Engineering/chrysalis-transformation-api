@@ -1,7 +1,5 @@
 import express, { Request, Response } from 'express';
-import {
-  UserQuerySchema,
-} from '../../interfaces/clientSchemas';
+import { UserQuerySchema } from '../../interfaces/clientSchemas';
 import { C1Service } from '../../services/c1Service';
 import { BackendService } from '../../services/backendService';
 import {
@@ -14,7 +12,7 @@ import {
 import { UsersByOrgs, UsersBySchools } from '../../interfaces/backendSchemas';
 import { parseResponse } from '../../utils/parseResponse';
 import logger from '../../utils/logging';
-import {arraysMatch} from "../../utils/arraysMatch";
+import { arraysMatch } from "../../utils/arraysMatch";
 import { dedupeUsers } from "../../utils/dedupe";
 
 const router = express.Router();
@@ -30,13 +28,13 @@ router.post('/', async (req: Request, res: Response) => {
   let prevUsersIds: string[] = [];
 
   if (!users.length) {
-    return res.status(204).json({message: 'No more users to onboard!'})
+    return res.status(204).json({ message: 'No more users to onboard!' });
   }
 
   while (users.length > 0) {
-    const curUsersIds = users.map(user => user.UserUUID);
+    const curUsersIds = users.map((user) => user.UserUUID);
     if (arraysMatch(prevUsersIds, curUsersIds)) {
-      return res.status(200).json({message: 'Users already onboarded!'})
+      return res.status(200).json({ message: 'Users already onboarded!' });
     }
     backendService.resetRequest();
     backendService.mapUsersToProto(uniqueUsers);
@@ -45,8 +43,8 @@ router.post('/', async (req: Request, res: Response) => {
 
     for (const user of orgUsers) {
       const usersToOrganization = addUsersToOrganization(
-          user.organization,
-          user.users
+        user.organization,
+        user.users
       );
 
       backendService.addUsersToOrganization(usersToOrganization, '4');
@@ -62,16 +60,18 @@ router.post('/', async (req: Request, res: Response) => {
 
     backendService.addUsersToClasses(usersToClass, '3');
 
-    const {statusCode, feedback} = await parseResponse();
+    const { statusCode, feedback } = await parseResponse();
     allStatuses.push(statusCode);
     let feedbackResponse;
     try {
       feedbackResponse = await service.postFeedback(feedback);
       allFeedbackResponses.push(...feedbackResponse);
     } catch (error) {
-      logger.error(error)
-      return res.status(error instanceof HttpError ? error.status : 500)
-          .json({message: 'Something went wrong on sending feedback for onboarding users!'});
+      logger.error(error);
+      return res.status(error instanceof HttpError ? error.status : 500).json({
+        message:
+          'Something went wrong on sending feedback for onboarding users!',
+      });
     }
     prevUsersIds = curUsersIds;
     users = await service.getUsers();

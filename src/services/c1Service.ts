@@ -21,7 +21,7 @@ const REFRESH_TOKEN_INTERVAL = 600000;
 
 const authServer = new AuthServer(
   String(process.env.C1_API_HOSTNAME),
-  loginData, 
+  loginData,
   process.env.C1_API_PORT
 );
 
@@ -48,8 +48,7 @@ export class C1Service extends BaseRestfulService {
 
   public static async getInstance() {
     if (this._instance) return this._instance;
-    const token = await authServer
-      .getAccessToken(C1AuthEndpoints.login);
+    const token = await authServer.getAccessToken(C1AuthEndpoints.login);
     this._instance = new C1Service(token);
     return this._instance;
   }
@@ -69,7 +68,9 @@ export class C1Service extends BaseRestfulService {
     return organizations ?? [];
   }
 
-  async getOrgSchools(pathSegments: string[]): Promise<Array<SchoolQuerySchema>> {
+  async getOrgSchools(
+    pathSegments: string[]
+  ): Promise<Array<SchoolQuerySchema>> {
     const client = this.createClient(
       C1Endpoints.organizationApiEndpoint,
       pathSegments

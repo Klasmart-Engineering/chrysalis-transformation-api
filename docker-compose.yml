@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - NPM_TOKEN
     container_name: node-server
     expose:
       - '4200'
