@@ -10,8 +10,10 @@ export const userSchema = {
     'Gender',
     'KLRoleName',
     'SchoolName',
-    'ClassName',
+    'SchoolUUID',
     'SchoolRoleName',
+    'OrganizationUUID',
+    'ClassInformation'
   ],
   properties: {
     OrganizationName: {
@@ -44,10 +46,16 @@ export const userSchema = {
     SchoolName: {
       type: 'string',
     },
-    ClassName: {
-      type: 'array',
+    SchoolUUID: {
+      type: 'string',
     },
     SchoolRoleName: {
+      type: 'array',
+    },
+    OrganizationUUID: {
+      type: 'string',
+    },
+    ClassInformation: {
       type: 'array',
     },
   },
