@@ -1,4 +1,8 @@
-import { OrganizationQuerySchema, UserQuerySchema } from './clientSchemas';
+import {
+  ClassQuerySchema,
+  OrganizationQuerySchema,
+  UserQuerySchema
+} from './clientSchemas';
 
 export interface UsersToOrganizationSchema {
   ExternalOrganizationUUID: string;
@@ -25,4 +29,9 @@ export interface UsersBySchools {
 export interface ClassesBySchools {
   schoolUuid: string;
   classesUuids: string[];
+}
+
+export interface ClassesByOrg {
+  organization: OrganizationQuerySchema;
+  classes: ClassQuerySchema[];
 }

@@ -1,4 +1,5 @@
 import {
+  ClassesByOrg,
   ClassesBySchools,
   UsersByOrgs,
   UsersBySchools,
@@ -54,7 +55,6 @@ const addUsersToOrganization = (
     return acc;
   }, []);
 };
-
 
 const mapClassesBySchools = (classes: ClassQuerySchema[]) => {
   return classes.reduce((acc: ClassesBySchools[], clazz: ClassQuerySchema) => {
@@ -162,10 +162,37 @@ const addUsersToClassroom = (users: UserQuerySchema[]) => {
   }, []);
 }
 
+const mapClassesByOrg = (classes: ClassQuerySchema[]) => {
+  return classes.reduce((acc: ClassesByOrg[], clazz: ClassQuerySchema) => {
+    const organization: OrganizationQuerySchema = {
+      OrganizationUUID: clazz.OrganizationUUID,
+      OrganizationName: clazz.OrganizationName
+    };
+
+    const existingOrg = acc.find(
+      org => org.organization.OrganizationName === clazz.OrganizationName
+    );
+
+    if (existingOrg) {
+      existingOrg.classes.push(clazz);
+    } else {
+      acc.push(
+        {
+          organization,
+          classes: [clazz]
+        }
+      );
+    }
+
+    return acc;
+  }, []);
+}
+
 export { 
   addUsersToOrganization,
   mapClassesBySchools,
   mapUsersByOrgs, 
   addUsersToClassroom,
   mapUsersBySchools,
+  mapClassesByOrg,
 };
