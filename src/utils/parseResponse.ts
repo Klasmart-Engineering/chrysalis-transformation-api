@@ -7,6 +7,16 @@ import {requestIds} from "../config/requestIds";
 let messages: string[] = [];
 const messageKey = 'detailsList';
 
+export enum Entity {
+  ORGANIZATION = 'Organization',
+  SCHOOL = 'School',
+  CLASS = 'Class',
+  USER = 'User',
+  ROLE = 'Role',
+  PROGRAM = 'Program',
+  UNKNOWN = 'Unknown',
+}
+
 export async function parseResponse() {
   const backendService = BackendService.getInstance();
   const response = (await backendService.sendRequest()) as BackendResponses;
@@ -69,7 +79,7 @@ const processFeedback = (
 ) => {
   const isOnboard = [];
   for (const response of responses) {
-    isOnboard.push((response.success || typeof response.errors.entityAlreadyExists === 'object'));
+    isOnboard.push((response.success || typeof response.errors?.entityAlreadyExists === 'object'));
   }
 
   return !isOnboard.includes(false);
@@ -140,13 +150,10 @@ export function protobufToEntity(e: proto.Entity): Entity {
       );
   }
 }
+// write tests for this
+export const alreadyProcess = (entities: BackendResponses) => {
+  const message = `already processed however c1 api is returning processed entities`;
+  const alreadyProcessed = entities.responsesList.map(entity => { return {SchoolUUID: entity.entityId} })
 
-export enum Entity {
-  ORGANIZATION = 'Organization',
-  SCHOOL = 'School',
-  CLASS = 'Class',
-  USER = 'User',
-  ROLE = 'Role',
-  PROGRAM = 'Program',
-  UNKNOWN = 'Unknown',
+  return {message, alreadyProcessed};
 }

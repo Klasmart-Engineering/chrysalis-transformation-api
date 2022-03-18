@@ -7,3 +7,6 @@ export class HttpError {
     this.body = { ...body, code: status };
   }
 }
+
+export class alreadyProcessedResponse {
+}
