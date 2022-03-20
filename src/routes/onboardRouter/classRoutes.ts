@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { ClassQuerySchema } from '../../interfaces/clientSchemas';
 import { C1Service } from '../../services/c1Service';
 import { BackendService } from '../../services/backendService';
-import { parseResponse } from '../../utils/parseResponse';
+import { alreadyProcess, Entity, parseResponse } from '../../utils/parseResponse';
 import { ClassesBySchools } from '../../interfaces/backendSchemas';
 import { HttpError, mapClassesBySchools } from '../../utils';
 import logger from '../../utils/logging';
@@ -20,13 +20,17 @@ router.post('/', async (req: Request, res: Response) => {
   let prevClassesIds: string[] = [];
 
   if (!classes.length) {
-    return res.status(204).json({ message: 'No more classes to onboard!' });
+    const response = alreadyProcess(null, Entity.CLASS);
+    return res.status(204).json(response);
   }
 
   while (classes.length > 0) {
     const curClassesIds = classes.map((clazz) => clazz.ClassUUID);
+    let feedbackResponse;
+
     if (arraysMatch(prevClassesIds, curClassesIds)) {
-      return res.status(200).json({ message: 'Classes already onboarded!' });
+      const response = alreadyProcess(classes, Entity.CLASS, feedbackResponse);
+      return res.status(200).json(response);
     }
     backendService.resetRequest();
     backendService.mapClassesToProto(classes);
@@ -42,7 +46,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     const { statusCode, feedback } = await parseResponse();
     allStatuses.push(statusCode);
-    let feedbackResponse;
+
     try {
       feedbackResponse = await service.postFeedback(feedback);
       allFeedbackResponses.push(...feedbackResponse);

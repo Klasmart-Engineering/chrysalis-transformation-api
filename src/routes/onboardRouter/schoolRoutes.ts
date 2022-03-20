@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { C1Service } from '../../services/c1Service';
 import { BackendService } from '../../services/backendService';
 import { SchoolQuerySchema } from '../../interfaces/clientSchemas';
-import { parseResponse } from '../../utils/parseResponse';
+import { alreadyProcess, Entity, parseResponse } from '../../utils/parseResponse';
 import logger from '../../utils/logging';
 import { HttpError } from '../../utils';
 import { arraysMatch } from '../../utils/arraysMatch';
@@ -17,22 +17,25 @@ router.post('/', async (req: Request, res: Response) => {
 
   let schools: SchoolQuerySchema[] = await service.getSchools();
   let prevSchoolsIds: string[] = [];
+  let feedbackResponse;
 
   if (!schools.length) {
-    return res.status(204).json({ message: 'No more schools to onboard!' });
+    const response = alreadyProcess(null, Entity.SCHOOL);
+    return res.status(204).json(response);
   }
 
   while (schools.length > 0) {
     const curSchoolsIds = schools.map((school) => school.SchoolUUID);
     if (arraysMatch(prevSchoolsIds, curSchoolsIds)) {
-      return res.status(200).json({ message: 'Schools already onboarded!' });
+      const response = alreadyProcess(schools, Entity.SCHOOL, feedbackResponse);
+      return res.status(200).json(response);
     }
     backendService.resetRequest();
     backendService.mapSchoolsToProto(schools);
 
     const { statusCode, feedback } = await parseResponse();
     allStatuses.push(statusCode);
-    let feedbackResponse;
+
     try {
       feedbackResponse = await service.postFeedback(feedback);
       allFeedbackResponses.push(...feedbackResponse);
