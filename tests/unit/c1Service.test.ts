@@ -69,6 +69,7 @@ describe('C1 Service', () => {
       return service.getSchools().then((res) => {
         expect(service.createClient).to.have.been.called.once;
         expect(res).to.be.an('array');
+        expect(res).to.have.length(3);
         if (Array.isArray(res))
           res.forEach((product) =>
             expect(product).to.be.jsonSchema(schoolSchema)
@@ -95,7 +96,7 @@ describe('C1 Service', () => {
       return service.getClasses().then((res) => {
         expect(service.createClient).to.have.been.called.once;
         expect(res).to.be.an('array');
-        expect(res).to.have.length(2);
+        expect(res).to.have.length(3);
         if (Array.isArray(res)) {
           res.forEach((c) => expect(c).to.be.jsonSchema(classSchema));
         }

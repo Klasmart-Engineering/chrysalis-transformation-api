@@ -1,7 +1,4 @@
-enum classRole {
-  'Student',
-  'Teacher',
-}
+import {classRoles} from "../../../../src/interfaces/clientSchemas";
 
 export const getUsers = [
   {
@@ -16,13 +13,15 @@ export const getUsers = [
     Gender: 'Female',
     KLRoleName: ['Chrysalis Student'],
     SchoolName: 'Test school',
-    ClassName: ['III A NEW0007561'],
+    SchoolUUID: 'bb5667dc-55e3-4f5a-b214-a12996556513',
     SchoolRoleName: ['Chrysalis Student'],
     Username: '',
-    ClassInformation: {
-      ClassUUID: '0c5ed9bb-afb1-4342-87c6-bdb0f323598e',
-      ClassRole: classRole.Student,
-    },
+    ClassInformation: [
+      {
+        ClassUUID: '0c5ed9bb-afb1-4342-87c6-bdb0f323598e',
+        ClassRole: 'Student' as classRoles,
+      }
+    ],
   },
   {
     OrganizationName: 'Chrysalis BLP Classic',
@@ -36,18 +35,20 @@ export const getUsers = [
     Gender: 'Female',
     KLRoleName: ['Chrysalis Student'],
     SchoolName: 'Test school',
-    ClassName: ['III A NEW0007561'],
+    SchoolUUID: 'bb5667dc-55e3-4f5a-b214-a12996556513',
     SchoolRoleName: ['Chrysalis Student'],
     Username: '',
-    ClassInformation: {
-      ClassUUID: '0c5ed9bb-afb1-4342-87c6-bdb0f323598e',
-      ClassRole: classRole.Student,
-    },
+    ClassInformation: [
+      {
+        ClassUUID: '0c5ed9bb-afb1-4342-87c6-bdb0f323598e',
+        ClassRole: 'Student' as classRoles,
+      }
+    ],
   },
   {
     OrganizationName: 'Chrysalis BLP Classic',
     OrganizationUUID: '849bce42-1c81-4b53-a37b-5064bf8097a5',
-    UserUUID: '166DD97A-A449-48CC-9E5F-04833F3F8A9B',
+    UserUUID: '7BCB47E6-8B56-4E3D-B0AB-FE96ACC72F94',
     UserGivenName: 'Test 3',
     UserFamilyName: 'Test 3',
     Email: '',
@@ -56,12 +57,14 @@ export const getUsers = [
     Gender: 'Male',
     KLRoleName: ['Chrysalis Student'],
     SchoolName: 'Test school',
-    ClassName: ['III A NEW0007561'],
+    SchoolUUID: 'bb5667dc-55e3-4f5a-b214-a12996556513',
     SchoolRoleName: ['Chrysalis Student'],
     Username: '',
-    ClassInformation: {
-      ClassUUID: '0c5ed9bb-afb1-4342-87c6-bdb0f323598e',
-      ClassRole: classRole.Teacher,
-    },
+    ClassInformation: [
+      {
+        ClassUUID: '0c5ed9bb-afb1-4342-87c6-bdb0f323598e',
+        ClassRole: 'Teacher' as classRoles,
+      }
+    ],
   },
 ];

@@ -1,4 +1,4 @@
-type classRoles = 'Student' | 'Teacher';
+export type classRoles = 'Student' | 'Teacher';
 
 export interface OrganizationQuerySchema {
   OrganizationName: string;

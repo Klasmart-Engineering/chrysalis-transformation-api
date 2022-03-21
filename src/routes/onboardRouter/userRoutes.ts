@@ -12,7 +12,8 @@ import {
 import { UsersByOrgs, UsersBySchools } from '../../interfaces/backendSchemas';
 import { parseResponse } from '../../utils/parseResponse';
 import logger from '../../utils/logging';
-import { arraysMatch } from '../../utils/arraysMatch';
+import { arraysMatch } from "../../utils/arraysMatch";
+import { dedupeUsers } from "../../utils/dedupe";
 
 const router = express.Router();
 
@@ -23,6 +24,7 @@ router.post('/', async (req: Request, res: Response) => {
   const allStatuses = [];
 
   let users: UserQuerySchema[] = await service.getUsers();
+  let uniqueUsers = dedupeUsers(users);
   let prevUsersIds: string[] = [];
 
   if (!users.length) {
@@ -35,9 +37,9 @@ router.post('/', async (req: Request, res: Response) => {
       return res.status(200).json({ message: 'Users already onboarded!' });
     }
     backendService.resetRequest();
-    backendService.mapUsersToProto(users);
+    backendService.mapUsersToProto(uniqueUsers);
 
-    const orgUsers: UsersByOrgs[] = mapUsersByOrgs(users);
+    const orgUsers: UsersByOrgs[] = mapUsersByOrgs(uniqueUsers);
 
     for (const user of orgUsers) {
       const usersToOrganization = addUsersToOrganization(
@@ -70,6 +72,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
     prevUsersIds = curUsersIds;
     users = await service.getUsers();
+    uniqueUsers = dedupeUsers(users);
   }
 
   const statusCode = allStatuses.includes(200) ? 200 : 400;

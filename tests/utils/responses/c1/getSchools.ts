@@ -17,4 +17,13 @@ export const getSchools = [
     ProgramName: ['BLP Grade 1', 'BLP Grade 2', 'BLP PP1', 'BLP PP2'],
     Source: 'Chrysalis',
   },
+  {
+    OrganizationName: 'Chrysalis BLP Premium',
+    OrganizationUUID: '81c430b4-3750-4103-bb7d-9eee22c539bc',
+    SchoolUUID: 'C83928CB-2CA5-441A-8CFB-2576F732FFA3',
+    SchoolName: 'Bharti Model School',
+    SchoolShortCode: 'ZZZRAZOZNB',
+    ProgramName: ['BLP Grade 1', 'BLP Grade 2', 'BLP PP1', 'BLP PP2'],
+    Source: 'Chrysalis',
+  },
 ];
