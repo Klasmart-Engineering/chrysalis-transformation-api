@@ -21,7 +21,7 @@ router.post('/', async (req: Request, res: Response) => {
 
   if (!classes.length) {
     const response = alreadyProcess(null, Entity.CLASS);
-    return res.status(204).json(response);
+    return res.status(200).json(response);
   }
 
   while (classes.length > 0) {

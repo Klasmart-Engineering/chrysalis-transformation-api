@@ -184,7 +184,7 @@ export const alreadyProcess = (
   response._alreadyProcessed = alreadyProcessed;
   response._feedback = feedback;
 
-  return response.instance;
+  return response;
 }
 
 export const getPluralName = (entityName: string) => {

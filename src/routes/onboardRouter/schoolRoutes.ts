@@ -21,7 +21,7 @@ router.post('/', async (req: Request, res: Response) => {
 
   if (!schools.length) {
     const response = alreadyProcess(null, Entity.SCHOOL);
-    return res.status(204).json(response);
+    return res.status(200).json(response);
   }
 
   while (schools.length > 0) {
@@ -41,10 +41,12 @@ router.post('/', async (req: Request, res: Response) => {
       allFeedbackResponses.push(...feedbackResponse);
     } catch (error) {
       logger.error(error);
-      return res.status(error instanceof HttpError ? error.status : 500).json({
-        message:
-          'Something went wrong on sending feedback for onboarding schools!',
-      });
+      return res.status(error instanceof HttpError ? error.status : 500).json(
+        {
+          message: 'Something went wrong on sending feedback for onboarding schools!',
+          feedback
+        }
+      );
     }
     prevSchoolsIds = curSchoolsIds;
     schools = await service.getSchools();

@@ -11,8 +11,6 @@ export class HttpError {
 }
 
 export class AlreadyProcessedResponse {
-  static entityName = 'Entities';
-
   private message: string;
   private alreadyProcessed: Record<string, string>[];
   private feedback: FeedbackResponse[]
@@ -37,9 +35,5 @@ export class AlreadyProcessedResponse {
 
   set _feedback(feedback: FeedbackResponse[]) {
     this.feedback = feedback;
-  }
-
-  get instance() {
-    return new AlreadyProcessedResponse(AlreadyProcessedResponse.entityName, this.alreadyProcessed, this.feedback);
   }
 }
