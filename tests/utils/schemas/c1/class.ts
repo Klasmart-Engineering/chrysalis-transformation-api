@@ -8,6 +8,8 @@ export const classSchema = {
     'ClassShortCode',
     'ProgramName',
     'SchoolName',
+    'OrganizationUUID',
+    'SchoolUUID'
   ],
   properties: {
     OrganizationName: {
@@ -26,6 +28,12 @@ export const classSchema = {
       type: 'array',
     },
     SchoolName: {
+      type: 'string',
+    },
+    OrganizationUUID: {
+      type: 'string',
+    },
+    SchoolUUID: {
       type: 'string',
     },
   },
