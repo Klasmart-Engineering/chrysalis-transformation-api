@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { ClassQuerySchema } from '../../interfaces/clientSchemas';
 import { C1Service } from '../../services/c1Service';
 import { BackendService } from '../../services/backendService';
-import { parseResponse } from '../../utils/parseResponse';
+import { alreadyProcess, Entity, parseResponse } from '../../utils/parseResponse';
 import {
   ClassesByOrg,
   ClassesBySchools
@@ -29,13 +29,17 @@ router.post('/', async (req: Request, res: Response) => {
   let prevClassesIds: string[] = [];
 
   if (!classes.length) {
-    return res.status(204).json({ message: 'No more classes to onboard!' });
+    const response = alreadyProcess(null, Entity.CLASS);
+    return res.status(200).json(response);
   }
 
   while (classes.length > 0) {
     const curClassesIds = classes.map((clazz) => clazz.ClassUUID);
+    let feedbackResponse;
+
     if (arraysMatch(prevClassesIds, curClassesIds)) {
-      return res.status(200).json({ message: 'Classes already onboarded!' });
+      const response = alreadyProcess(classes, Entity.CLASS, feedbackResponse);
+      return res.status(200).json(response);
     }
     backendService.resetRequest();
     backendService.mapClassesToProto(uniqueClasses);
@@ -54,16 +58,18 @@ router.post('/', async (req: Request, res: Response) => {
 
     const { statusCode, feedback } = await parseResponse();
     allStatuses.push(statusCode);
-    let feedbackResponse;
+
     try {
       feedbackResponse = await service.postFeedback(feedback);
       allFeedbackResponses.push(...feedbackResponse);
     } catch (error) {
       logger.error(error);
-      return res.status(error instanceof HttpError ? error.status : 500).json({
-        message:
-          'Something went wrong on sending feedback for onboarding classes!',
-      });
+      return res.status(error instanceof HttpError ? error.status : 500).json(
+        {
+          message: 'Something went wrong on sending feedback for onboarding classes!',
+          feedback
+        }
+      );
     }
     prevClassesIds = curClassesIds;
     classes = await service.getClasses();

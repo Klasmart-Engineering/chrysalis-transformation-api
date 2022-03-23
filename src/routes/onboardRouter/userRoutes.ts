@@ -10,7 +10,7 @@ import {
   mapUsersBySchools,
 } from '../../utils';
 import { UsersByOrgs, UsersBySchools } from '../../interfaces/backendSchemas';
-import { parseResponse } from '../../utils/parseResponse';
+import { alreadyProcess, Entity, parseResponse } from '../../utils/parseResponse';
 import logger from '../../utils/logging';
 import { arraysMatch } from "../../utils/arraysMatch";
 import { dedupeUsers } from "../../utils/dedupe";
@@ -26,15 +26,18 @@ router.post('/', async (req: Request, res: Response) => {
   let users: UserQuerySchema[] = await service.getUsers();
   let uniqueUsers = dedupeUsers(users);
   let prevUsersIds: string[] = [];
+  let feedbackResponse;
 
   if (!users.length) {
-    return res.status(204).json({ message: 'No more users to onboard!' });
+    const response = alreadyProcess(null, Entity.USER);
+    return res.status(200).json(response);
   }
 
   while (users.length > 0) {
     const curUsersIds = users.map((user) => user.UserUUID);
     if (arraysMatch(prevUsersIds, curUsersIds)) {
-      return res.status(200).json({ message: 'Users already onboarded!' });
+      const response = alreadyProcess(users, Entity.USER, feedbackResponse);
+      return res.status(200).json(response);
     }
     backendService.resetRequest();
     backendService.mapUsersToProto(uniqueUsers);
@@ -59,16 +62,18 @@ router.post('/', async (req: Request, res: Response) => {
 
     const { statusCode, feedback } = await parseResponse();
     allStatuses.push(statusCode);
-    let feedbackResponse;
+
     try {
       feedbackResponse = await service.postFeedback(feedback);
       allFeedbackResponses.push(...feedbackResponse);
     } catch (error) {
       logger.error(error);
-      return res.status(error instanceof HttpError ? error.status : 500).json({
-        message:
-          'Something went wrong on sending feedback for onboarding users!',
-      });
+      return res.status(error instanceof HttpError ? error.status : 500).json(
+        {
+          message: 'Something went wrong on sending feedback for onboarding users!',
+          feedback
+        }
+      );
     }
     prevUsersIds = curUsersIds;
     users = await service.getUsers();

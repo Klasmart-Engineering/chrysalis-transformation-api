@@ -1,11 +1,31 @@
 import { BackendResponse, BackendResponses } from '../interfaces/backendResponse';
 import * as proto from '../protos/api_pb';
 import { BackendService } from '../services/backendService';
-import { Feedback } from '../interfaces/clientSchemas';
+import { 
+  ClassQuerySchema,
+  Feedback,
+  FeedbackResponse,
+  OrganizationQuerySchema, 
+  SchoolQuerySchema, 
+  UserQuerySchema 
+} from '../interfaces/clientSchemas';
 import {requestIds} from "../config/requestIds";
+import { AlreadyProcessedResponse } from './httpResponses';
 
 let messages: string[] = [];
 const messageKey = 'detailsList';
+
+export enum Entity {
+  ORGANIZATION = 'Organization',
+  SCHOOL = 'School',
+  CLASS = 'Class',
+  USER = 'User',
+  ROLE = 'Role',
+  PROGRAM = 'Program',
+  UNKNOWN = 'Unknown',
+}
+
+export type Entities = OrganizationQuerySchema[] | SchoolQuerySchema[] | ClassQuerySchema[] | UserQuerySchema[];
 
 export async function parseResponse() {
   const backendService = BackendService.getInstance();
@@ -69,7 +89,7 @@ const processFeedback = (
 ) => {
   const isOnboard = [];
   for (const response of responses) {
-    isOnboard.push((response.success || typeof response.errors.entityAlreadyExists === 'object'));
+    isOnboard.push((response.success || typeof response.errors?.entityAlreadyExists === 'object'));
   }
 
   return !isOnboard.includes(false);
@@ -141,12 +161,54 @@ export function protobufToEntity(e: proto.Entity): Entity {
   }
 }
 
-export enum Entity {
-  ORGANIZATION = 'Organization',
-  SCHOOL = 'School',
-  CLASS = 'Class',
-  USER = 'User',
-  ROLE = 'Role',
-  PROGRAM = 'Program',
-  UNKNOWN = 'Unknown',
+export const alreadyProcess = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  entities: any[] | null,
+  entityName: Entity.SCHOOL | Entity.CLASS | Entity.USER,
+  feedback: FeedbackResponse[] = []
+) => {
+  const pluralName = getPluralName(entityName);
+  
+  if (!entities) {
+    return new AlreadyProcessedResponse(`${ pluralName } already processed`, [], []);
+  }
+
+  const uuidKey = getUuidKey(entityName);
+
+  const response = new AlreadyProcessedResponse();
+  
+  const message = `${ pluralName } already processed however c1 api is returning processed entities`;
+  const alreadyProcessed = entities.map(entity => { return {[uuidKey]: entity[uuidKey]} });
+
+  response._message = message;
+  response._alreadyProcessed = alreadyProcessed;
+  response._feedback = feedback;
+
+  return response;
+}
+
+export const getPluralName = (entityName: string) => {
+  switch (entityName) {
+    case Entity.SCHOOL:
+      return 'Schools'
+    case Entity.CLASS:
+      return 'Classes'
+    case Entity.USER:
+      return 'Users'
+    default:
+      return 'Entities'
+  }
+}
+
+const getUuidKey = (entityName: string) => {
+  switch (entityName) {
+    case Entity.SCHOOL:
+      return 'SchoolUUID'
+    case Entity.CLASS:
+      return 'ClassUUID'
+    case Entity.USER:
+      return 'UserUUID'
+    default:
+      return 'UUID'
+  }
 }

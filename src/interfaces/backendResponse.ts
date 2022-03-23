@@ -14,7 +14,7 @@ export interface BackendResponse {
   entityName: Entity;
   entityId: string;
   success: boolean;
-  errors: Record<ErrorKeys, object>;
+  errors?: Record<ErrorKeys, object>;
 }
 
 type ErrorKeys =
