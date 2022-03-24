@@ -17,7 +17,9 @@ export const dedupeSchools = (schools: SchoolQuerySchema[]) => {
     }
     return acc;
   }, {uniqueSchools: [], duplicateSchoolIds: []})
-  logger.info('Duplicate school ids:', dedupeResult.duplicateSchoolIds);
+  if (dedupeResult.duplicateSchoolIds.length) {
+    logger.info('Duplicate school ids:', dedupeResult.duplicateSchoolIds);
+  }
   return dedupeResult.uniqueSchools;
 }
 
@@ -33,7 +35,9 @@ export const dedupeClasses = (classes: ClassQuerySchema[]) => {
     }
     return acc;
   }, {uniqueClasses: [], duplicateClassIds: []});
-  logger.info('Duplicate class ids:', dedupeResult.duplicateClassIds);
+  if (dedupeResult.duplicateClassIds.length) {
+    logger.info('Duplicate class ids:', dedupeResult.duplicateClassIds);
+  }
   return dedupeResult.uniqueClasses;
 }
 
@@ -49,6 +53,8 @@ export const dedupeUsers = (users: UserQuerySchema[]) => {
     }
     return acc;
   }, {uniqueUsers: [], duplicateUserIds: []});
-  logger.info('Duplicate user ids:', dedupeResult.duplicateUserIds);
+  if (dedupeResult.duplicateUserIds.length) {
+    logger.info('Duplicate user ids:', dedupeResult.duplicateUserIds);
+  }
   return dedupeResult.uniqueUsers;
 }
