@@ -27,6 +27,7 @@ router.post('/', async (req: Request, res: Response) => {
   let classes: ClassQuerySchema[] = await service.getClasses();
   let uniqueClasses = dedupeClasses(classes);
   let prevClassesIds: string[] = [];
+  let feedbackResponse;
 
   if (!classes.length) {
     const response = alreadyProcess(null, Entity.CLASS);
@@ -35,7 +36,6 @@ router.post('/', async (req: Request, res: Response) => {
 
   while (classes.length > 0) {
     const curClassesIds = classes.map((clazz) => clazz.ClassUUID);
-    let feedbackResponse;
 
     if (arraysMatch(prevClassesIds, curClassesIds)) {
       const response = alreadyProcess(classes, Entity.CLASS, feedbackResponse);
