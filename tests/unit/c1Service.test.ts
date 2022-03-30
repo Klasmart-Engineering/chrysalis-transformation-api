@@ -2,7 +2,7 @@ import chai, { expect } from 'chai';
 import spies from 'chai-spies';
 import nock from 'nock';
 import jsonSchema from 'chai-json-schema';
-import logger from '../../src/utils/logging';
+import { log } from '../../src/utils/logging';
 import { C1Service } from '../../src/services/c1Service';
 import { C1Endpoints } from '../../src/config/c1Endpoints';
 import {
@@ -46,10 +46,10 @@ const feedbackBody = JSON.stringify(feedbackData);
 describe('C1 Service', () => {
   before(() => {
     service = new C1Service('test');
-    chai.spy.on(logger, 'error', () => true);
+    chai.spy.on(log, 'error', () => true);
   });
   after(() => {
-    chai.spy.restore(logger, 'error');
+    chai.spy.restore(log, 'error');
   });
   describe('#getSchools', () => {
     beforeEach(() => {

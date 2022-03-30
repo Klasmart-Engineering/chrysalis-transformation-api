@@ -60,88 +60,81 @@ const mapClassesBySchools = (classes: ClassQuerySchema[]) => {
   return classes.reduce((acc: ClassesBySchools[], clazz: ClassQuerySchema) => {
     const { SchoolUUID, ClassUUID } = clazz;
     const existingSchool = acc.find(
-      school => school.schoolUuid === SchoolUUID
+      (school) => school.schoolUuid === SchoolUUID
     );
 
     if (existingSchool) {
       existingSchool.classesUuids.push(ClassUUID);
     } else {
-      acc.push(
-        {
-          schoolUuid: SchoolUUID,
-          classesUuids: [ClassUUID]
-        }
-      );
+      acc.push({
+        schoolUuid: SchoolUUID,
+        classesUuids: [ClassUUID],
+      });
     }
 
     return acc;
   }, []);
-}
+};
 
 const mapUsersByOrgs = (users: UserQuerySchema[]) => {
   return users.reduce((acc: UsersByOrgs[], user: UserQuerySchema) => {
     const organization: OrganizationQuerySchema = {
-      OrganizationUUID: user.OrganizationUUID, 
-      OrganizationName: user.OrganizationName
+      OrganizationUUID: user.OrganizationUUID,
+      OrganizationName: user.OrganizationName,
     };
-  
+
     const existingOrg = acc.find(
-      org => org.organization.OrganizationName === user.OrganizationName
+      (org) => org.organization.OrganizationName === user.OrganizationName
     );
-  
+
     if (existingOrg) {
       existingOrg.users.push(user);
     } else {
-      acc.push(
-        {
-          organization,
-          users: [user]
-        }
-      );
+      acc.push({
+        organization,
+        users: [user],
+      });
     }
-  
+
     return acc;
   }, []);
-}
+};
 
 const mapUsersBySchools = (users: UserQuerySchema[]) => {
   return users.reduce((acc: UsersBySchools[], user: UserQuerySchema) => {
     const { SchoolUUID, UserUUID } = user;
     const existingSchool = acc.find(
-      school => school.schoolUuid === SchoolUUID
+      (school) => school.schoolUuid === SchoolUUID
     );
 
     if (existingSchool) {
       existingSchool.usersUuids.push(UserUUID);
     } else {
-      acc.push(
-        {
-          schoolUuid: SchoolUUID,
-          usersUuids: [UserUUID]
-        }
-      );
+      acc.push({
+        schoolUuid: SchoolUUID,
+        usersUuids: [UserUUID],
+      });
     }
-  
+
     return acc;
   }, []);
-}
+};
 
 const addUsersToClassroom = (users: UserQuerySchema[]) => {
   return users.reduce((acc: UsersToClassSchema[], user) => {
     user.ClassInformation &&
-     user.ClassInformation.forEach(
-      (classInfo: ClassInformation) => {
+      user.ClassInformation.forEach((classInfo: ClassInformation) => {
         const { ClassRole, ClassUUID } = classInfo;
 
         const userToClass = acc.find(
           (u2c) => u2c.ExternalClassUUID === classInfo.ClassUUID
         );
-  
+
         if (userToClass) {
-          appendUserIdBasedOnRole(
-            userToClass, 
-            { UserUUID: user.UserUUID, KLRoleName: ClassRole }
-          );
+          appendUserIdBasedOnRole(userToClass, {
+            UserUUID: user.UserUUID,
+            KLRoleName: ClassRole,
+          });
         } else {
           const newUserToClass = {
             ExternalClassUUID: ClassUUID,
@@ -149,49 +142,46 @@ const addUsersToClassroom = (users: UserQuerySchema[]) => {
             ExternalStudentUUIDs: [],
           };
 
-          appendUserIdBasedOnRole(
-            newUserToClass, 
-            { UserUUID: user.UserUUID, KLRoleName: ClassRole }
-          );
+          appendUserIdBasedOnRole(newUserToClass, {
+            UserUUID: user.UserUUID,
+            KLRoleName: ClassRole,
+          });
           acc.push(newUserToClass);
         }
-      }
-    )
+      });
 
     return acc;
   }, []);
-}
+};
 
 const mapClassesByOrg = (classes: ClassQuerySchema[]) => {
   return classes.reduce((acc: ClassesByOrg[], clazz: ClassQuerySchema) => {
     const organization: OrganizationQuerySchema = {
       OrganizationUUID: clazz.OrganizationUUID,
-      OrganizationName: clazz.OrganizationName
+      OrganizationName: clazz.OrganizationName,
     };
 
     const existingOrg = acc.find(
-      org => org.organization.OrganizationName === clazz.OrganizationName
+      (org) => org.organization.OrganizationName === clazz.OrganizationName
     );
 
     if (existingOrg) {
       existingOrg.classes.push(clazz);
     } else {
-      acc.push(
-        {
-          organization,
-          classes: [clazz]
-        }
-      );
+      acc.push({
+        organization,
+        classes: [clazz],
+      });
     }
 
     return acc;
   }, []);
-}
+};
 
-export { 
+export {
   addUsersToOrganization,
   mapClassesBySchools,
-  mapUsersByOrgs, 
+  mapUsersByOrgs,
   addUsersToClassroom,
   mapUsersBySchools,
   mapClassesByOrg,

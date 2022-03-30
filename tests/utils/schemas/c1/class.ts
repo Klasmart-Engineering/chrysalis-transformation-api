@@ -9,7 +9,7 @@ export const classSchema = {
     'ProgramName',
     'SchoolName',
     'OrganizationUUID',
-    'SchoolUUID'
+    'SchoolUUID',
   ],
   properties: {
     OrganizationName: {

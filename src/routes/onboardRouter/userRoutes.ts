@@ -10,10 +10,14 @@ import {
   mapUsersBySchools,
 } from '../../utils';
 import { UsersByOrgs, UsersBySchools } from '../../interfaces/backendSchemas';
-import { alreadyProcess, Entity, parseResponse } from '../../utils/parseResponse';
-import logger from '../../utils/logging';
-import { arraysMatch } from "../../utils/arraysMatch";
-import { dedupeUsers } from "../../utils/dedupe";
+import {
+  alreadyProcess,
+  Entity,
+  parseResponse,
+} from '../../utils/parseResponse';
+import { log } from '../../utils/logging';
+import { arraysMatch } from '../../utils/arraysMatch';
+import { dedupeUsers } from '../../utils/dedupe';
 
 const router = express.Router();
 
@@ -67,13 +71,15 @@ router.post('/', async (req: Request, res: Response) => {
       feedbackResponse = await service.postFeedback(feedback);
       allFeedbackResponses.push(...feedbackResponse);
     } catch (error) {
-      logger.error(error);
-      return res.status(error instanceof HttpError ? error.status : 500).json(
-        {
-          message: 'Something went wrong on sending feedback for onboarding users!',
-          feedback
-        }
+      log.error(
+        { error, targetApi: 'C1' },
+        'Failed to post feedback for users'
       );
+      return res.status(error instanceof HttpError ? error.status : 500).json({
+        message:
+          'Something went wrong on sending feedback for onboarding users!',
+        feedback,
+      });
     }
     prevUsersIds = curUsersIds;
     users = await service.getUsers();

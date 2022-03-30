@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import logger from '../utils/logging';
+import { log } from '../utils/logging';
 
 export const checkAPIToken = (
   req: Request,
@@ -9,7 +9,7 @@ export const checkAPIToken = (
   const apiSecret = req.get('X_API_SECRET');
 
   if (apiSecret !== process.env.API_SECRET) {
-    logger.error('Unauthorized')
+    log.error('Unauthorized');
     return res.status(401).json({ message: 'Unauthorized' });
   }
 

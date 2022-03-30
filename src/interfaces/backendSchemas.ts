@@ -1,7 +1,7 @@
 import {
   ClassQuerySchema,
   OrganizationQuerySchema,
-  UserQuerySchema
+  UserQuerySchema,
 } from './clientSchemas';
 
 export interface UsersToOrganizationSchema {

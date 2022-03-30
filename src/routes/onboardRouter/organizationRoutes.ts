@@ -10,12 +10,13 @@ router.post('/', async (req: Request, res: Response) => {
   const service = await C1Service.getInstance();
   const backendService = BackendService.getInstance();
 
-  const organizations: OrganizationQuerySchema[] = await service.getOrganizations();
+  const organizations: OrganizationQuerySchema[] =
+    await service.getOrganizations();
 
   backendService.resetRequest();
   backendService.mapOrganizationsToProto(organizations);
 
-  const {statusCode, feedback} = await parseResponse();
+  const { statusCode, feedback } = await parseResponse();
 
   return res.status(statusCode).json(feedback);
 });

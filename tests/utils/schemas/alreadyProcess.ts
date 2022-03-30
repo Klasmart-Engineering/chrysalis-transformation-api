@@ -1,11 +1,7 @@
 export const alreadyProcessed = {
   title: 'alreadyProcessed',
   type: 'object',
-  required: [
-    'message',
-    'alreadyProcessed',
-    'feedback',
-  ],
+  required: ['message', 'alreadyProcessed', 'feedback'],
   properties: {
     message: {
       type: 'string',

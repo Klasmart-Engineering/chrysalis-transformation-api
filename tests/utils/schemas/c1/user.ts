@@ -13,7 +13,7 @@ export const userSchema = {
     'SchoolUUID',
     'SchoolRoleName',
     'OrganizationUUID',
-    'ClassInformation'
+    'ClassInformation',
   ],
   properties: {
     OrganizationName: {

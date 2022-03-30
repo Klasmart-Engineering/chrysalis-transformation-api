@@ -1,4 +1,4 @@
-import { FeedbackResponse } from "../interfaces/clientSchemas";
+import { FeedbackResponse } from '../interfaces/clientSchemas';
 
 export class HttpError {
   status: number;
@@ -13,14 +13,14 @@ export class HttpError {
 export class AlreadyProcessedResponse {
   private message: string;
   private alreadyProcessed: Record<string, string>[];
-  private feedback: FeedbackResponse[]
+  private feedback: FeedbackResponse[];
 
   constructor(
     message = '',
     alreadyProcessed: Record<string, string>[] = [],
     feedback: FeedbackResponse[] = []
   ) {
-    this.message = message
+    this.message = message;
     this.alreadyProcessed = alreadyProcessed;
     this.feedback = feedback;
   }
@@ -30,7 +30,7 @@ export class AlreadyProcessedResponse {
   }
 
   set _alreadyProcessed(alreadyProcessed: Record<string, string>[]) {
-    this.alreadyProcessed = alreadyProcessed 
+    this.alreadyProcessed = alreadyProcessed;
   }
 
   set _feedback(feedback: FeedbackResponse[]) {
