@@ -1,5 +1,5 @@
-import { Entity } from "../utils/parseResponse";
-import {requestIds} from "../config/requestIds";
+import { Entity } from '../utils/parseResponse';
+import { requestIds } from '../config/requestIds';
 
 export interface BackendResponses {
   responsesList: BackendResponse[];

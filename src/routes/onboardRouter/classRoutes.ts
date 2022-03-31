@@ -2,19 +2,19 @@ import express, { Request, Response } from 'express';
 import { ClassQuerySchema } from '../../interfaces/clientSchemas';
 import { C1Service } from '../../services/c1Service';
 import { BackendService } from '../../services/backendService';
-import { alreadyProcess, Entity, parseResponse } from '../../utils/parseResponse';
+import {
+  alreadyProcess,
+  Entity,
+  parseResponse,
+} from '../../utils/parseResponse';
 import {
   ClassesByOrg,
-  ClassesBySchools
+  ClassesBySchools,
 } from '../../interfaces/backendSchemas';
-import {
-  HttpError,
-  mapClassesByOrg,
-  mapClassesBySchools
-} from '../../utils';
-import logger from '../../utils/logging';
-import { arraysMatch } from "../../utils/arraysMatch";
-import { dedupeClasses } from "../../utils/dedupe";
+import { HttpError, mapClassesByOrg, mapClassesBySchools } from '../../utils';
+import { log } from '../../utils/logging';
+import { arraysMatch } from '../../utils/arraysMatch';
+import { dedupeClasses } from '../../utils/dedupe';
 
 const router = express.Router();
 
@@ -45,8 +45,10 @@ router.post('/', async (req: Request, res: Response) => {
     backendService.mapClassesToProto(uniqueClasses);
 
     const classesByOrgs: ClassesByOrg[] = mapClassesByOrg(uniqueClasses);
-    classesByOrgs.forEach(classesByOrg => {
-      const schoolClasses: ClassesBySchools[] = mapClassesBySchools(classesByOrg.classes);
+    classesByOrgs.forEach((classesByOrg) => {
+      const schoolClasses: ClassesBySchools[] = mapClassesBySchools(
+        classesByOrg.classes
+      );
       for (const clazz of schoolClasses) {
         backendService.addClassesToSchool(
           clazz.schoolUuid,
@@ -54,7 +56,7 @@ router.post('/', async (req: Request, res: Response) => {
           '3'
         );
       }
-    })
+    });
 
     const { statusCode, feedback } = await parseResponse();
     allStatuses.push(statusCode);
@@ -63,13 +65,15 @@ router.post('/', async (req: Request, res: Response) => {
       feedbackResponse = await service.postFeedback(feedback);
       allFeedbackResponses.push(...feedbackResponse);
     } catch (error) {
-      logger.error(error);
-      return res.status(error instanceof HttpError ? error.status : 500).json(
-        {
-          message: 'Something went wrong on sending feedback for onboarding classes!',
-          feedback
-        }
+      log.error(
+        { error, targetApi: 'C1' },
+        'Failed to post feedback for classes'
       );
+      return res.status(error instanceof HttpError ? error.status : 500).json({
+        message:
+          'Something went wrong on sending feedback for onboarding classes!',
+        feedback,
+      });
     }
     prevClassesIds = curClassesIds;
     classes = await service.getClasses();

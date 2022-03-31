@@ -11,7 +11,7 @@ import nock from 'nock';
 import { C1Service } from '../../src/services/c1Service';
 import { C1Endpoints } from '../../src/config/c1Endpoints';
 import { getClasses, getOrganizations, getSchools, getUsers } from '../utils/responses/c1';
-import logger from '../../src/utils/logging';
+import { log } from '../../src/utils/logging';
 import { createFakeClient } from '../utils/createFakeClient';
 
 use(chaiAsPromised);

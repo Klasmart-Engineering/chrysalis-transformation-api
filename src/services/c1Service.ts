@@ -9,8 +9,7 @@ import {
   SchoolQuerySchema,
   UserQuerySchema,
 } from '../interfaces/clientSchemas';
-import logger from '../utils/logging';
-import { stringify } from '../utils/stringify';
+import { log } from '../utils/logging';
 
 const loginData = JSON.stringify({
   Username: String(process.env.C1_API_USERNAME),
@@ -41,7 +40,10 @@ export class C1Service extends BaseRestfulService {
           this.jwtToken = response;
         })
         .catch(() => {
-          logger.error('Failed to refresh token');
+          log.error(
+            { targetApi: 'C1' },
+            'Failed to refresh token when the token was due to time out'
+          );
         });
     }, REFRESH_TOKEN_INTERVAL);
   }
@@ -56,13 +58,13 @@ export class C1Service extends BaseRestfulService {
   async getOrganizations(): Promise<Array<OrganizationQuerySchema>> {
     const client = this.createClient(C1Endpoints.organizationApiEndpoint);
     let organizations: OrganizationQuerySchema[] = [];
-    
+
     try {
-      organizations = (await this.getData(client)) as Array<OrganizationQuerySchema>;
-    }
-    catch (error) {
-      const stringifyError = stringify(error);
-      logger.error(stringifyError);
+      organizations = (await this.getData(
+        client
+      )) as Array<OrganizationQuerySchema>;
+    } catch (error) {
+      log.error({ error, targetApi: 'C1' }, 'Failed to get organizations');
     }
 
     return organizations ?? [];
@@ -81,12 +83,11 @@ export class C1Service extends BaseRestfulService {
   async getSchools(): Promise<Array<SchoolQuerySchema>> {
     const client = this.createClient(C1Endpoints.schoolsApiEndpoint);
     let schools: SchoolQuerySchema[] = [];
-    
+
     try {
-      schools = (await this.getData(client)) as SchoolQuerySchema[];   
+      schools = (await this.getData(client)) as SchoolQuerySchema[];
     } catch (error) {
-      const stringifyError = stringify(error);
-      logger.error(stringifyError);
+      log.error({ error, targetApi: 'C1' }, 'Failed to get schools');
     }
 
     return schools ?? [];
@@ -99,11 +100,10 @@ export class C1Service extends BaseRestfulService {
     try {
       classes = (await this.getData(client)) as ClassQuerySchema[];
     } catch (error) {
-      const stringifyError = stringify(error);
-      logger.error(stringifyError);
+      log.error({ error, targetApi: 'C1' }, 'Failed to get classes');
     }
 
-    return classes ?? []; 
+    return classes ?? [];
   }
 
   async getUsers(): Promise<Array<UserQuerySchema>> {
@@ -113,11 +113,10 @@ export class C1Service extends BaseRestfulService {
     try {
       users = (await this.getData(client)) as UserQuerySchema[];
     } catch (error) {
-      const stringifyError = stringify(error);
-      logger.error(stringifyError);
+      log.error({ error, targetApi: 'C1' }, 'Failed to get users');
     }
 
-    return users ?? []; 
+    return users ?? [];
   }
 
   async postFeedback(feedback: Feedback[]): Promise<Array<FeedbackResponse>> {

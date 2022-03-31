@@ -1,8 +1,7 @@
 import { HttpOptions } from '../interfaces/httpOptions';
 import https from 'https';
 import { HttpError } from './httpResponses';
-import logger from './logging';
-import { stringify } from './stringify';
+import { log } from './logging';
 
 type TokenResponse = {
   APIUserID: number;
@@ -35,8 +34,7 @@ export class AuthServer {
       if (response.JwtToken) this.jwtToken = response.JwtToken;
       if (response.RefreshToken) this.refreshToken = response.RefreshToken;
     } catch (error) {
-      const stringifyError = stringify(error)
-      logger.error(stringifyError);
+      log.error({ error, targetApi: 'C1' }, 'Failed to login');
     }
   }
 
@@ -52,8 +50,7 @@ export class AuthServer {
       if (response.JwtToken) this.jwtToken = response.JwtToken;
       if (response.RefreshToken) this.refreshToken = response.RefreshToken;
     } catch (error) {
-      const stringifyError = stringify(error)
-      logger.error(stringifyError);
+      log.error({ error, targetApi: 'C1' }, 'Failed to refresh token');
     }
   }
 

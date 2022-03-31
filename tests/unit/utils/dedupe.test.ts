@@ -1,18 +1,22 @@
-import logger from "../../../src/utils/logging";
+import { log } from '../../../src/utils/logging';
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import {dedupeClasses, dedupeSchools, dedupeUsers} from "../../../src/utils/dedupe";
-import {getClasses, getSchools, getUsers} from "../../utils/responses/c1";
-import {classSchema, schoolSchema, userSchema} from "../../utils/schemas/c1";
+import {
+  dedupeClasses,
+  dedupeSchools,
+  dedupeUsers,
+} from '../../../src/utils/dedupe';
+import { getClasses, getSchools, getUsers } from '../../utils/responses/c1';
+import { classSchema, schoolSchema, userSchema } from '../../utils/schemas/c1';
 chai.use(spies);
 
 describe('dedupe entities', function () {
   before(() => {
-    chai.spy.on(logger, 'info', () => true);
+    chai.spy.on(log, 'info', () => true);
   });
   after(() => {
-    chai.spy.restore(logger, 'error');
-  })
+    chai.spy.restore(log, 'error');
+  });
   describe('#dedupe schools', () => {
     it('should return unique schools', () => {
       const uniqueSchools = dedupeSchools(getSchools);

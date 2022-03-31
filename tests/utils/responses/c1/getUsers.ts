@@ -1,4 +1,4 @@
-import {classRoles} from "../../../../src/interfaces/clientSchemas";
+import { classRoles } from '../../../../src/interfaces/clientSchemas';
 
 export const getUsers = [
   {
@@ -20,7 +20,7 @@ export const getUsers = [
       {
         ClassUUID: '0c5ed9bb-afb1-4342-87c6-bdb0f323598e',
         ClassRole: 'Student' as classRoles,
-      }
+      },
     ],
   },
   {
@@ -42,7 +42,7 @@ export const getUsers = [
       {
         ClassUUID: '0c5ed9bb-afb1-4342-87c6-bdb0f323598e',
         ClassRole: 'Student' as classRoles,
-      }
+      },
     ],
   },
   {
@@ -64,7 +64,7 @@ export const getUsers = [
       {
         ClassUUID: '0c5ed9bb-afb1-4342-87c6-bdb0f323598e',
         ClassRole: 'Teacher' as classRoles,
-      }
+      },
     ],
   },
 ];

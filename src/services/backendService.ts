@@ -13,7 +13,7 @@ import {
 } from '@grpc/grpc-js/build/src/client-interceptors';
 import { InterceptingListener } from '@grpc/grpc-js/build/src/call-stream';
 import { Metadata } from '@grpc/grpc-js/build/src/metadata';
-import logger from '../utils/logging';
+import { log } from '../utils/logging';
 import {
   UsersToClassSchema,
   UsersToOrganizationSchema,
@@ -57,7 +57,10 @@ export class BackendService {
       if (this._instance) {
         return this._instance;
       } else {
-        const channel: grpc.ChannelCredentials = process.env.NODE_ENV == 'development' ? grpc.ChannelCredentials.createInsecure() as grpc.ChannelCredentials : grpc.ChannelCredentials.createSsl() as grpc.ChannelCredentials;
+        const channel: grpc.ChannelCredentials =
+          process.env.NODE_ENV == 'development'
+            ? (grpc.ChannelCredentials.createInsecure() as grpc.ChannelCredentials)
+            : (grpc.ChannelCredentials.createSsl() as grpc.ChannelCredentials);
         const interceptor = (
           options: InterceptorOptions,
           nextCall: NextCall
@@ -82,11 +85,14 @@ export class BackendService {
           { interceptors: [interceptor] }
         );
         this._instance = new BackendService(client);
-        logger.info('Connected to Generic backend');
+        log.info('Connected to Generic backend');
         return this._instance;
       }
     } catch (e) {
-      logger.error('❌ Failed to connect to Generic backend');
+      log.error(
+        { error: e, targetApi: 'Generic Backend' },
+        '❌ Failed to connect to Generic backend'
+      );
       throw e;
     }
   }
@@ -318,7 +324,7 @@ export class BackendService {
           reject(err);
           return;
         }
-        logger.info(responses.toObject());
+        log.info(responses.toObject());
         resolve(responses.toObject());
       });
     });

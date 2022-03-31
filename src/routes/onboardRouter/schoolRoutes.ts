@@ -2,12 +2,15 @@ import express, { Request, Response } from 'express';
 import { C1Service } from '../../services/c1Service';
 import { BackendService } from '../../services/backendService';
 import { SchoolQuerySchema } from '../../interfaces/clientSchemas';
-import { alreadyProcess, Entity, parseResponse } from '../../utils/parseResponse';
-import logger from '../../utils/logging';
+import {
+  alreadyProcess,
+  Entity,
+  parseResponse,
+} from '../../utils/parseResponse';
+import { log } from '../../utils/logging';
 import { HttpError } from '../../utils';
-import { arraysMatch } from "../../utils/arraysMatch";
-import { dedupeSchools } from "../../utils/dedupe";
-
+import { arraysMatch } from '../../utils/arraysMatch';
+import { dedupeSchools } from '../../utils/dedupe';
 
 const router = express.Router();
 
@@ -43,13 +46,15 @@ router.post('/', async (req: Request, res: Response) => {
       feedbackResponse = await service.postFeedback(feedback);
       allFeedbackResponses.push(...feedbackResponse);
     } catch (error) {
-      logger.error(error);
-      return res.status(error instanceof HttpError ? error.status : 500).json(
-        {
-          message: 'Something went wrong on sending feedback for onboarding schools!',
-          feedback
-        }
+      log.error(
+        { error, targetApi: 'C1' },
+        'Failed to post feedback for schools'
       );
+      return res.status(error instanceof HttpError ? error.status : 500).json({
+        message:
+          'Something went wrong on sending feedback for onboarding schools!',
+        feedback,
+      });
     }
     prevSchoolsIds = curSchoolsIds;
     schools = await service.getSchools();
