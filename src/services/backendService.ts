@@ -72,12 +72,13 @@ export class BackendService {
               listener: Partial<InterceptingListener>,
               next: CallableFunction
             ) {
-              metadata.add('x-api-key', String(process.env.BACKEND_API_SECRET));
-              const headers = {};
               const transaction = newrelic.getTransaction();
+              metadata.add('x-api-key', String(process.env.BACKEND_API_SECRET));
+              const headers: Record<string, string> = {};
               transaction.insertDistributedTraceHeaders(headers);
-              for (const [k, v] of Object.entries(headers))
+              for (const [k, v] of Object.entries(headers)) {
                 metadata.add(k, v as grpc.MetadataValue);
+              }
               next(metadata, listener);
             },
           };
@@ -330,7 +331,13 @@ export class BackendService {
           reject(err);
           return;
         }
-        log.info(responses.toObject());
+        log.debug(responses.toObject());
+        // This ONLY works because this entire class is a singleton and it is impossible
+        // to send more than one request at a time.
+        //
+        // If this is ever changed, then this distributed tracing logic needs to be updated
+        const transaction = newrelic.getTransaction();
+        transaction.end();
         resolve(responses.toObject());
       });
     });

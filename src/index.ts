@@ -1,3 +1,4 @@
+require('newrelic');
 import app from './app';
 import { log } from './utils/logging';
 import './utils/dotenv';
