@@ -4,6 +4,7 @@ import {
   SchoolQuerySchema,
   ClassQuerySchema,
 } from '../interfaces/clientSchemas';
+import newrelic from 'newrelic';
 import * as proto from '../protos/api_pb';
 import { OnboardingClient } from '../protos/api_grpc_pb';
 import * as grpc from '@grpc/grpc-js';
@@ -72,6 +73,11 @@ export class BackendService {
               next: CallableFunction
             ) {
               metadata.add('x-api-key', String(process.env.BACKEND_API_SECRET));
+              const headers = {};
+              const transaction = newrelic.getTransaction();
+              transaction.insertDistributedTraceHeaders(headers);
+              for (const [k, v] of Object.entries(headers))
+                metadata.add(k, v as grpc.MetadataValue);
               next(metadata, listener);
             },
           };
