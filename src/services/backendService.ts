@@ -324,7 +324,6 @@ export class BackendService {
           reject(err);
           return;
         }
-        log.info(responses.toObject());
         resolve(responses.toObject());
       });
     });
