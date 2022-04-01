@@ -4,6 +4,7 @@ import {
   SchoolQuerySchema,
   ClassQuerySchema,
 } from '../interfaces/clientSchemas';
+import newrelic from 'newrelic';
 import * as proto from '../protos/api_pb';
 import { OnboardingClient } from '../protos/api_grpc_pb';
 import * as grpc from '@grpc/grpc-js';
@@ -71,7 +72,13 @@ export class BackendService {
               listener: Partial<InterceptingListener>,
               next: CallableFunction
             ) {
+              const transaction = newrelic.getTransaction();
               metadata.add('x-api-key', String(process.env.BACKEND_API_SECRET));
+              const headers: Record<string, string> = {};
+              transaction.insertDistributedTraceHeaders(headers);
+              for (const [k, v] of Object.entries(headers)) {
+                metadata.add(k, v as grpc.MetadataValue);
+              }
               next(metadata, listener);
             },
           };
@@ -324,6 +331,12 @@ export class BackendService {
           reject(err);
           return;
         }
+        // This ONLY works because this entire class is a singleton and it is impossible
+        // to send more than one request at a time.
+        //
+        // If this is ever changed, then this distributed tracing logic needs to be updated
+        const transaction = newrelic.getTransaction();
+        transaction.end();
         resolve(responses.toObject());
       });
     });
