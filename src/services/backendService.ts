@@ -331,7 +331,6 @@ export class BackendService {
           reject(err);
           return;
         }
-        log.debug(responses.toObject());
         // This ONLY works because this entire class is a singleton and it is impossible
         // to send more than one request at a time.
         //
