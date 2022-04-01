@@ -7,7 +7,7 @@
     "test": "npm run test:unit && npm run test:acceptance",
     "test:unit": "mocha --require ts-node/register \"tests/unit/**/*.test.ts\" --timeout 8000 --exit",
     "test:acceptance": "mocha --require ts-node/register \"tests/acceptance/**/*.test.ts\" --timeout 8000 --exit",
-    "start": "ts-node src/index.ts",
+    "start": "ts-node -r newrelic src/index.ts",
     "start:dev": "nodemon",
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
