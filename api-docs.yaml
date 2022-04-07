@@ -226,8 +226,8 @@ components:
               value:
                 message: 'Classes already processed however c1 api is returning processed entities'
                 alreadyProcessed:
-                  - { SchoolUUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e' }
-                  - { SchoolUUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39' }
+                  - { ClassUUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e' }
+                  - { ClassUUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39' }
                 feedback:
                   - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
                     Entity: 'Class'
@@ -309,8 +309,8 @@ components:
               value:
                 message: 'Users already processed however c1 api is returning processed entities'
                 alreadyProcessed:
-                  - { SchoolUUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e' }
-                  - { SchoolUUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39' }
+                  - { UserUUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e' }
+                  - { UserUUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39' }
                 feedback:
                   - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
                     Entity: 'User'
@@ -378,6 +378,11 @@ components:
   schemas:
     Feedback:
       type: array
+      items:
+        $ref: '#/components/schemas/FeedbackItem'
+
+    FeedbackItem:
+      type: object
       required:
         - UUID
         - Entity
@@ -391,11 +396,14 @@ components:
         HasSuccess:
           type: boolean
         ErrorMessage:
-          type: string[]
+          type: array
+          items:
+            type: string
         OutputResult:
           type: object
           items:
             $ref: '#/components/schemas/OutputResult'
+
     OutputResult:
       type: object
       required:
@@ -419,12 +427,13 @@ components:
         alreadyProcessed:
           type: array
           items:
-            $ref: '#/components/schemas/AlreadyProcessedSchema'
+            $ref: '#/components/schemas/AlreadyProcessedItem'
         feedback:
           type: array
           items:
             $ref: '#/components/schemas/Feedback'
-    AlreadyProcessedSchema:
+
+    AlreadyProcessedItem:
       type: object
       properties:
         OrganizationUUID:
@@ -446,6 +455,7 @@ components:
           type: string
         feedback:
           $ref: '#/components/schemas/Feedback'
+
     Error:
       type: object
       required:
