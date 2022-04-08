@@ -7,6 +7,8 @@ info:
 servers:
   - url: 'http://localhost:4200'
     description: 'Local development server'
+  - url: 'https://csi-c1.alpha.kidsloop.net'
+    description: 'Alpha server'
 
 paths:
   /onboard/organizations:
@@ -467,10 +469,10 @@ components:
         message: Not Found
 
   securitySchemes:
-    ApiKeyAuth:
+    ApiSecret:
       type: apiKey
       in: header
-      name: X-API-KEY
+      name: X_API_SECRET
 
 security:
-  - ApiKeyAuth: []
+  - ApiSecret: []

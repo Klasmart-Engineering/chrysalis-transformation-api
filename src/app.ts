@@ -18,7 +18,9 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use('/onboard', checkAPIToken, OnboardRouter);
 app.use('/health', HealthRouter);
-app.use('/documentation', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+if(process.env.DISPLAY_SWAGGER_DOCS === 'true') {
+  app.use('/documentation', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+}
 
 // catch 404 and forward to error handler
 app.use((req: Request, res: Response, next: NextFunction) => {
