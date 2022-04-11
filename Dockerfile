@@ -7,6 +7,7 @@ COPY src ./src
 COPY types ./types
 COPY newrelic.js .
 COPY .npmrc .
+COPY api-docs.yaml .
 
 RUN npm install
 

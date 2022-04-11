@@ -1,0 +1,478 @@
+openapi: 3.0.0
+info:
+  version: '1.0.0'
+  title: 'KidsLoop - C1 Transformation API'
+  description: |
+    This API is very light-weight and is used to pass data to our generic backend for onboarding.
+servers:
+  - url: 'http://localhost:4200'
+    description: 'Local development server'
+  - url: 'https://csi-c1.alpha.kidsloop.net'
+    description: 'Alpha server'
+
+paths:
+  /onboard/organizations:
+    post:
+      summary: 'Attempts to onboard all organizations fetched from C1'
+      operationId: organization
+      tags:
+        - Organizations
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponseOrganizations'
+        '400':
+          $ref: '#/components/responses/FailedResponseOrganizations'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/UnexpectedErrorOrganizations'
+
+  /onboard/schools:
+    post:
+      summary: 'Attempts to onboard all schools fetched from C1'
+      operationId: school
+      tags:
+        - Schools
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponseSchools'
+        '400':
+          $ref: '#/components/responses/FailedResponseSchools'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/UnexpectedErrorSchools'
+
+  /onboard/classes:
+    post:
+      summary: 'Attempts to onboard all classes fetched from C1'
+      operationId: class
+      tags:
+        - Classes
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponseClasses'
+        '400':
+          $ref: '#/components/responses/FailedResponseClasses'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/UnexpectedErrorClasses'
+
+  /onboard/users:
+    post:
+      summary: 'Attempts to onboard all users fetched from C1'
+      operationId: user
+      tags:
+        - Users
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponseUsers'
+        '400':
+          $ref: '#/components/responses/FailedResponseUsers'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/UnexpectedErrorUsers'
+
+components:
+  responses:
+    SuccessResponseOrganizations:
+      description: 'OK'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Feedback'
+          example:
+            - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
+              Entity: 'Organization'
+              HasSuccess: true
+              ErrorMessage: []
+            - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
+              Entity: 'Organization'
+              HasSuccess: true
+              ErrorMessage: []
+    FailedResponseOrganizations:
+      description: 'Bad request. Validation issues with organization schema.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Feedback'
+          example:
+            - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
+              Entity: 'Organization'
+              HasSuccess: false
+              ErrorMessage:
+                - "CREATE_ORG: Organization 1 not found"
+            - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
+              Entity: 'Organization'
+              HasSuccess: false
+              ErrorMessage:
+                - "CREATE_ORG: Organization 2 not found"
+    UnexpectedErrorOrganizations:
+      description: 'Internal server error.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "Internal Server Error"
+
+    SuccessResponseSchools:
+      description: 'OK'
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/Feedback'
+              - $ref: '#/components/schemas/AlreadyProcessed'
+          examples:
+            Feedback:
+              value:
+                - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
+                  Entity: 'School'
+                  HasSuccess: true
+                  ErrorMessage: [ ]
+                  OutputResult:
+                    Status: true
+                    Messages: 'Success'
+                - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
+                  Entity: 'School'
+                  HasSuccess: true
+                  ErrorMessage: [ ]
+                  OutputResult:
+                    Status: true
+                    Messages: 'Success'
+            Already Processed:
+              value:
+                message: 'Schools already processed however c1 api is returning processed entities'
+                alreadyProcessed:
+                  - { SchoolUUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e' }
+                  - { SchoolUUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39' }
+                feedback:
+                  - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
+                    Entity: 'School'
+                    HasSuccess: true
+                    ErrorMessage: [ ]
+                  - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
+                    Entity: 'School'
+                    HasSuccess: true
+                    ErrorMessage: [ ]
+    FailedResponseSchools:
+      description: 'Bad request. Validation issues with school schema.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Feedback'
+          example:
+            - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
+              Entity: 'School'
+              HasSuccess: false
+              ErrorMessage:
+                - "CREATE_SCHOOL: \"name\" is not allowed to be empty"
+                - "ADD_PROGRAMS_TO_SCHOOL: School with id 17b60175-53f6-445e-b8a6-faab6ed3f31e does not exist"
+              OutputResult:
+                Status: true
+                Messages: 'Success'
+            - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
+              Entity: 'School'
+              HasSuccess: false
+              ErrorMessage:
+                - "CREATE_SCHOOL: \"name\" length must be at least 3 characters long"
+                - "ADD_PROGRAMS_TO_SCHOOL: School with id e16a7ebd-0a10-4b2d-aa4d-6116f9383d39 does not exist"
+              OutputResult:
+                Status: true
+                Messages: 'Success'
+    UnexpectedErrorSchools:
+      description: 'Internal server error.'
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/Error'
+              - $ref: '#/components/schemas/FeedbackError'
+          examples:
+            Server Error:
+              value:
+                message: "Internal Server Error"
+            Feedback Error:
+              value:
+                message: "Something went wrong on sending feedback for onboarding schools"
+
+    SuccessResponseClasses:
+      description: 'OK'
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/Feedback'
+              - $ref: '#/components/schemas/AlreadyProcessed'
+          examples:
+            Feedback:
+              value:
+                - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
+                  Entity: 'Class'
+                  HasSuccess: true
+                  ErrorMessage: [ ]
+                  OutputResult:
+                    Status: true
+                    Messages: 'Success'
+                - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
+                  Entity: 'Class'
+                  HasSuccess: true
+                  ErrorMessage: [ ]
+                  OutputResult:
+                    Status: true
+                    Messages: 'Success'
+            Already Processed:
+              value:
+                message: 'Classes already processed however c1 api is returning processed entities'
+                alreadyProcessed:
+                  - { ClassUUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e' }
+                  - { ClassUUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39' }
+                feedback:
+                  - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
+                    Entity: 'Class'
+                    HasSuccess: true
+                    ErrorMessage: [ ]
+                  - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
+                    Entity: 'Class'
+                    HasSuccess: true
+                    ErrorMessage: [ ]
+    FailedResponseClasses:
+      description: 'Bad request. Validation issues with class schema.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Feedback'
+          example:
+            - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
+              Entity: 'Class'
+              HasSuccess: false
+              ErrorMessage:
+                - "CREATE_CLASS: \"name\" is not allowed to be empty"
+                - "ADD_CLASSES_TO_SCHOOL: None of the provided class ids were valid"
+                - "ADD_PROGRAMS_TO_CLASS: Class with id 17b60175-53f6-445e-b8a6-faab6ed3f31e does not exist"
+              OutputResult:
+                Status: true
+                Messages: 'Success'
+            - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
+              Entity: 'Class'
+              HasSuccess: false
+              ErrorMessage:
+                - "CREATE_CLASS: \"name\" length must be at least 3 characters long"
+                - "ADD_CLASSES_TO_SCHOOL: None of the provided class ids were valid"
+                - "ADD_PROGRAMS_TO_CLASS: Class with id e16a7ebd-0a10-4b2d-aa4d-6116f9383d39 does not exist"
+              OutputResult:
+                Status: true
+                Messages: 'Success'
+    UnexpectedErrorClasses:
+      description: 'Internal server error.'
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/Error'
+              - $ref: '#/components/schemas/FeedbackError'
+          examples:
+            Server Error:
+              value:
+                message: "Internal Server Error"
+            Feedback Error:
+              value:
+                message: "Something went wrong on sending feedback for onboarding classes"
+
+    SuccessResponseUsers:
+      description: 'OK'
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/Feedback'
+              - $ref: '#/components/schemas/AlreadyProcessed'
+          examples:
+            Feedback:
+              value:
+                - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
+                  Entity: 'User'
+                  HasSuccess: true
+                  ErrorMessage: [ ]
+                  OutputResult:
+                    Status: true
+                    Messages: 'Success'
+                - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
+                  Entity: 'User'
+                  HasSuccess: true
+                  ErrorMessage: [ ]
+                  OutputResult:
+                    Status: true
+                    Messages: 'Success'
+            Already Processed:
+              value:
+                message: 'Users already processed however c1 api is returning processed entities'
+                alreadyProcessed:
+                  - { UserUUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e' }
+                  - { UserUUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39' }
+                feedback:
+                  - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
+                    Entity: 'User'
+                    HasSuccess: true
+                    ErrorMessage: [ ]
+                  - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
+                    Entity: 'User'
+                    HasSuccess: true
+                    ErrorMessage: [ ]
+    FailedResponseUsers:
+      description: 'Bad request. Validation issues with user schema.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Feedback'
+          example:
+            - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
+              Entity: 'User'
+              HasSuccess: false
+              ErrorMessage:
+                - "CREATE_USER: \"dateOfBirth\" with value \"10-2013-9999\" fails to match the required pattern: /^(((0)[0-9])|((1)[0-2]))(-)\\d{4}$/"
+                - "ADD_USERS_TO_ORG: Unable to find user with id 17b60175-53f6-445e-b8a6-faab6ed3f31e"
+                - "ADD_USERS_TO_SCHOOL: Unable to find user with id 17b60175-53f6-445e-b8a6-faab6ed3f31e"
+                - "ADD_USERS_TO_CLASS: Student: 17b60175-53f6-445e-b8a6-faab6ed3f31e can not be added to class b6c84297-62b0-4431-b3a9-ee664b57a00f as they do not share the same parent school"
+              OutputResult:
+                Status: true
+                Messages: 'Success'
+            - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
+              Entity: 'User'
+              HasSuccess: false
+              ErrorMessage:
+                - "CREATE_USER: \"givenName\" is not allowed to be empty"
+                - "ADD_USERS_TO_ORG: Unable to find user with id e16a7ebd-0a10-4b2d-aa4d-6116f9383d39"
+                - "ADD_USERS_TO_SCHOOL: Unable to find user with id e16a7ebd-0a10-4b2d-aa4d-6116f9383d39"
+                - "ADD_USERS_TO_CLASS: Student: e16a7ebd-0a10-4b2d-aa4d-6116f9383d39 can not be added to class b6c84297-62b0-4431-b3a9-ee664b57a00f as they do not share the same parent school"
+              OutputResult:
+                Status: true
+                Messages: 'Success'
+    UnexpectedErrorUsers:
+      description: 'Internal server error.'
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/Error'
+              - $ref: '#/components/schemas/FeedbackError'
+          examples:
+            Server Error:
+              value:
+                message: "Internal Server Error"
+            Feedback Error:
+              value:
+                message: "Something went wrong on sending feedback for onboarding users"
+
+    Unauthorized:
+      description: 'Unauthorized request.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Unauthorized
+
+
+  schemas:
+    Feedback:
+      type: array
+      items:
+        $ref: '#/components/schemas/FeedbackItem'
+
+    FeedbackItem:
+      type: object
+      required:
+        - UUID
+        - Entity
+        - HasSuccess
+        - ErrorMessage
+      properties:
+        UUID:
+          type: string
+        Entity:
+          type: string
+        HasSuccess:
+          type: boolean
+        ErrorMessage:
+          type: array
+          items:
+            type: string
+        OutputResult:
+          type: object
+          items:
+            $ref: '#/components/schemas/OutputResult'
+
+    OutputResult:
+      type: object
+      required:
+        - Status
+        - Messages
+      properties:
+        Status:
+          type: boolean
+        Messages:
+          type: string
+
+    AlreadyProcessed:
+      type: object
+      required:
+        - message
+        - alreadyProcessed
+        - feedback
+      properties:
+        message:
+          type: string
+        alreadyProcessed:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlreadyProcessedItem'
+        feedback:
+          type: array
+          items:
+            $ref: '#/components/schemas/Feedback'
+
+    AlreadyProcessedItem:
+      type: object
+      properties:
+        OrganizationUUID:
+          type: string
+        SchoolUUID:
+          type: string
+        ClassUUID:
+          type: string
+        UserUUID:
+          type: string
+
+    FeedbackError:
+      type: object
+      required:
+        - message
+        - feedback
+      properties:
+        message:
+          type: string
+        feedback:
+          $ref: '#/components/schemas/Feedback'
+
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+      example:
+        message: Not Found
+
+  securitySchemes:
+    ApiSecret:
+      type: apiKey
+      in: header
+      name: X_API_SECRET
+
+security:
+  - ApiSecret: []
