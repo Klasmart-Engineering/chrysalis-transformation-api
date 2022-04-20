@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use('/onboard', checkAPIToken, OnboardRouter);
 app.use('/health', HealthRouter);
-if(process.env.DISPLAY_SWAGGER_DOCS === 'true') {
+if (process.env.DISPLAY_SWAGGER_DOCS === 'true') {
   app.use('/documentation', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 }
 
