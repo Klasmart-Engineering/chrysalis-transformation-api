@@ -12,8 +12,8 @@
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
     "fmt": "npm run lint-fix && npm run prettier-format",
-    "prettier-format": "prettier --config .prettierrc \"./**/*.{ts,test.ts}\" --write",
-    "prettier-check": "prettier --config .prettierrc \"./**/*.{ts,test.ts}\" --check",
+    "prettier-format": "prettier --config .prettierrc \"./**/*.{ts,test.ts,yaml}\" --write",
+    "prettier-check": "prettier --config .prettierrc \"./**/*.{ts,test.ts,yaml}\" --check",
     "commitlint-check": "commitlint",
     "prepare": "husky install",
     "build:protos": "sh ./scripts/build-protos.sh"
