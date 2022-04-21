@@ -103,12 +103,12 @@ components:
               Entity: 'Organization'
               HasSuccess: false
               ErrorMessage:
-                - "CREATE_ORG: Organization 1 not found"
+                - 'CREATE_ORG: Organization 1 not found'
             - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
               Entity: 'Organization'
               HasSuccess: false
               ErrorMessage:
-                - "CREATE_ORG: Organization 2 not found"
+                - 'CREATE_ORG: Organization 2 not found'
     UnexpectedErrorOrganizations:
       description: 'Internal server error.'
       content:
@@ -116,7 +116,7 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            message: "Internal Server Error"
+            message: 'Internal Server Error'
 
     SuccessResponseSchools:
       description: 'OK'
@@ -132,14 +132,14 @@ components:
                 - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
                   Entity: 'School'
                   HasSuccess: true
-                  ErrorMessage: [ ]
+                  ErrorMessage: []
                   OutputResult:
                     Status: true
                     Messages: 'Success'
                 - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
                   Entity: 'School'
                   HasSuccess: true
-                  ErrorMessage: [ ]
+                  ErrorMessage: []
                   OutputResult:
                     Status: true
                     Messages: 'Success'
@@ -153,11 +153,11 @@ components:
                   - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
                     Entity: 'School'
                     HasSuccess: true
-                    ErrorMessage: [ ]
+                    ErrorMessage: []
                   - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
                     Entity: 'School'
                     HasSuccess: true
-                    ErrorMessage: [ ]
+                    ErrorMessage: []
     FailedResponseSchools:
       description: 'Bad request. Validation issues with school schema.'
       content:
@@ -169,8 +169,8 @@ components:
               Entity: 'School'
               HasSuccess: false
               ErrorMessage:
-                - "CREATE_SCHOOL: \"name\" is not allowed to be empty"
-                - "ADD_PROGRAMS_TO_SCHOOL: School with id 17b60175-53f6-445e-b8a6-faab6ed3f31e does not exist"
+                - 'CREATE_SCHOOL: "name" is not allowed to be empty'
+                - 'ADD_PROGRAMS_TO_SCHOOL: School with id 17b60175-53f6-445e-b8a6-faab6ed3f31e does not exist'
               OutputResult:
                 Status: true
                 Messages: 'Success'
@@ -178,8 +178,8 @@ components:
               Entity: 'School'
               HasSuccess: false
               ErrorMessage:
-                - "CREATE_SCHOOL: \"name\" length must be at least 3 characters long"
-                - "ADD_PROGRAMS_TO_SCHOOL: School with id e16a7ebd-0a10-4b2d-aa4d-6116f9383d39 does not exist"
+                - 'CREATE_SCHOOL: "name" length must be at least 3 characters long'
+                - 'ADD_PROGRAMS_TO_SCHOOL: School with id e16a7ebd-0a10-4b2d-aa4d-6116f9383d39 does not exist'
               OutputResult:
                 Status: true
                 Messages: 'Success'
@@ -194,10 +194,10 @@ components:
           examples:
             Server Error:
               value:
-                message: "Internal Server Error"
+                message: 'Internal Server Error'
             Feedback Error:
               value:
-                message: "Something went wrong on sending feedback for onboarding schools"
+                message: 'Something went wrong on sending feedback for onboarding schools'
 
     SuccessResponseClasses:
       description: 'OK'
@@ -213,14 +213,14 @@ components:
                 - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
                   Entity: 'Class'
                   HasSuccess: true
-                  ErrorMessage: [ ]
+                  ErrorMessage: []
                   OutputResult:
                     Status: true
                     Messages: 'Success'
                 - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
                   Entity: 'Class'
                   HasSuccess: true
-                  ErrorMessage: [ ]
+                  ErrorMessage: []
                   OutputResult:
                     Status: true
                     Messages: 'Success'
@@ -234,11 +234,11 @@ components:
                   - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
                     Entity: 'Class'
                     HasSuccess: true
-                    ErrorMessage: [ ]
+                    ErrorMessage: []
                   - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
                     Entity: 'Class'
                     HasSuccess: true
-                    ErrorMessage: [ ]
+                    ErrorMessage: []
     FailedResponseClasses:
       description: 'Bad request. Validation issues with class schema.'
       content:
@@ -250,9 +250,9 @@ components:
               Entity: 'Class'
               HasSuccess: false
               ErrorMessage:
-                - "CREATE_CLASS: \"name\" is not allowed to be empty"
-                - "ADD_CLASSES_TO_SCHOOL: None of the provided class ids were valid"
-                - "ADD_PROGRAMS_TO_CLASS: Class with id 17b60175-53f6-445e-b8a6-faab6ed3f31e does not exist"
+                - 'CREATE_CLASS: "name" is not allowed to be empty'
+                - 'ADD_CLASSES_TO_SCHOOL: None of the provided class ids were valid'
+                - 'ADD_PROGRAMS_TO_CLASS: Class with id 17b60175-53f6-445e-b8a6-faab6ed3f31e does not exist'
               OutputResult:
                 Status: true
                 Messages: 'Success'
@@ -260,9 +260,9 @@ components:
               Entity: 'Class'
               HasSuccess: false
               ErrorMessage:
-                - "CREATE_CLASS: \"name\" length must be at least 3 characters long"
-                - "ADD_CLASSES_TO_SCHOOL: None of the provided class ids were valid"
-                - "ADD_PROGRAMS_TO_CLASS: Class with id e16a7ebd-0a10-4b2d-aa4d-6116f9383d39 does not exist"
+                - 'CREATE_CLASS: "name" length must be at least 3 characters long'
+                - 'ADD_CLASSES_TO_SCHOOL: None of the provided class ids were valid'
+                - 'ADD_PROGRAMS_TO_CLASS: Class with id e16a7ebd-0a10-4b2d-aa4d-6116f9383d39 does not exist'
               OutputResult:
                 Status: true
                 Messages: 'Success'
@@ -277,10 +277,10 @@ components:
           examples:
             Server Error:
               value:
-                message: "Internal Server Error"
+                message: 'Internal Server Error'
             Feedback Error:
               value:
-                message: "Something went wrong on sending feedback for onboarding classes"
+                message: 'Something went wrong on sending feedback for onboarding classes'
 
     SuccessResponseUsers:
       description: 'OK'
@@ -296,14 +296,14 @@ components:
                 - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
                   Entity: 'User'
                   HasSuccess: true
-                  ErrorMessage: [ ]
+                  ErrorMessage: []
                   OutputResult:
                     Status: true
                     Messages: 'Success'
                 - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
                   Entity: 'User'
                   HasSuccess: true
-                  ErrorMessage: [ ]
+                  ErrorMessage: []
                   OutputResult:
                     Status: true
                     Messages: 'Success'
@@ -317,11 +317,11 @@ components:
                   - UUID: '17b60175-53f6-445e-b8a6-faab6ed3f31e'
                     Entity: 'User'
                     HasSuccess: true
-                    ErrorMessage: [ ]
+                    ErrorMessage: []
                   - UUID: 'e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
                     Entity: 'User'
                     HasSuccess: true
-                    ErrorMessage: [ ]
+                    ErrorMessage: []
     FailedResponseUsers:
       description: 'Bad request. Validation issues with user schema.'
       content:
@@ -334,9 +334,9 @@ components:
               HasSuccess: false
               ErrorMessage:
                 - "CREATE_USER: \"dateOfBirth\" with value \"10-2013-9999\" fails to match the required pattern: /^(((0)[0-9])|((1)[0-2]))(-)\\d{4}$/"
-                - "ADD_USERS_TO_ORG: Unable to find user with id 17b60175-53f6-445e-b8a6-faab6ed3f31e"
-                - "ADD_USERS_TO_SCHOOL: Unable to find user with id 17b60175-53f6-445e-b8a6-faab6ed3f31e"
-                - "ADD_USERS_TO_CLASS: Student: 17b60175-53f6-445e-b8a6-faab6ed3f31e can not be added to class b6c84297-62b0-4431-b3a9-ee664b57a00f as they do not share the same parent school"
+                - 'ADD_USERS_TO_ORG: Unable to find user with id 17b60175-53f6-445e-b8a6-faab6ed3f31e'
+                - 'ADD_USERS_TO_SCHOOL: Unable to find user with id 17b60175-53f6-445e-b8a6-faab6ed3f31e'
+                - 'ADD_USERS_TO_CLASS: Student: 17b60175-53f6-445e-b8a6-faab6ed3f31e can not be added to class b6c84297-62b0-4431-b3a9-ee664b57a00f as they do not share the same parent school'
               OutputResult:
                 Status: true
                 Messages: 'Success'
@@ -344,10 +344,10 @@ components:
               Entity: 'User'
               HasSuccess: false
               ErrorMessage:
-                - "CREATE_USER: \"givenName\" is not allowed to be empty"
-                - "ADD_USERS_TO_ORG: Unable to find user with id e16a7ebd-0a10-4b2d-aa4d-6116f9383d39"
-                - "ADD_USERS_TO_SCHOOL: Unable to find user with id e16a7ebd-0a10-4b2d-aa4d-6116f9383d39"
-                - "ADD_USERS_TO_CLASS: Student: e16a7ebd-0a10-4b2d-aa4d-6116f9383d39 can not be added to class b6c84297-62b0-4431-b3a9-ee664b57a00f as they do not share the same parent school"
+                - 'CREATE_USER: "givenName" is not allowed to be empty'
+                - 'ADD_USERS_TO_ORG: Unable to find user with id e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
+                - 'ADD_USERS_TO_SCHOOL: Unable to find user with id e16a7ebd-0a10-4b2d-aa4d-6116f9383d39'
+                - 'ADD_USERS_TO_CLASS: Student: e16a7ebd-0a10-4b2d-aa4d-6116f9383d39 can not be added to class b6c84297-62b0-4431-b3a9-ee664b57a00f as they do not share the same parent school'
               OutputResult:
                 Status: true
                 Messages: 'Success'
@@ -362,10 +362,10 @@ components:
           examples:
             Server Error:
               value:
-                message: "Internal Server Error"
+                message: 'Internal Server Error'
             Feedback Error:
               value:
-                message: "Something went wrong on sending feedback for onboarding users"
+                message: 'Something went wrong on sending feedback for onboarding users'
 
     Unauthorized:
       description: 'Unauthorized request.'
@@ -375,7 +375,6 @@ components:
             $ref: '#/components/schemas/Error'
           example:
             message: Unauthorized
-
 
   schemas:
     Feedback:
