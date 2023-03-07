@@ -67,7 +67,7 @@
     "chai-as-promised": "7.1.1",
     "chai-json-schema": "1.5.1",
     "chai-spies": "1.0.0",
-    "commitizen": "4.2.4",
+    "commitizen": "4.3.0",
     "cross-env": "7.0.3",
     "eslint": "8.2.0",
     "eslint-config-node": "4.1.0",
